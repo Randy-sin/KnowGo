@@ -155,9 +155,11 @@ export default function LearnPage() {
         setIsTyping(false)
         setTimeout(() => setIsTyping(true), 800)
       } else {
-        // 完成所有阶段，进入深度学习
+        // 完成所有阶段，保存回答并进入模拟器
+        localStorage.setItem('knowgo-responses', JSON.stringify(newResponses))
         console.log('All stages completed. Responses:', newResponses)
-        // 这里可以进入实际的学习内容页面
+        // 跳转到模拟器页面
+        router.push('/simulate')
       }
     }
   }
