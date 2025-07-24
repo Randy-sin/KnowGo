@@ -1,0 +1,168 @@
+# KnowGo项目 - Cursor忽略文件配置
+# 此文件控制Cursor AI功能和索引对文件的访问
+
+# ===========================================
+# 敏感文件和配置 - 安全考虑
+# ===========================================
+.env*
+.env.local
+.env.production
+.env.staging
+.env.development
+secrets/
+config/secrets/
+**/credentials.json
+**/secrets.json
+**/*.key
+**/*.pem
+**/id_rsa
+**/id_ecdsa
+**/id_ed25519
+auth.json
+firebase-adminsdk-*.json
+
+# ===========================================
+# 依赖和构建文件 - 性能优化
+# ===========================================
+node_modules/
+.next/
+.nuxt/
+dist/
+build/
+out/
+.cache/
+.parcel-cache/
+.turbo/
+.pnpm-store/
+
+# 锁文件
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lockb
+
+# ===========================================
+# 开发工具和缓存
+# ===========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# 缓存目录
+.eslintcache
+.stylelintcache
+.sass-cache/
+.pytest_cache/
+.mypy_cache/
+.coverage/
+.nyc_output/
+
+# ===========================================
+# 日志和临时文件
+# ===========================================
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+.tmp/
+temp/
+
+# ===========================================
+# 版本控制
+# ===========================================
+.git/
+.svn/
+.hg/
+.bzr/
+
+# ===========================================
+# AI开发中不需要的文件类型
+# ===========================================
+# 图片文件
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.webp
+*.ico
+*.svg
+
+# 视频文件
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+
+# 音频文件
+*.mp3
+*.wav
+*.ogg
+*.m4a
+
+# 压缩文件
+*.zip
+*.tar
+*.gz
+*.7z
+*.rar
+*.tgz
+
+# 字体文件
+*.ttf
+*.otf
+*.woff
+*.woff2
+*.eot
+
+# 文档文件（根据需要调整）
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+
+# ===========================================
+# 项目特定忽略
+# ===========================================
+# Vercel部署配置
+.vercel/
+
+# Storybook
+storybook-static/
+
+# 测试覆盖率报告
+coverage/
+lcov.info
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# ===========================================
+# 备份和临时文件
+# ===========================================
+*.bak
+*.backup
+*.tmp
+*.temp
+*~
+*.orig
+
+# ===========================================
+# 特殊说明
+# ===========================================
+# 如果需要包含某些被忽略的文件，使用 ! 前缀
+# 例如：!important-config.json
+
+# 注意：根据Cursor文档，.cursorignore会尽力排除文件，
+# 但不保证100%阻止，请勿将其作为安全保护的唯一手段 
