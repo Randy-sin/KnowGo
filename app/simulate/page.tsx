@@ -107,8 +107,14 @@ export default function SimulatePage() {
       const x = 50 + vx * t * 0.1
       const y = 400 - (vy * t * 0.1 - 0.5 * config.gravity * t * t * 0.01)
       
-      if (y > 450) break // 触地
-      points.push({ x, y })
+      // 确保坐标是有效数字
+      if (isFinite(x) && isFinite(y)) {
+        if (y > 450) break // 触地
+        points.push({ x, y })
+      } else {
+        // 如果计算出无效坐标，停止计算
+        break
+      }
     }
     
     return points
@@ -127,15 +133,23 @@ export default function SimulatePage() {
     let currentIndex = 0
     
     const animate = () => {
-      if (currentIndex < points.length) {
-        setBallPosition(points[currentIndex])
-        setTrajectory(prev => [...prev, points[currentIndex]])
+      if (currentIndex < points.length && points[currentIndex]) {
+        const currentPoint = points[currentIndex]
+        // 确保当前点有有效坐标
+        if (currentPoint && typeof currentPoint.x === 'number' && typeof currentPoint.y === 'number') {
+          setBallPosition(currentPoint)
+          setTrajectory(prev => [...prev, currentPoint])
+        }
         currentIndex++
         const frame = requestAnimationFrame(animate)
         setAnimationFrame(frame)
       } else {
         setIsPlaying(false)
-        checkHit(points[points.length - 1])
+        // 检查最后一个有效点
+        const lastValidPoint = points[points.length - 1]
+        if (lastValidPoint && typeof lastValidPoint.x === 'number' && typeof lastValidPoint.y === 'number') {
+          checkHit(lastValidPoint)
+        }
       }
     }
     
@@ -186,23 +200,35 @@ export default function SimulatePage() {
     ctx.fillStyle = '#e5e7eb'
     ctx.fillRect(config.targetZone.x, config.targetZone.y, config.targetZone.width, config.targetZone.height)
     
-    // 绘制轨迹
+    // 绘制轨迹 - 添加安全检查
     if (trajectory.length > 1) {
       ctx.strokeStyle = '#6b7280'
       ctx.lineWidth = 2
       ctx.beginPath()
-      ctx.moveTo(trajectory[0].x, trajectory[0].y)
-      trajectory.forEach(point => {
-        ctx.lineTo(point.x, point.y)
-      })
-      ctx.stroke()
+      
+      // 找到第一个有效点
+      const firstValidPoint = trajectory.find(point => point && typeof point.x === 'number' && typeof point.y === 'number')
+      if (firstValidPoint) {
+        ctx.moveTo(firstValidPoint.x, firstValidPoint.y)
+        
+        trajectory.forEach(point => {
+          // 确保点存在且有有效的x,y坐标
+          if (point && typeof point.x === 'number' && typeof point.y === 'number') {
+            ctx.lineTo(point.x, point.y)
+          }
+        })
+        
+        ctx.stroke()
+      }
     }
     
-    // 绘制球
-    ctx.fillStyle = '#1f2937'
-    ctx.beginPath()
-    ctx.arc(ballPosition.x, ballPosition.y, 8, 0, Math.PI * 2)
-    ctx.fill()
+    // 绘制球 - 添加安全检查
+    if (ballPosition && typeof ballPosition.x === 'number' && typeof ballPosition.y === 'number') {
+      ctx.fillStyle = '#1f2937'
+      ctx.beginPath()
+      ctx.arc(ballPosition.x, ballPosition.y, 8, 0, Math.PI * 2)
+      ctx.fill()
+    }
     
     // 绘制发射器
     ctx.strokeStyle = '#374151'
