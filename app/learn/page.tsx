@@ -32,12 +32,16 @@ export default function LearnPage() {
   // 生成引导性问题
   const generateQuestion = (topic: string) => {
     const questions = {
-      "抛物线": "你有没有观察过篮球投射时的轨迹？",
-      "机器学习": "为什么你的手机总能推荐你喜欢的内容？",
-      "react": "网页是如何瞬间响应你的每一次点击的？",
-      "量子物理": "为什么粒子可以同时存在于多个位置？",
-      "经济学": "为什么同样的商品在不同地方价格不同？",
-      "default": `关于「${topic}」，你是否曾经好奇过...`
+      "抛物线": "Have you ever watched the trajectory of a basketball shot?",
+      "机器学习": "Why does your phone always know what content you'll like?",
+      "react": "How does a webpage respond instantly to every click?",
+      "量子物理": "Why can particles exist in multiple places at once?",
+      "经济学": "Why do identical products cost different amounts in different places?",
+      "parabola": "Have you ever watched the trajectory of a basketball shot?",
+      "machine learning": "Why does your phone always know what content you'll like?",
+      "quantum physics": "Why can particles exist in multiple places at once?",
+      "economics": "Why do identical products cost different amounts in different places?",
+      "default": `About「${topic}」, have you ever wondered...`
     }
     return questions[topic.toLowerCase() as keyof typeof questions] || questions.default
   }
@@ -45,7 +49,7 @@ export default function LearnPage() {
   const handleContinue = () => {
     if (userResponse.trim()) {
       // 这里可以进入下一阶段或深度学习
-      console.log('用户回应:', userResponse)
+      console.log('User response:', userResponse)
     }
   }
 
@@ -136,7 +140,7 @@ export default function LearnPage() {
                   transition={{ duration: 0.6, delay: 1.5 }}
                   value={userResponse}
                   onChange={(e) => setUserResponse(e.target.value)}
-                  placeholder="分享你的想法..."
+                  placeholder="Share your thoughts..."
                   className="w-full h-32 px-0 py-4 text-lg font-light text-gray-800 placeholder:text-gray-400 bg-transparent border-none resize-none focus:outline-none"
                   style={{
                     fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif'
@@ -170,7 +174,7 @@ export default function LearnPage() {
                       : 'text-gray-300 cursor-not-allowed'
                   }`}
                 >
-                  <span>继续</span>
+                  <span>Continue</span>
                   <ArrowRight className="w-4 h-4" />
                 </motion.button>
               </motion.div>
