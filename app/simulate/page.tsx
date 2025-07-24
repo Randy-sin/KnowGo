@@ -13,9 +13,10 @@ export default function SimulatePage() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [showHint, setShowHint] = useState(false)
   
-  // 模拟器参数
-  const [angle, setAngle] = useState(45)
-  const [velocity, setVelocity] = useState(50)
+  // 模拟器参数 - 改为二次函数参数
+  const [paramA, setParamA] = useState(-0.01) // 控制开口方向和大小
+  const [paramB, setParamB] = useState(0.8)   // 控制倾斜度
+  const [paramC, setParamC] = useState(50)    // 控制起始高度
   const [attempts, setAttempts] = useState(0)
   const [hits, setHits] = useState(0)
   
@@ -42,34 +43,31 @@ export default function SimulatePage() {
   const getSimulatorConfig = (topic: string) => {
     const configs = {
       "parabola": {
-        title: "Basketball Shot Simulator",
-        subtitle: "Explore the mathematics of perfect shots",
+        title: "Quadratic Function Explorer",
+        subtitle: "y = ax² + bx + c - Discover the power of parameters",
         targetZone: { x: 650, y: 380, width: 60, height: 20 },
-        gravity: 0.3,
-        hint: "Try different angles and velocities. Notice how the ball follows a parabolic path!",
+        hint: "Adjust a, b, and c to see how they affect the parabola shape!",
         failureHints: [
-          "Too low? Try increasing the angle or velocity.",
-          "Overshot? Try reducing the velocity or lowering the angle.",
-          "The perfect shot isn't about strength—it's about understanding the curve."
+          "Try making 'a' more negative to create a steeper curve downward.",
+          "Adjust 'b' to change the tilt and direction of the parabola.",
+          "The parameter 'c' controls where your parabola starts vertically."
         ]
       },
       "抛物线": {
-        title: "Basketball Shot Simulator", 
-        subtitle: "Explore the mathematics of perfect shots",
+        title: "二次函数探索器", 
+        subtitle: "y = ax² + bx + c - 发现参数的力量",
         targetZone: { x: 650, y: 380, width: 60, height: 20 },
-        gravity: 0.3,
-        hint: "Try different angles and velocities. Notice how the ball follows a parabolic path!",
+        hint: "调节a、b、c参数，看看它们如何影响抛物线的形状！",
         failureHints: [
-          "Too low? Try increasing the angle or velocity.",
-          "Overshot? Try reducing the velocity or lowering the angle.", 
-          "The perfect shot isn't about strength—it's about understanding the curve."
+          "尝试让'a'更负，创造更陡峭的向下曲线。",
+          "调节'b'来改变抛物线的倾斜和方向。", 
+          "参数'c'控制抛物线的垂直起始位置。"
         ]
       },
       "machine learning": {
         title: "Recommendation Engine",
         subtitle: "See how algorithms learn your preferences",
         targetZone: { x: 600, y: 200, width: 100, height: 200 },
-        gravity: 0,
         hint: "Each 'shot' represents a recommendation. Watch how the system learns!",
         failureHints: [
           "The algorithm is learning from your choices...",
@@ -81,7 +79,6 @@ export default function SimulatePage() {
         title: "Component Interaction",
         subtitle: "Visualize how React components respond",
         targetZone: { x: 600, y: 300, width: 80, height: 100 },
-        gravity: 0.1,
         hint: "Each interaction triggers a state change. Watch the instant response!",
         failureHints: [
           "See how fast the interface responds?",
@@ -96,23 +93,22 @@ export default function SimulatePage() {
 
   const config = getSimulatorConfig(query)
 
-  // 物理计算
-  const calculateTrajectory = (angle: number, velocity: number) => {
+  // 二次函数计算 - y = ax² + bx + c
+  const calculateQuadraticPath = (a: number, b: number, c: number) => {
     const points: {x: number, y: number}[] = []
-    const angleRad = (angle * Math.PI) / 180
-    const vx = velocity * Math.cos(angleRad) * 0.8
-    const vy = velocity * Math.sin(angleRad) * 0.8
     
-    for (let t = 0; t < 150; t++) {
-      const x = 50 + vx * t * 0.1
-      const y = 400 - (vy * t * 0.1 - 0.5 * config.gravity * t * t * 0.01)
+    // 从x=50开始，到x=750结束，模拟投射路径
+    for (let x = 50; x <= 750; x += 2) {
+      // 使用二次函数公式
+      const relativeX = (x - 50) / 10 // 缩放x坐标以适合显示
+      const y = 400 - (a * relativeX * relativeX + b * relativeX + c)
       
       // 确保坐标是有效数字
       if (isFinite(x) && isFinite(y)) {
-        if (y > 450) break // 触地
+        // 如果y值过高或过低，停止计算
+        if (y > 500 || y < 0) break
         points.push({ x, y })
       } else {
-        // 如果计算出无效坐标，停止计算
         break
       }
     }
@@ -129,7 +125,7 @@ export default function SimulatePage() {
     setTrajectory([])
     setBallPosition({ x: 50, y: 400 })
     
-    const points = calculateTrajectory(angle, velocity)
+    const points = calculateQuadraticPath(paramA, paramB, paramC)
     let currentIndex = 0
     
     const animate = () => {
@@ -230,16 +226,26 @@ export default function SimulatePage() {
       ctx.fill()
     }
     
-    // 绘制发射器
-    ctx.strokeStyle = '#374151'
-    ctx.lineWidth = 3
+    // 绘制坐标轴参考线
+    ctx.strokeStyle = '#d1d5db'
+    ctx.lineWidth = 1
+    ctx.setLineDash([5, 5])
+    
+    // 绘制起始点参考线
     ctx.beginPath()
-    ctx.moveTo(50, 400)
-    const angleRad = (angle * Math.PI) / 180
-    ctx.lineTo(50 + Math.cos(angleRad) * 30, 400 - Math.sin(angleRad) * 30)
+    ctx.moveTo(50, 0)
+    ctx.lineTo(50, 500)
     ctx.stroke()
     
-  }, [ballPosition, trajectory, angle, config])
+    // 绘制中心水平线
+    ctx.beginPath()
+    ctx.moveTo(0, 400)
+    ctx.lineTo(800, 400)
+    ctx.stroke()
+    
+    ctx.setLineDash([]) // 重置虚线
+    
+  }, [ballPosition, trajectory, paramA, paramB, paramC, config])
 
   const handleBack = () => {
     router.push('/learn')
@@ -319,38 +325,68 @@ export default function SimulatePage() {
             <div className="space-y-6">
               <h3 className="text-lg font-medium text-gray-900">Parameters</h3>
               
-              {/* 角度控制 */}
+              {/* 参数 a 控制 */}
               <div className="space-y-3">
                 <label className="text-sm text-gray-600 flex justify-between">
-                  <span>Angle</span>
-                  <span className="font-medium">{angle}°</span>
+                  <span>a (curvature)</span>
+                  <span className="font-medium">{paramA.toFixed(3)}</span>
                 </label>
                 <input
                   type="range"
-                  min="10"
-                  max="80"
-                  value={angle}
-                  onChange={(e) => setAngle(Number(e.target.value))}
+                  min="-0.05"
+                  max="0.05"
+                  step="0.001"
+                  value={paramA}
+                  onChange={(e) => setParamA(Number(e.target.value))}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                   disabled={isPlaying}
                 />
+                <p className="text-xs text-gray-500">Controls the curve's opening direction and steepness</p>
               </div>
 
-              {/* 速度控制 */}
+              {/* 参数 b 控制 */}
               <div className="space-y-3">
                 <label className="text-sm text-gray-600 flex justify-between">
-                  <span>Velocity</span>
-                  <span className="font-medium">{velocity}</span>
+                  <span>b (slope)</span>
+                  <span className="font-medium">{paramB.toFixed(2)}</span>
                 </label>
                 <input
                   type="range"
-                  min="20"
-                  max="100"
-                  value={velocity}
-                  onChange={(e) => setVelocity(Number(e.target.value))}
+                  min="-2"
+                  max="2"
+                  step="0.1"
+                  value={paramB}
+                  onChange={(e) => setParamB(Number(e.target.value))}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                   disabled={isPlaying}
                 />
+                <p className="text-xs text-gray-500">Controls the linear component and tilt</p>
+              </div>
+
+              {/* 参数 c 控制 */}
+              <div className="space-y-3">
+                <label className="text-sm text-gray-600 flex justify-between">
+                  <span>c (y-intercept)</span>
+                  <span className="font-medium">{paramC.toFixed(0)}</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="150"
+                  step="5"
+                  value={paramC}
+                  onChange={(e) => setParamC(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                  disabled={isPlaying}
+                />
+                <p className="text-xs text-gray-500">Controls the starting height</p>
+              </div>
+
+              {/* 当前方程显示 */}
+              <div className="bg-gray-100 rounded-lg p-3">
+                <p className="text-sm font-mono text-center">
+                  y = {paramA.toFixed(3)}x² + {paramB.toFixed(2)}x + {paramC.toFixed(0)}
+                </p>
               </div>
             </div>
 
