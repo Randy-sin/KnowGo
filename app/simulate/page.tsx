@@ -185,7 +185,7 @@ export default function SimulatePage() {
       if (!isFullscreen) {
         await gameContainer.requestFullscreen()
         setIsFullscreen(true)
-      } else {
+        } else {
         await document.exitFullscreen()
         setIsFullscreen(false)
       }
@@ -303,7 +303,7 @@ export default function SimulatePage() {
       </AnimatePresence>
 
       {/* 主内容区域 */}
-      <div className="pt-20 pb-8 px-8">
+      <div className="pt-20 pb-8 px-4">
         {/* 标题区域 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -324,7 +324,7 @@ export default function SimulatePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-6xl mx-auto"
+          className="w-full mx-auto"
         >
           {isGeneratingGame ? (
             <div className="bg-white border border-gray-200 rounded-2xl p-16 text-center">
@@ -404,7 +404,7 @@ export default function SimulatePage() {
                  <iframe
                    srcDoc={currentGame.html}
                    className={`w-full border-0 ${
-                     isFullscreen ? 'h-screen' : 'h-[600px]'
+                     isFullscreen ? 'h-screen' : 'h-[80vh] min-h-[600px]'
                    }`}
                    title={currentGame.title}
                    sandbox="allow-scripts allow-same-origin"

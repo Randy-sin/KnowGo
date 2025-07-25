@@ -278,7 +278,7 @@ ${getGameMechanics(topic, category)}
         /* 使用提供的CSS变量系统 */
         :root { --bg-primary: #ffffff; --fg-primary: #1a1a1a; /* ... */ }
         body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
-        .game-container { width: 100%; margin: 0 auto; }
+        .game-container { width: 100%; height: 100%; margin: 0 auto; min-height: 600px; }
         /* 根据游戏类型设计相应的交互界面样式 */
     </style>
 </head>
@@ -333,7 +333,8 @@ ${getGameMechanics(topic, category)}
 - 根据游戏类型选择：Canvas绘图/DOM操作/SVG图形
 - 实现完整的用户交互系统
 - 流畅的动画效果和即时反馈
-- **重要：不要限制容器尺寸，使用100%宽度充分利用屏幕空间**
+- **重要：不要限制容器尺寸，使用100%宽度和充足高度充分利用屏幕空间**
+- **游戏区域应该占据大部分屏幕，最少600px高度，建议800px以上**
 
 **🎮 游戏机制要求：**
 - 明确的挑战目标和胜利条件
@@ -356,7 +357,8 @@ ${getGameMechanics(topic, category)}
 - 所有引号必须正确转义 (使用 \\")
 - 代码必须压缩在一行中，但保持可读性
 - 必须包含完整的游戏逻辑，不能有未实现的函数
-- **关键：游戏容器使用100%宽度，不要设置max-width限制**
+- **关键：游戏容器使用100%宽度和充足高度，不要设置max-width或max-height限制**
+- **游戏画面应该足够大，充分利用可用空间，营造沉浸式体验**
 
 **强制设计系统 (CSS变量)：**
 ${designSystemCSS}
