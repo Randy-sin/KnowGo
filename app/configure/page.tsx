@@ -149,8 +149,9 @@ export default function ConfigurePage() {
       // 立即跳转到classify页面，提供流畅体验
       router.push('/classify');
       
-      // 后台异步生成问题（不阻塞跳转）
+      // 后台异步生成问题和重新生成游戏（不阻塞跳转）
       generateQuestionsInBackground(config)
+      regenerateGameWithConfig(config)
     }
   }
 
@@ -188,6 +189,45 @@ export default function ConfigurePage() {
       }
     } catch (error) {
       console.error('后台问题生成出错:', error);
+    }
+  }
+
+  // 根据用户配置重新生成游戏的函数
+  const regenerateGameWithConfig = async (config: {level: string, style: string}) => {
+    try {
+      const savedQuery = localStorage.getItem('xknow-query');
+      const savedClassification = localStorage.getItem('xknow-classification');
+      
+      if (savedQuery && savedClassification) {
+        console.log('开始根据用户配置重新生成游戏...')
+        
+        const classification = JSON.parse(savedClassification);
+        
+        const response = await fetch('/api/generate-game', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            topic: savedQuery,
+            category: classification.category,
+            userLevel: config.level,
+            learningObjective: `通过互动游戏深度理解${savedQuery}的核心概念`,
+            stream: false
+          })
+        });
+
+        if (response.ok) {
+          const { game } = await response.json();
+          // 保存重新生成的游戏，覆盖之前的预生成结果
+          localStorage.setItem('xknow-pregenerated-game', JSON.stringify(game));
+          console.log('个性化游戏重新生成完成:', game.title)
+        } else {
+          console.error('游戏重新生成失败:', response.status)
+        }
+      }
+    } catch (error) {
+      console.error('后台游戏重新生成出错:', error);
     }
   }
 

@@ -25,8 +25,9 @@ export default function HomePage() {
     // 立即跳转到配置页面，提供流畅体验
     router.push('/configure')
     
-    // 后台异步进行问题分类（不阻塞跳转）
+    // 后台并行执行：问题分类 + 游戏预生成
     classifyQuestionInBackground(input.trim())
+    preGenerateGameInBackground(input.trim())
   }
 
   // 后台分类函数
@@ -53,6 +54,40 @@ export default function HomePage() {
       }
     } catch (error) {
       console.error('后台分类出错:', error)
+    }
+  }
+
+  // 后台预生成游戏函数
+  const preGenerateGameInBackground = async (query: string) => {
+    try {
+      console.log('开始后台预生成游戏:', query)
+      
+      // 使用默认配置预生成游戏
+      const response = await fetch('/api/generate-game', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topic: query,
+          category: 'science', // 默认先用science，分类完成后可能重新生成
+          userLevel: 'intermediate',
+          learningObjective: `通过互动游戏深度理解${query}的核心概念`,
+          stream: false // 预生成不需要流式输出
+        })
+      })
+
+      if (response.ok) {
+        const { game } = await response.json()
+        
+        // 预生成完成后保存结果
+        localStorage.setItem('xknow-pregenerated-game', JSON.stringify(game))
+        console.log('后台游戏预生成完成:', game.title)
+      } else {
+        console.error('游戏预生成失败:', response.status)
+      }
+    } catch (error) {
+      console.error('后台游戏预生成出错:', error)
     }
   }
 

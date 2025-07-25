@@ -27,11 +27,12 @@ export default function SimulatePage() {
   const [showInfo, setShowInfo] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const { t } = useTranslations()
-
+  
   useEffect(() => {
     const savedQuery = localStorage.getItem('xknow-query')
     const savedCategory = localStorage.getItem('xknow-category') 
     const savedConfig = localStorage.getItem('xknow-config')
+    const pregeneratedGame = localStorage.getItem('xknow-pregenerated-game')
     
     if (savedQuery) {
       setQuery(savedQuery)
@@ -47,10 +48,25 @@ export default function SimulatePage() {
         }
       }
       
-      // 延迟一点再生成游戏，确保状态已设置
-      setTimeout(() => {
-        generateInteractiveGame(savedQuery, savedCategory || 'science')
-      }, 500)
+      // 优先使用预生成的游戏
+      if (pregeneratedGame) {
+        try {
+          const game = JSON.parse(pregeneratedGame)
+          setCurrentGame(game)
+          console.log('使用预生成的游戏:', game.title)
+        } catch (error) {
+          console.error('Failed to parse pregenerated game:', error)
+          // 如果预生成游戏解析失败，重新生成
+          setTimeout(() => {
+            generateInteractiveGame(savedQuery, savedCategory || 'science')
+          }, 500)
+        }
+      } else {
+        // 没有预生成游戏，重新生成
+        setTimeout(() => {
+          generateInteractiveGame(savedQuery, savedCategory || 'science')
+        }, 500)
+      }
     } else {
       router.push('/')
     }
@@ -393,7 +409,7 @@ export default function SimulatePage() {
               </div>
             </div>
           ) : currentGame ? (
-                       <motion.div
+          <motion.div
                id="game-container"
                initial={{ opacity: 0, scale: 0.95 }}
                animate={{ opacity: 1, scale: 1 }}
@@ -418,21 +434,21 @@ export default function SimulatePage() {
                {!isFullscreen && (
                  <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                    <div className="flex items-center justify-between">
-                     <div>
+                <div>
                        <h2 className="text-lg font-medium text-gray-900">
                          {currentGame.title}
                        </h2>
                        <p className="text-sm text-gray-600 mt-1">
                          {currentGame.instructions}
                        </p>
-                     </div>
+                  </div>
                      <div className="flex items-center space-x-2">
                        <div className="w-3 h-3 bg-red-400 rounded-full"></div>
                        <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
                        <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                     </div>
-                   </div>
-                 </div>
+                  </div>
+                </div>
+              </div>
                )}
                
                {/* 全屏时的迷你控制栏 */}
@@ -445,7 +461,7 @@ export default function SimulatePage() {
                    >
                      <Minimize className="w-4 h-4" />
                    </motion.button>
-                 </div>
+                    </div>
                )}
 
                              {/* 游戏iframe */}
@@ -458,7 +474,7 @@ export default function SimulatePage() {
                    title={currentGame.title}
                    sandbox="allow-scripts allow-same-origin"
                  />
-               </div>
+                  </div>
                 </motion.div>
           ) : (
             <div className="bg-white border border-gray-200 rounded-2xl p-16 text-center">
