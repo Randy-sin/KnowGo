@@ -16,7 +16,6 @@ export default function ConfigurePage() {
   const [query, setQuery] = useState("")
   const [classification, setClassification] = useState<{category: string} | null>(null)
   const [isClassifying, setIsClassifying] = useState(true)
-
   const { t } = useTranslations()
 
   // 将useEffect移到组件顶部，避免条件性调用

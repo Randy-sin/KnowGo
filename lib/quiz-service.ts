@@ -29,20 +29,24 @@ export interface QuizStreamEvent {
 }
 
 // 辅助函数：验证 Quiz 对象格式
-export function validateQuizQuestion(quiz: any): quiz is QuizQuestion {
+export function validateQuizQuestion(quiz: unknown): quiz is QuizQuestion {
+  if (!quiz || typeof quiz !== 'object' || quiz === null) {
+    return false
+  }
+  
+  const q = quiz as Record<string, unknown>
   return (
-    quiz &&
-    typeof quiz.id === 'string' &&
-    typeof quiz.title === 'string' &&
-    typeof quiz.question === 'string' &&
-    Array.isArray(quiz.options) &&
-    quiz.options.length === 4 &&
-    quiz.options.every((option: any) => typeof option === 'string') &&
-    typeof quiz.correctAnswer === 'number' &&
-    quiz.correctAnswer >= 0 &&
-    quiz.correctAnswer < 4 &&
-    typeof quiz.explanation === 'string' &&
-    typeof quiz.topic === 'string'
+    typeof q.id === 'string' &&
+    typeof q.title === 'string' &&
+    typeof q.question === 'string' &&
+    Array.isArray(q.options) &&
+    q.options.length === 4 &&
+    (q.options as unknown[]).every((option: unknown) => typeof option === 'string') &&
+    typeof q.correctAnswer === 'number' &&
+    typeof q.correctAnswer === 'number' && q.correctAnswer >= 0 &&
+    typeof q.correctAnswer === 'number' && q.correctAnswer < 4 &&
+    typeof q.explanation === 'string' &&
+    typeof q.topic === 'string'
   )
 }
 

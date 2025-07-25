@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, RefreshCw, Play, Info, Loader2, Maximize, Minimize } from "lucide-react"
+import { ArrowLeft, RefreshCw, Play, Info, Maximize, Minimize } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { useTranslations } from "@/lib/use-translations"
@@ -26,7 +26,7 @@ export default function SimulatePage() {
   const [generationMessage, setGenerationMessage] = useState("")
   const [showInfo, setShowInfo] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const { t } = useTranslations()
+  // const { t } = useTranslations() // Removed unused
   
   useEffect(() => {
     const savedQuery = localStorage.getItem('xknow-query')
@@ -70,7 +70,7 @@ export default function SimulatePage() {
     } else {
       router.push('/')
     }
-  }, [router])
+  }, [router]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 监听全屏状态变化
   useEffect(() => {
@@ -85,7 +85,7 @@ export default function SimulatePage() {
   }, [])
 
   // 生成互动游戏函数 - 在所有Hooks之后定义
-  const generateInteractiveGame = async (topic: string, gameCategory: string) => {
+  const generateInteractiveGame = useCallback(async (topic: string, gameCategory: string) => {
     setIsGeneratingGame(true)
     setGenerationMessage("AI正在为您设计专属游戏...")
     
@@ -168,7 +168,7 @@ export default function SimulatePage() {
     } finally {
       setIsGeneratingGame(false)
     }
-  }
+  }, [])
 
   // 备用游戏函数已移除，因为用户要求不使用任何备用内容
 
@@ -315,7 +315,7 @@ export default function SimulatePage() {
             互动模拟器
           </h1>
           <p className="text-gray-500 text-sm">
-            通过 "<span className="font-medium text-gray-700">{query}</span>" 的互动体验深度学习
+            通过 &ldquo;<span className="font-medium text-gray-700">{query}</span>&rdquo; 的互动体验深度学习
           </p>
         </motion.div>
 

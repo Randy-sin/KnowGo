@@ -88,7 +88,7 @@ export default function HistoryPage() {
             {t('history.title')}
           </h1>
           <p className="text-lg text-gray-600 mb-2">
-            探索 <span className="font-medium text-gray-900">"{query}"</span> 的历史脉络
+            探索 <span className="font-medium text-gray-900">&ldquo;{query}&rdquo;</span> 的历史脉络
           </p>
           <p className="text-sm text-gray-500">
             {t('history.subtitle')}
@@ -113,7 +113,7 @@ export default function HistoryPage() {
                   历史教学视频
                 </h3>
                 <p className="text-gray-600">
-                  关于 "{query}" 的详细历史解说
+                  关于 &ldquo;{query}&rdquo; 的详细历史解说
                 </p>
               </div>
             </div>
@@ -145,7 +145,7 @@ export default function HistoryPage() {
                 <h3 className="text-lg font-medium text-gray-900">核心概念</h3>
               </div>
               <p className="text-gray-600 text-sm leading-relaxed">
-                深入了解 "{query}" 的历史背景、重要人物和关键事件，掌握其在历史进程中的重要意义。
+                深入了解 &ldquo;{query}&rdquo; 的历史背景、重要人物和关键事件，掌握其在历史进程中的重要意义。
               </p>
             </motion.div>
 

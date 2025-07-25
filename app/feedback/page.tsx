@@ -6,7 +6,7 @@ import { ArrowLeft, Check, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { useTranslations } from "@/lib/use-translations"
-import { QuizQuestion, createFallbackQuiz } from "@/lib/quiz-service"
+import { QuizQuestion } from "@/lib/quiz-service"
 
 interface UserResponse {
   question: string
@@ -37,8 +37,6 @@ export default function FeedbackPage() {
   const [currentStage, setCurrentStage] = useState<'reflection' | 'quiz'>('reflection')
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false)
   const [quizGenerationMessage, setQuizGenerationMessage] = useState("")
-  
-  const { t } = useTranslations()
 
   // AI生成题目的函数
   const generateQuizForTopic = async () => {
@@ -203,7 +201,7 @@ export default function FeedbackPage() {
         const savedQuestions = localStorage.getItem('xknow-pregenerated-questions')
         if (savedQuestions) {
           const questionsData = JSON.parse(savedQuestions)
-          const questionTexts = questionsData.map((q: any) => q.question)
+          const questionTexts = questionsData.map((q: { question: string }) => q.question)
           console.log('获取问题列表:', questionTexts)
           setQuestions(questionTexts)
           
@@ -265,7 +263,7 @@ export default function FeedbackPage() {
         generateQuizForTopic()
       }, 1000)
     }
-  }, [query, category, analysisData.length, currentIndex, currentStage])
+  }, [query, category, analysisData.length, currentIndex, currentStage]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 如果用户未登录，重定向到登录页
   if (isLoaded && !isSignedIn) {

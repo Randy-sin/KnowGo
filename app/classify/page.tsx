@@ -6,17 +6,16 @@ import { ArrowLeft, ArrowRight, Brain, Clock, Globe } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import type { QuestionCategory, ClassificationResult } from "@/lib/classifier-service"
-import { LanguageToggle } from "@/components/ui/language-toggle"
+// import { LanguageToggle } from "@/components/ui/language-toggle"
 import { useTranslations } from "@/lib/use-translations"
 
 export default function ClassifyPage() {
   const { isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   const [query, setQuery] = useState("")
-  const [isClassifying, setIsClassifying] = useState(false)
+  const [isClassifying] = useState(false)
   const [classification, setClassification] = useState<ClassificationResult | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<QuestionCategory | null>(null)
-  const { t } = useTranslations()
 
   useEffect(() => {
     const savedQuery = localStorage.getItem('xknow-query')
@@ -129,7 +128,7 @@ export default function ClassifyPage() {
             智能分类
           </h1>
           <p className="text-lg text-gray-500 mb-8 font-light">
-            正在分析 "<span className="text-gray-900 font-normal">{query}</span>"
+            正在分析 &ldquo;<span className="text-gray-900 font-normal">{query}</span>&rdquo;
           </p>
 
           {/* AI 分析状态 */}

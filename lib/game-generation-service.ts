@@ -211,25 +211,7 @@ body {
 }
 `
 
-  const gameTypes = {
-    science: {
-      parabola: 'Basketball Shooter - 抛物线投篮游戏',
-      physics: 'Force Simulator - 物理力学模拟器', 
-      chemistry: 'Reaction Lab - 化学反应实验室',
-      biology: 'Cell Division - 细胞分裂可视化',
-      ml: 'Neural Network - 神经网络训练器'
-    },
-    history: {
-      timeline: 'Time Navigator - 历史时间导航器',
-      decisions: 'Historical Choices - 历史决策模拟器',
-      geography: 'Empire Builder - 帝国扩张模拟'
-    },
-    others: {
-      geography: 'Climate Controller - 气候控制器',
-      language: 'Word Evolution - 语言演化器',
-      economics: 'Market Simulator - 市场模拟器'
-    }
-  }
+  // Removed unused gameTypes variable
 
   return `你是世界顶级的教育游戏设计师，专门为苹果、OpenAI等顶级科技公司设计真正的**闯关类学习游戏**。你必须创建一个有明确游戏目标、挑战机制和胜利条件的完整游戏。
 

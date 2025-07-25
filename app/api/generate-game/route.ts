@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { 
   generateInteractiveGame, 
-  GameGenerationRequest, 
-  GameResponse 
+  GameGenerationRequest
 } from '@/lib/game-generation-service'
 
 export async function POST(request: NextRequest) {

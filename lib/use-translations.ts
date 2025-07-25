@@ -16,13 +16,17 @@ export function useTranslations() {
   
   const t = (key: string): string => {
     const keys = key.split('.')
-    let value: any = messages[language]
+    let value: Record<string, unknown> | unknown = messages[language]
     
     for (const k of keys) {
-      value = value?.[k]
+      if (value && typeof value === 'object' && value !== null) {
+        value = (value as Record<string, unknown>)[k]
+      } else {
+        return key
+      }
     }
     
-    return value || key
+    return typeof value === 'string' ? value : key
   }
 
   return { t, language }

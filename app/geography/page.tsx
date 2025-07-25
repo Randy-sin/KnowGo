@@ -88,7 +88,7 @@ export default function GeographyPage() {
             {t('geography.title')}
           </h1>
           <p className="text-lg text-gray-600 mb-2">
-            系统学习 <span className="font-medium text-gray-900">"{query}"</span> 相关知识
+            系统学习 <span className="font-medium text-gray-900">&ldquo;{query}&rdquo;</span> 相关知识
           </p>
           <p className="text-sm text-gray-500">
             {t('geography.subtitle')}
@@ -120,7 +120,7 @@ export default function GeographyPage() {
                 </div>
               </div>
               <p className="text-gray-700 leading-relaxed mb-4">
-                探索 "{query}" 的地理特征、空间分布和环境因素，理解地理位置对相关现象的影响。
+                探索 &ldquo;{query}&rdquo; 的地理特征、空间分布和环境因素，理解地理位置对相关现象的影响。
               </p>
               <motion.button
                 whileHover={{ y: -2 }}
@@ -147,7 +147,7 @@ export default function GeographyPage() {
                 </div>
               </div>
               <p className="text-gray-700 leading-relaxed mb-4">
-                了解 "{query}" 相关的社会现象、文化背景和人文特色，掌握其社会意义。
+                了解 &ldquo;{query}&rdquo; 相关的社会现象、文化背景和人文特色，掌握其社会意义。
               </p>
               <motion.button
                 whileHover={{ y: -2 }}

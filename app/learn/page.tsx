@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -23,7 +23,7 @@ export default function LearnPage() {
   const { t } = useTranslations()
 
   // 智能等待问题生成：先等待后台生成，超时后自己生成
-  const waitForQuestionsOrGenerate = async (topic: string, userConfig: {level: string, style: string}) => {
+  const waitForQuestionsOrGenerate = useCallback(async (topic: string, userConfig: {level: string, style: string}) => {
     setIsLoadingQuestions(true)
     
     console.log('等待后台问题生成或自主生成...')
@@ -66,7 +66,7 @@ export default function LearnPage() {
         generateLearningQuestions(topic, userConfig)
       }
     }, 300)
-  }
+  }, [])
 
   // 生成 AI 学习问题
   const generateLearningQuestions = async (topic: string, userConfig: {level: string, style: string}) => {
@@ -132,7 +132,7 @@ export default function LearnPage() {
     } else {
       router.push('/')
     }
-  }, [router])
+  }, [router]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 如果用户未登录，重定向到登录页
   if (isLoaded && !isSignedIn) {

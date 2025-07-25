@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 }
 
 // 处理流式请求
-async function handleStreamRequest(topic: string, category: string, config?: any) {
+async function handleStreamRequest(topic: string, category: string, config?: { level: string, style: string }) {
   const encoder = new TextEncoder()
   
   const stream = new ReadableStream({
