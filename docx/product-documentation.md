@@ -1,8 +1,8 @@
-# KnowGo 产品文档
+# Xknow 产品文档
 
 ## 📋 概述
 
-KnowGo 是一个基于 Next.js 15 构建的个性化 AI 学习平台，采用硅谷风格的极简设计。应用引导用户完成完整的四步学习旅程：搜索 → 配置 → 引导问题 → 互动模拟器。
+Xknow 是一个基于 Next.js 15 构建的个性化 AI 学习平台，采用硅谷风格的极简设计。应用引导用户完成完整的学习旅程：**搜索 → 认证 → 配置 → 引导问题 → 互动模拟器**，通过 Clerk 提供安全的用户认证和个性化学习体验。
 
 ---
 
@@ -12,11 +12,13 @@ KnowGo 是一个基于 Next.js 15 构建的个性化 AI 学习平台，采用硅
 
 | 页面/组件 | 文件路径 | 路由 | 描述 |
 |---|---|---|---|
-| **主页** | `app/page.tsx` | `/` | 带搜索界面的主要着陆页 |
-| **配置页** | `app/configure/page.tsx` | `/configure` | 学习偏好设置 |
-| **引导学习页** | `app/learn/page.tsx` | `/learn` | 三阶段AI引导问题 |
-| **互动模拟器** | `app/simulate/page.tsx` | `/simulate` | 游戏化学习体验 |
-| **布局** | `app/layout.tsx` | - | 根布局与元数据 |
+| **主页** | `app/page.tsx` | `/` | 带搜索界面和认证状态的主要着陆页 |
+| **登录页** | `app/sign-in/[[...sign-in]]/page.tsx` | `/sign-in` | Clerk 认证登录页面 |
+| **配置页** | `app/configure/page.tsx` | `/configure` | 学习偏好设置（需认证） |
+| **引导学习页** | `app/learn/page.tsx` | `/learn` | 三阶段AI引导问题（需认证） |
+| **互动模拟器** | `app/simulate/page.tsx` | `/simulate` | 游戏化学习体验（需认证） |
+| **根布局** | `app/layout.tsx` | - | Clerk Provider + 全局样式 |
+| **中间件** | `middleware.ts` | - | 路由保护和认证控制 |
 | **全局样式** | `app/globals.css` | - | 设计系统与样式 |
 
 ### **支持文件**
@@ -33,57 +35,142 @@ KnowGo 是一个基于 Next.js 15 构建的个性化 AI 学习平台，采用硅
 
 ## 🚀 页面详情
 
+### **0. 认证系统概述**
+
+**Clerk 集成：** 完整的用户认证解决方案
+
+**核心特性：**
+- **无缝登录体验**：社交登录 + 邮箱注册
+- **会话管理**：自动处理登录状态和会话刷新
+- **路由保护**：中间件级别的页面访问控制
+- **用户信息**：firstName、email 等个人信息获取
+
+**认证流程：**
+1. 未登录用户访问受保护页面自动跳转到 `/sign-in`
+2. 登录成功后返回原始目标页面
+3. 已登录用户在右上角显示用户头像和信息
+
+---
+
 ### **1. 主页 (`app/page.tsx`)**
 
-**路由：** `/`
+**路由：** `/` （无需认证）
 
-**用途：** 用户查询的入口点
+**用途：** 用户查询的入口点 + 认证状态展示
 
 **主要功能：**
 - 极简搜索界面
 - 快速建议按钮
-- 直接跳转到配置页面
+- **认证状态显示**：右上角登录按钮或用户头像
+- **智能跳转**：已登录用户直接到配置页，未登录用户先到登录页
 - 硅谷风格设计
 
-**代码亮点：**
+**认证集成：**
 ```typescript
-- useState 用于输入管理
-- localStorage 用于查询持久化
-- 直接 router.push 到 /configure
-- Framer Motion 动画
+// Clerk Hooks 集成
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
+
+// 认证状态渲染
+<SignedOut>
+  <Link href="/sign-in">
+    <button className="btn-ghost-minimal">Sign in</button>
+  </Link>
+</SignedOut>
+<SignedIn>
+  <UserButton appearance={{...}} />
+</SignedIn>
 ```
 
 **用户流程：**
 1. 用户输入学习查询
-2. 点击提交或建议
-3. 重定向到配置页面
+2. 点击提交检查登录状态
+3. **已登录**：直接到配置页面
+4. **未登录**：跳转到登录页面
 
 ---
 
-### **2. 配置页 (`app/configure/page.tsx`)**
+### **2. 登录页 (`app/sign-in/[[...sign-in]]/page.tsx`)**
 
-**路由：** `/configure`
+**路由：** `/sign-in/*` （Clerk 动态路由）
 
-**用途：** 个性化学习体验
+**用途：** 用户认证入口，集成 Clerk 登录组件
+
+**主要功能：**
+- **Clerk SignIn 组件**：完整的登录/注册表单
+- **品牌一致性**：与 Xknow 设计系统保持一致
+- **返回导航**：可返回主页的清晰导航
+- **自动重定向**：登录成功后返回原始页面
+
+**设计特色：**
+```typescript
+// Clerk 外观自定义
+appearance={{
+  variables: {
+    colorPrimary: "#000000",
+    colorBackground: "#ffffff",
+    borderRadius: "12px",
+    fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif"
+  },
+  elements: {
+    card: "shadow-none border border-gray-200 rounded-2xl bg-white p-8",
+    headerTitle: "hidden",
+    headerSubtitle: "hidden",
+    formFieldInput: "border border-gray-200 rounded-xl px-4 py-3",
+    formButtonPrimary: "bg-black text-white rounded-xl py-3 px-6 hover:bg-gray-800"
+  }
+}}
+```
+
+**认证特性：**
+- **多种登录方式**：邮箱/密码、社交登录（GitHub、Google 等）
+- **注册功能**：新用户可直接创建账户
+- **密码重置**：忘记密码自助重置
+- **会话持久化**：记住登录状态，减少重复登录
+
+**用户体验：**
+1. 极简的 Xknow 品牌展示
+2. 清晰的登录/注册选项
+3. 即时错误反馈和验证
+4. 登录成功后平滑跳转
+
+---
+
+### **3. 配置页 (`app/configure/page.tsx`)**
+
+**路由：** `/configure` （**需要认证**）
+
+**用途：** 个性化学习体验 + 用户信息展示
 
 **主要功能：**
 - 知识水平选择（初学者/中级/专家）
 - 学习风格选择（12种不同风格）
+- **个性化欢迎**：显示用户名称和当前主题
+- **认证状态检查**：未登录自动重定向到登录页
 - 带返回按钮的极简导航
 - 实时进度指示器
 
-**代码亮点：**
+**认证集成：**
 ```typescript
-- 复杂的选择状态管理
-- 高级 Framer Motion 动画
-- 选中状态的条件样式
-- 配置的本地存储持久化
+// Clerk 认证检查
+const { isLoaded, isSignedIn, user } = useUser()
+
+// 未登录重定向
+if (isLoaded && !isSignedIn) {
+  return <RedirectToSignIn />
+}
+
+// 用户信息展示
+<div className="text-xs text-gray-500">
+  Welcome, {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+</div>
 ```
 
 **用户流程：**
-1. 选择知识水平
-2. 选择学习风格
-3. 进入引导学习页面
+1. **认证检查**：确认用户已登录
+2. **个性化展示**：显示用户名和学习主题
+3. 选择知识水平
+4. 选择学习风格
+5. 进入引导学习页面
 
 **可选学习风格：**
 - 课堂式、讲故事、对话式、导师式
@@ -92,9 +179,9 @@ KnowGo 是一个基于 Next.js 15 构建的个性化 AI 学习平台，采用硅
 
 ---
 
-### **3. 引导学习页 (`app/learn/page.tsx`) - 全新设计**
+### **4. 引导学习页 (`app/learn/page.tsx`) - 全新设计**
 
-**路由：** `/learn`
+**路由：** `/learn` （**需要认证**）
 
 **用途：** 基于README教育理念的渐进式AI引导学习
 
@@ -141,9 +228,9 @@ KnowGo 是一个基于 Next.js 15 构建的个性化 AI 学习平台，采用硅
 
 ---
 
-### **4. 互动模拟器 (`app/simulate/page.tsx`) - 游戏化学习**
+### **5. 互动模拟器 (`app/simulate/page.tsx`) - 游戏化学习**
 
-**路由：** `/simulate`
+**路由：** `/simulate` （**需要认证**）
 
 **用途：** 基于README"互动式模拟器"理念的游戏化学习体验
 
@@ -210,26 +297,34 @@ failureHints: [
 
 ---
 
-## 🔄 完整用户旅程 (更新版)
+## 🔄 完整用户旅程 (含认证流程)
 
-### **四步学习流程**
+### **五步学习流程**
 ```
-1. 搜索发现 (/)
+1. 搜索发现 (/) - 无需认证
    ↓ 输入学习主题
    ↓ 选择快速建议或自定义输入
+   ↓ 检查登录状态
 
-2. 个性化配置 (/configure)
+2. 用户认证 (/sign-in) - 如果未登录
+   ↓ Clerk 登录/注册表单
+   ↓ 社交登录或邮箱注册
+   ↓ 会话建立和状态管理
+   ↓ 自动返回原始流程
+
+3. 个性化配置 (/configure) - 需要认证
+   ↓ 显示用户欢迎信息
    ↓ 选择知识水平 (3个选项)
    ↓ 选择学习风格 (12个选项)
    ↓ 实时进度指示
 
-3. 引导问题 (/learn)
+4. 引导问题 (/learn) - 需要认证
    ↓ 生活化引入问题
    ↓ 观察与发现问题
    ↓ 概念建立问题
    ↓ 每阶段必须输入思考
 
-4. 互动模拟器 (/simulate)
+5. 互动模拟器 (/simulate) - 需要认证
    ↓ 基于概念的游戏化体验
    ↓ 参数调节 + 实时反馈
    ↓ AI智能指导
@@ -239,14 +334,23 @@ failureHints: [
 ### **数据流管理**
 ```typescript
 // localStorage 数据持久化
-'knowgo-query': 用户搜索的学习主题
-'knowgo-config': 用户选择的学习配置
-'knowgo-responses': 用户在引导阶段的所有回答
+'xknow-query': 用户搜索的学习主题
+'xknow-config': 用户选择的学习配置
+'xknow-responses': 用户在引导阶段的所有回答
+
+// Clerk 认证状态管理
+- 用户会话：自动持久化，无需手动管理
+- 用户信息：通过 useUser() hook 获取
+- 认证状态：isLoaded, isSignedIn, user 对象
 
 // 跨页面状态传递
-主页 → 配置页: query
-配置页 → 学习页: query + config  
-学习页 → 模拟器: query + config + responses
+主页 → 登录页: 如果未认证
+登录页 → 配置页: 认证成功后 + query
+配置页 → 学习页: query + config + user info
+学习页 → 模拟器: query + config + responses + user info
+
+// 路由保护机制
+中间件检查 → 未认证重定向 → 登录后返回原页面
 ```
 
 ---
@@ -279,7 +383,14 @@ failureHints: [
 
 ## 💾 技术架构升级
 
+### **认证系统架构**
+- **Clerk Provider**：全应用认证状态管理
+- **中间件保护**：路由级别访问控制
+- **会话持久化**：跨设备登录状态同步
+- **用户信息集成**：个性化用户体验
+
 ### **状态管理策略**
+- **Clerk hooks**：认证状态管理 (useUser, useAuth)
 - **React hooks**：组件级状态管理
 - **localStorage**：跨页面数据持久化
 - **Context传递**：复杂状态共享
@@ -301,19 +412,28 @@ failureHints: [
 
 ## 🎯 教育价值实现
 
-### **从抽象到具体的学习路径**
-1. **生活场景连接**：引导阶段建立直观理解
-2. **概念逐步抽象**：从现象到理论的平滑过渡
-3. **参数化操作**：模拟器阶段的动手实践
-4. **反馈驱动学习**：AI教练的个性化指导
+### **个性化学习路径**
+1. **身份认证**：建立个人学习档案和持续追踪
+2. **生活场景连接**：引导阶段建立直观理解
+3. **概念逐步抽象**：从现象到理论的平滑过渡
+4. **参数化操作**：模拟器阶段的动手实践
+5. **反馈驱动学习**：AI教练的个性化指导
 
 ### **核心教育理念实现**
+- ✅ **个性化学习体验**：基于用户认证的定制化内容
 - ✅ **"投不中不是你的问题"**：友好的AI提示语言
 - ✅ **"抛物线方程没调对"**：参数调节的直观理解
 - ✅ **游戏化降低门槛**：通过玩耍自然学习
 - ✅ **可视化抽象概念**：数学公式的图形化表示
 
+### **认证系统价值**
+- **学习连续性**：跨设备、跨会话的学习进度保存
+- **个人化推荐**：基于用户历史的智能内容推荐
+- **社交学习**：未来可扩展的学习社区功能
+- **学习分析**：长期学习行为分析和优化建议
+
 ### **学习效果评估**
+- **用户留存**：认证用户的长期参与度分析
 - **参与度指标**：完成率、停留时间、交互次数
 - **理解程度**：参数调节的合理性、目标达成情况
 - **概念迁移**：从具体到抽象的理解转换

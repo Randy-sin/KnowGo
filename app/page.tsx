@@ -15,9 +15,9 @@ export default function HomePage() {
     e.preventDefault()
     if (!input.trim()) return
     
-    // Save search query and redirect to configuration immediately
+    // Save search query and redirect to classification page
     localStorage.setItem('xknow-query', input.trim())
-    router.push('/configure')
+    router.push('/classify')
   }
 
   return (

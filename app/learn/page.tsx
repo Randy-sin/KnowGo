@@ -15,15 +15,64 @@ export default function LearnPage() {
   const [currentStage, setCurrentStage] = useState(0)
   const [currentResponse, setCurrentResponse] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+  const [stages, setStages] = useState<LearningStage[]>([])
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
+
+  // 生成 AI 学习问题
+  const generateLearningQuestions = async (topic: string, userConfig: {level: string, style: string}) => {
+    setIsLoadingQuestions(true)
+    try {
+      const response = await fetch('/api/generate-questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topic,
+          config: userConfig
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate questions')
+      }
+
+      const data = await response.json()
+      setStages(data.questions)
+    } catch (error) {
+      console.error('Error generating questions:', error)
+      // 显示错误状态，不提供备用方案
+    } finally {
+      setIsLoadingQuestions(false)
+    }
+  }
 
   // 将useEffect移到组件顶部，避免条件性调用
   useEffect(() => {
     const savedQuery = localStorage.getItem('xknow-query')
     const savedConfig = localStorage.getItem('xknow-config')
+    const pregeneratedQuestions = localStorage.getItem('xknow-pregenerated-questions')
     
     if (savedQuery && savedConfig) {
+      const parsedConfig = JSON.parse(savedConfig)
       setQuery(savedQuery)
-      setConfig(JSON.parse(savedConfig))
+      setConfig(parsedConfig)
+      
+      // 检查是否有预生成的问题
+      if (pregeneratedQuestions) {
+        try {
+          const questions = JSON.parse(pregeneratedQuestions)
+          setStages(questions)
+          console.log('使用预生成的问题')
+        } catch (error) {
+          console.error('Failed to parse pregenerated questions:', error)
+          // 如果解析失败，重新生成
+          generateLearningQuestions(savedQuery, parsedConfig)
+        }
+      } else {
+        // 没有预生成问题，重新生成
+        generateLearningQuestions(savedQuery, parsedConfig)
+      }
       
       // 渐进式显示内容
       setTimeout(() => setShowContent(true), 600)
@@ -53,116 +102,13 @@ export default function LearnPage() {
     )
   }
 
-  // 基于README的三阶段AI引导流程
-  const generateLearningStages = (topic: string) => {
-    const stages = {
-      "抛物线": [
-        {
-          type: "life_connection",
-          question: "Have you ever watched a basketball shot? What did you notice about the ball's path?",
-          followUp: "Think about that curved line the ball makes..."
-        },
-        {
-          type: "observation", 
-          question: "If we could trace that path, what shape would we see? How is it different from a straight line or circle?",
-          followUp: "Notice the unique characteristics..."
-        },
-        {
-          type: "concept_building",
-          question: "This special curve has a name and mathematical properties. What do you think makes it so important in physics and math?",
-          followUp: "Let's connect your observations to the concept..."
-        }
-      ],
-      "parabola": [
-        {
-          type: "life_connection",
-          question: "Have you ever watched a basketball shot? What did you notice about the ball's path?",
-          followUp: "Think about that curved line the ball makes..."
-        },
-        {
-          type: "observation",
-          question: "If we could trace that path, what shape would we see? How is it different from a straight line or circle?", 
-          followUp: "Notice the unique characteristics..."
-        },
-        {
-          type: "concept_building",
-          question: "This special curve has a name and mathematical properties. What do you think makes it so important in physics and math?",
-          followUp: "Let's connect your observations to the concept..."
-        }
-      ],
-      "机器学习": [
-        {
-          type: "life_connection",
-          question: "Why does your phone seem to know exactly what videos you want to watch next?",
-          followUp: "Think about how it learns your preferences..."
-        },
-        {
-          type: "observation",
-          question: "What data might your phone be collecting to make these predictions? How does it improve over time?",
-          followUp: "Consider the pattern recognition process..."
-        },
-        {
-          type: "concept_building", 
-          question: "This ability to learn from data and make predictions is the core of something bigger. What makes this different from traditional programming?",
-          followUp: "Let's explore how machines actually learn..."
-        }
-      ],
-      "machine learning": [
-        {
-          type: "life_connection",
-          question: "Why does your phone seem to know exactly what videos you want to watch next?",
-          followUp: "Think about how it learns your preferences..."
-        },
-        {
-          type: "observation",
-          question: "What data might your phone be collecting to make these predictions? How does it improve over time?",
-          followUp: "Consider the pattern recognition process..."
-        },
-        {
-          type: "concept_building",
-          question: "This ability to learn from data and make predictions is the core of something bigger. What makes this different from traditional programming?",
-          followUp: "Let's explore how machines actually learn..."
-        }
-      ],
-      "react": [
-        {
-          type: "life_connection",
-          question: "How does a webpage instantly respond to your clicks, showing new content without refreshing the entire page?",
-          followUp: "Think about the seamless interactions you experience..."
-        },
-        {
-          type: "observation",
-          question: "What happens behind the scenes when you interact with a modern web app? How is it different from traditional websites?",
-          followUp: "Notice the reactive behavior patterns..."
-        },
-        {
-          type: "concept_building",
-          question: "This responsiveness comes from a specific way of building user interfaces. What principles might make interactions feel so natural?",
-          followUp: "Let's understand the reactive paradigm..."
-        }
-      ]
-    }
-    
-    return stages[topic.toLowerCase() as keyof typeof stages] || [
-      {
-        type: "life_connection",
-        question: `Have you encountered ${topic} in your daily life? What sparked your curiosity about it?`,
-        followUp: "Think about your personal connection..."
-      },
-      {
-        type: "observation",
-        question: `What patterns or characteristics have you noticed about ${topic}? What makes it unique?`,
-        followUp: "Consider the deeper patterns..."
-      },
-      {
-        type: "concept_building",
-        question: `How might understanding ${topic} change the way you see the world around you?`,
-        followUp: "Let's build the conceptual framework..."
-      }
-    ]
+  // AI 生成的三阶段学习问题接口
+  interface LearningStage {
+    type: "life_connection" | "observation" | "concept_building";
+    question: string;
+    followUp: string;
   }
 
-  const stages = generateLearningStages(query)
   const currentStageData = stages[currentStage]
 
   const handleContinue = () => {
@@ -178,6 +124,8 @@ export default function LearnPage() {
       } else {
         // 完成所有阶段，保存回答并进入模拟器
         localStorage.setItem('xknow-responses', JSON.stringify(newResponses))
+        // 清除预生成的问题，因为已经使用完毕
+        localStorage.removeItem('xknow-pregenerated-questions')
         console.log('All stages completed. Responses:', newResponses)
         // 跳转到模拟器页面
         router.push('/simulate')
@@ -191,15 +139,19 @@ export default function LearnPage() {
     router.push('/')
   }
 
-  if (!config || !showContent) {
+  if (!config || !showContent || isLoadingQuestions || stages.length === 0) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center space-y-4"
         >
-          <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
+          <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse mx-auto"></div>
+          {isLoadingQuestions && (
+            <p className="text-sm text-gray-500">AI 正在为你生成个性化学习问题...</p>
+          )}
         </motion.div>
       </div>
     )
@@ -250,19 +202,21 @@ export default function LearnPage() {
             >
               
               {/* 问题文本 */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.5, delay: 0.3 }}
-                className="space-y-4"
-              >
-                <p className="text-xl font-light text-gray-700 leading-relaxed">
-                  {currentStageData?.question}
-                </p>
-                <p className="text-sm font-light text-gray-500 italic">
-                  {currentStageData?.followUp}
-                </p>
-              </motion.div>
+              {currentStageData && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1.5, delay: 0.3 }}
+                  className="space-y-4"
+                >
+                  <p className="text-xl font-light text-gray-700 leading-relaxed">
+                    {currentStageData.question}
+                  </p>
+                  <p className="text-sm font-light text-gray-500 italic">
+                    {currentStageData.followUp}
+                  </p>
+                </motion.div>
+              )}
 
               {/* 思考引导 */}
               <motion.div
@@ -334,7 +288,7 @@ export default function LearnPage() {
         className="pb-8 flex justify-center"
       >
         <div className="flex space-x-1">
-          {stages.map((_, index) => (
+          {stages.map((stage: LearningStage, index: number) => (
             <div
               key={index}
               className={`h-px transition-all duration-500 ${
