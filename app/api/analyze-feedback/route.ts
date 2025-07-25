@@ -82,7 +82,7 @@ async function handleStreamRequest(question: string, userAnswer: string, topic: 
 
         // 使用 @google/genai 实现流式输出
         const ai = new GoogleGenAI({
-          apiKey: process.env.GEMINI_API_KEY || 'AIzaSyBxZ2fsjm-laE__4ELPZDbRLzzbTPY7ARU'
+          apiKey: process.env.GEMINI_API_KEY!
         })
         
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'progress', message: '正在生成分析内容...' })}\n\n`))

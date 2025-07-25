@@ -52,7 +52,7 @@ export async function generateFeedbackAnalysis(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-goog-api-key': process.env.GEMINI_API_KEY || 'AIzaSyBxZ2fsjm-laE__4ELPZDbRLzzbTPY7ARU'
+        'X-goog-api-key': process.env.GEMINI_API_KEY!
       },
       body: JSON.stringify({
         contents: [

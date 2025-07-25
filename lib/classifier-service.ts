@@ -37,11 +37,16 @@ export async function classifyQuestion(topic: string): Promise<ClassificationRes
 
 请对以下学习主题进行分类：${topic}`;
 
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY environment variable is required')
+    }
+
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-goog-api-key': process.env.GEMINI_API_KEY || 'AIzaSyBxZ2fsjm-laE__4ELPZDbRLzzbTPY7ARU'
+        'X-goog-api-key': apiKey
       },
       body: JSON.stringify({
         contents: [

@@ -25,7 +25,7 @@ export async function generateInteractiveGame(request: GameGenerationRequest): P
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-goog-api-key': process.env.GEMINI_API_KEY || 'AIzaSyBxZ2fsjm-laE__4ELPZDbRLzzbTPY7ARU'
+        'X-goog-api-key': process.env.GEMINI_API_KEY!
       },
       body: JSON.stringify({
         contents: [
@@ -49,10 +49,10 @@ export async function generateInteractiveGame(request: GameGenerationRequest): P
         // 重试一次
         const retryResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-goog-api-key': process.env.GEMINI_API_KEY || 'AIzaSyBxZ2fsjm-laE__4ELPZDbRLzzbTPY7ARU'
-          },
+                     headers: {
+             'Content-Type': 'application/json',
+             'X-goog-api-key': process.env.GEMINI_API_KEY!
+           },
           body: JSON.stringify({
             contents: [
               {

@@ -2,7 +2,7 @@
 
 ## API 基本信息
 
-**API Key:** `AIzaSyBxZ2fsjm-laE__4ELPZDbRLzzbTPY7ARU`
+**API Key:** `[设置在环境变量 GEMINI_API_KEY 中]`
 
 ## 调用示例
 
