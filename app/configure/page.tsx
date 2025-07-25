@@ -202,7 +202,7 @@ export default function ConfigurePage() {
         
         const classification = JSON.parse(savedClassification);
         
-        const response = await fetch('/api/generate-game', {
+        let response = await fetch('/api/generate-game', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -215,6 +215,26 @@ export default function ConfigurePage() {
             stream: false
           })
         });
+
+        // 如果失败，重试一次
+        if (!response.ok && response.status === 500) {
+          console.log('游戏生成失败，等待2秒后重试...')
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          
+          response = await fetch('/api/generate-game', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              topic: savedQuery,
+              category: classification.category,
+              userLevel: config.level,
+              learningObjective: `通过互动游戏深度理解${savedQuery}的核心概念`,
+              stream: false
+            })
+          });
+        }
 
         if (response.ok) {
           const { game } = await response.json();

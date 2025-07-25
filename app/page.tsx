@@ -63,7 +63,7 @@ export default function HomePage() {
       console.log('开始后台预生成游戏:', query)
       
       // 使用默认配置预生成游戏
-      const response = await fetch('/api/generate-game', {
+      let response = await fetch('/api/generate-game', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,6 +76,26 @@ export default function HomePage() {
           stream: false // 预生成不需要流式输出
         })
       })
+
+      // 如果失败，重试一次
+      if (!response.ok && response.status === 500) {
+        console.log('游戏预生成失败，等待2秒后重试...')
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        response = await fetch('/api/generate-game', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            topic: query,
+            category: 'science',
+            userLevel: 'intermediate',
+            learningObjective: `通过互动游戏深度理解${query}的核心概念`,
+            stream: false
+          })
+        })
+      }
 
       if (response.ok) {
         const { game } = await response.json()

@@ -393,11 +393,24 @@ ${designSystemCSS}
 - 编程逻辑 → 代码拼图组合游戏
 - 生物结构 → 器官拖拽组装游戏
 
-**🚀 立即开始创造：**
-1. 深入理解"${topic}"的本质和学习难点
-2. 设计最能体现该概念的游戏玩法
-3. 编写完整的HTML5游戏代码
-4. 确保游戏既有趣又富有教育意义
+**🚨 CRITICAL FINAL INSTRUCTION:**
+
+请立即为主题"${topic}"生成一个完整的学习游戏！
+
+**输出要求：只返回JSON，不要任何其他文字、解释或对话！**
+
+必须严格按照以下格式输出：
+
+\`\`\`json
+{
+  "html": "[完整的HTML5游戏代码，包含所有CSS和JavaScript]",
+  "title": "[游戏标题]", 
+  "instructions": "[游戏规则]",
+  "gameType": "challenge-based-game"
+}
+\`\`\`
+
+**⚠️ 绝对不要输出任何JSON格式之外的内容！**
 5. 让用户在享受游戏的过程中自然掌握"${topic}"！
 
 请严格按照JSON格式输出，html字段包含完整可运行的创意游戏代码。`
@@ -479,17 +492,31 @@ function parseGameResponse(content: string, topic: string): GameResponse {
   try {
     // 清理内容
     let cleanContent = content.trim()
+    
+    // 如果内容以中文开头，说明AI没有按要求返回JSON
+    if (/^[好的谢对不起抱歉]/.test(cleanContent)) {
+      console.error('AI returned conversational response instead of JSON:', cleanContent.substring(0, 100))
+      throw new Error('AI返回了对话回复而不是JSON格式，请重试')
+    }
+    
+    // 移除markdown代码块标记
     if (cleanContent.startsWith('```json')) {
       cleanContent = cleanContent.replace(/^```json\s*/, '').replace(/\s*```$/, '')
     } else if (cleanContent.startsWith('```')) {
       cleanContent = cleanContent.replace(/^```\s*/, '').replace(/\s*```$/, '')
     }
 
+    // 尝试找到JSON部分
+    const jsonMatch = cleanContent.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      cleanContent = jsonMatch[0]
+    }
+
     const result = JSON.parse(cleanContent)
     
     // 验证必要字段
     if (!result.html || !result.title) {
-      throw new Error('Invalid game response format')
+      throw new Error('Invalid game response format: missing html or title field')
     }
 
     return {
@@ -500,7 +527,8 @@ function parseGameResponse(content: string, topic: string): GameResponse {
     }
   } catch (error) {
     console.error('Failed to parse game response:', error)
-    throw new Error('Failed to generate game')
+    console.error('Original content:', content.substring(0, 200))
+    throw new Error('游戏生成格式错误，请重试')
   }
 }
 
