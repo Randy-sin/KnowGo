@@ -46,20 +46,4 @@ export function validateQuizQuestion(quiz: any): quiz is QuizQuestion {
   )
 }
 
-// 辅助函数：创建备用题目
-export function createFallbackQuiz(topic: string): QuizQuestion {
-  return {
-    id: `fallback-${Date.now()}`,
-    title: `${topic}基础检测`,
-    question: `关于"${topic}"，以下说法正确的是：`,
-    options: [
-      "这是一个重要的学习概念",
-      "这个概念没有实际应用价值",
-      "这个概念已经过时了",
-      "这个概念无法理解"
-    ],
-    correctAnswer: 0,
-    explanation: `"${topic}"是一个重要的学习概念，具有重要的理论价值和实际应用意义。深入理解这个概念有助于我们更好地掌握相关知识。`,
-    topic: topic
-  }
-} 
+// 备用题目函数已移除，因为用户要求不使用任何备用内容 

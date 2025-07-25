@@ -3,8 +3,7 @@ import {
   QuizQuestion, 
   QuizGenerationRequest, 
   QuizStreamEvent, 
-  validateQuizQuestion, 
-  createFallbackQuiz 
+  validateQuizQuestion
 } from '@/lib/quiz-service'
 
 export async function POST(request: NextRequest) {
@@ -27,8 +26,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 非流式输出
-    const quiz = await generateQuiz(topic, guidedQuestion, userAnswer || null, category, userLevel)
-    return NextResponse.json({ quiz })
+    try {
+      const quiz = await generateQuiz(topic, guidedQuestion, userAnswer || null, category, userLevel)
+      return NextResponse.json({ quiz })
+    } catch (error) {
+      console.error('Quiz generation failed:', error)
+      return NextResponse.json(
+        { error: '题目生成失败，请重试' },
+        { status: 500 }
+      )
+    }
   } catch (error) {
     console.error('Error generating quiz:', error)
     return NextResponse.json(
@@ -89,8 +96,8 @@ async function generateQuiz(topic: string, guidedQuestion: string, userAnswer: s
     console.error('Failed to parse quiz response:', parseError)
     console.error('Raw content:', cleanContent)
     
-    // 返回备用题目
-    return createFallbackQuiz(topic)
+    // 不返回备用题目，直接抛出错误
+    throw new Error('AI生成的题目格式无效，请重试')
   }
 }
 
@@ -195,7 +202,76 @@ async function handleStreamRequest(topic: string, guidedQuestion: string, userAn
         })
 
         if (!response.ok) {
-          throw new Error(`Gemini API error: ${response.status}`)
+          // 503错误表示服务暂时不可用，稍后重试
+          if (response.status === 503) {
+            console.log('Gemini API暂时不可用，等待2秒后重试...')
+            await new Promise(resolve => setTimeout(resolve, 2000))
+            
+            // 重试一次
+            const retryResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-goog-api-key': process.env.GEMINI_API_KEY || 'AIzaSyBxZ2fsjm-laE__4ELPZDbRLzzbTPY7ARU'
+              },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    parts: [
+                      {
+                        text: buildQuizPrompt(topic, guidedQuestion, userAnswer, category, userLevel)
+                      }
+                    ]
+                  }
+                ]
+              })
+            })
+            
+            if (!retryResponse.ok) {
+              throw new Error(`Gemini API重试后仍然失败: ${retryResponse.status}`)
+            }
+            
+            // 使用重试的响应
+            const retryData = await retryResponse.json()
+            const retryContent = retryData.candidates[0].content.parts[0].text
+            
+            const progressEvent: QuizStreamEvent = { 
+              type: 'progress', 
+              message: '重试成功，正在生成题目内容...' 
+            }
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(progressEvent)}\n\n`))
+            
+                         // 使用重试的内容继续处理
+            let cleanRetryContent = retryContent.trim()
+            if (cleanRetryContent.startsWith('```json')) {
+              cleanRetryContent = cleanRetryContent.replace(/^```json\s*/, '').replace(/\s*```$/, '')
+            } else if (cleanRetryContent.startsWith('```')) {
+              cleanRetryContent = cleanRetryContent.replace(/^```\s*/, '').replace(/\s*```$/, '')
+            }
+            
+            try {
+              const quiz = JSON.parse(cleanRetryContent)
+              
+              // 验证格式
+              if (!validateQuizQuestion(quiz)) {
+                throw new Error('Invalid quiz format from AI response')
+              }
+              
+              const completeEvent: QuizStreamEvent = { 
+                type: 'complete', 
+                quiz: quiz as QuizQuestion,
+                message: '重试成功！题目生成完成' 
+              }
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(completeEvent)}\n\n`))
+              controller.close()
+              return
+            } catch (retryParseError) {
+              console.error('重试后仍然解析失败:', retryParseError)
+              throw new Error('重试后仍然无法生成有效题目')
+            }
+          } else {
+            throw new Error(`Gemini API error: ${response.status}`)
+          }
         }
 
         const progressEvent: QuizStreamEvent = { 
@@ -233,14 +309,12 @@ async function handleStreamRequest(topic: string, guidedQuestion: string, userAn
         } catch (parseError) {
           console.error('Failed to parse quiz response:', parseError)
           
-          // 发送备用题目
-          const fallbackQuiz = createFallbackQuiz(topic)
-          const fallbackEvent: QuizStreamEvent = { 
-            type: 'complete', 
-            quiz: fallbackQuiz,
-            message: '题目生成完成！准备开始检测' 
+          // 发送错误信息，不使用备用题目
+          const errorEvent: QuizStreamEvent = { 
+            type: 'error', 
+            error: 'AI生成的题目格式无效，请重试'
           }
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(fallbackEvent)}\n\n`))
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(errorEvent)}\n\n`))
         }
         
         controller.close()

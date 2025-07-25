@@ -161,81 +161,16 @@ export default function SimulatePage() {
       }
     } catch (error) {
       console.error('Error generating game:', error)
-      setGenerationMessage('游戏生成失败')
+      setGenerationMessage('游戏生成失败，请重试')
       
-      // 设置备用游戏信息
-      setCurrentGame({
-        html: createSimpleFallbackGame(topic),
-        title: `${topic} 学习游戏`,
-        instructions: '正在为您准备学习体验，请稍后重试',
-        gameType: 'fallback'
-      })
+      // 不设置备用游戏，让用户重试
+      setCurrentGame(null)
     } finally {
       setIsGeneratingGame(false)
     }
   }
 
-  const createSimpleFallbackGame = (topic: string) => {
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>${topic} 学习游戏</title>
-    <style>
-        body {
-            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-            background: #ffffff;
-            color: #1a1a1a;
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            text-align: center;
-        }
-        .container {
-            max-width: 400px;
-        }
-        .title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #1a1a1a;
-        }
-        .message {
-            color: #6b7280;
-            line-height: 1.6;
-            margin-bottom: 12px;
-        }
-        .retry-btn {
-            background: #1a1a1a;
-            color: #ffffff;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.2s ease;
-        }
-        .retry-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1 class="title">${topic} 互动学习</h1>
-        <p class="message">正在为您准备个性化的学习游戏...</p>
-        <p class="message">AI正在根据您的学习需求定制最佳体验。</p>
-        <button class="retry-btn" onclick="window.parent.location.reload()">重新生成游戏</button>
-    </div>
-</body>
-</html>`
-  }
+  // 备用游戏函数已移除，因为用户要求不使用任何备用内容
 
   const handleRegenerateGame = () => {
     setCurrentGame(null)

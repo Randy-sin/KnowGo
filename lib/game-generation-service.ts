@@ -41,7 +41,45 @@ export async function generateInteractiveGame(request: GameGenerationRequest): P
     })
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`)
+      // 503错误表示服务暂时不可用，稍后重试
+      if (response.status === 503) {
+        console.log('Gemini API暂时不可用，等待3秒后重试...')
+        await new Promise(resolve => setTimeout(resolve, 3000))
+        
+        // 重试一次
+        const retryResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-goog-api-key': process.env.GEMINI_API_KEY || 'AIzaSyBxZ2fsjm-laE__4ELPZDbRLzzbTPY7ARU'
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: prompt
+                  }
+                ]
+              }
+            ]
+          })
+        })
+        
+        if (!retryResponse.ok) {
+          console.error(`游戏生成重试失败: ${retryResponse.status}`)
+          throw new Error(`Gemini API重试后仍然失败: ${retryResponse.status}`)
+        }
+        
+        const retryData = await retryResponse.json()
+        const retryContent = retryData.candidates[0].content.parts[0].text
+        console.log('游戏生成重试成功')
+        
+        // 使用重试的内容继续处理
+        return parseGameResponse(retryContent, topic)
+      } else {
+        throw new Error(`Gemini API error: ${response.status}`)
+      }
     }
 
     const data = await response.json()
@@ -51,8 +89,8 @@ export async function generateInteractiveGame(request: GameGenerationRequest): P
     return parseGameResponse(content, topic)
   } catch (error) {
     console.error('Error generating game:', error)
-    // 返回备用游戏
-    return createFallbackGame(topic, category)
+    // 不返回备用游戏，直接抛出错误
+    throw new Error('游戏生成失败，请重试')
   }
 }
 
@@ -482,67 +520,4 @@ function parseGameResponse(content: string, topic: string): GameResponse {
   }
 }
 
-/**
- * 创建备用游戏（当AI生成失败时）
- */
-function createFallbackGame(topic: string, category: string): GameResponse {
-  const fallbackHTML = `
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${topic} 学习游戏</title>
-    <style>
-        :root {
-            --bg-primary: #ffffff;
-            --fg-primary: #1a1a1a;
-            --bg-secondary: #f9fafb;
-            --border: #e5e7eb;
-        }
-        
-        body {
-            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-            background: var(--bg-primary);
-            color: var(--fg-primary);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        
-        .container {
-            text-align: center;
-            max-width: 400px;
-        }
-        
-        .title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-        
-        .message {
-            color: #6b7280;
-            line-height: 1.6;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1 class="title">${topic} 学习游戏</h1>
-        <p class="message">正在为您准备个性化的学习体验...</p>
-        <p class="message">请稍后重试或联系支持团队。</p>
-    </div>
-</body>
-</html>`
-
-  return {
-    html: fallbackHTML,
-    title: `${topic} 互动学习`,
-    instructions: '正在准备学习内容，请稍后重试',
-    gameType: 'fallback'
-  }
-} 
+// 备用游戏函数已移除，因为用户要求不使用任何备用内容 
