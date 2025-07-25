@@ -12,40 +12,47 @@ import { useTranslations } from "@/lib/use-translations"
 export default function HomePage() {
   const router = useRouter()
   const [input, setInput] = useState("")
+
   const { t } = useTranslations()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim()) return
     
+    // 立即保存问题并跳转，不等待分类结果
+    localStorage.setItem('xknow-query', input.trim())
+    
+    // 立即跳转到配置页面，提供流畅体验
+    router.push('/configure')
+    
+    // 后台异步进行问题分类（不阻塞跳转）
+    classifyQuestionInBackground(input.trim())
+  }
+
+  // 后台分类函数
+  const classifyQuestionInBackground = async (query: string) => {
     try {
-      // 先进行问题分类
+      console.log('开始后台分类:', query)
+      
       const response = await fetch('/api/classify-question', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ topic: input.trim() })
+        body: JSON.stringify({ topic: query })
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to classify question')
+      if (response.ok) {
+        const classification = await response.json()
+        
+        // 分类完成后保存结果
+        localStorage.setItem('xknow-classification', JSON.stringify(classification))
+        console.log('后台分类完成:', classification)
+      } else {
+        console.error('分类失败:', response.status)
       }
-
-      const classification = await response.json()
-      
-      // 保存问题和分类结果
-      localStorage.setItem('xknow-query', input.trim())
-      localStorage.setItem('xknow-classification', JSON.stringify(classification))
-      
-      // 跳转到配置页面
-      router.push('/configure')
-      
     } catch (error) {
-      console.error('Classification error:', error)
-      // 如果分类失败，仍然保存问题，让后续流程处理
-      localStorage.setItem('xknow-query', input.trim())
-      router.push('/configure')
+      console.error('后台分类出错:', error)
     }
   }
 
@@ -115,13 +122,15 @@ export default function HomePage() {
               placeholder={t('home.searchPlaceholder')}
               className="input-minimal pr-16"
             />
-            <button
+            <motion.button
               type="submit"
               disabled={!input.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-3 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-3 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
-              <ArrowRight className="w-5 h-5" />
-            </button>
+<ArrowRight className="w-5 h-5" />
+            </motion.button>
           </form>
 
           {/* Quick suggestions */}

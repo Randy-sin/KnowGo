@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, ArrowRight, Brain, Clock, Globe, CheckCircle } from "lucide-react"
+import { ArrowLeft, ArrowRight, Brain, Clock, Globe } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import type { QuestionCategory, ClassificationResult } from "@/lib/classifier-service"
@@ -16,10 +16,6 @@ export default function ClassifyPage() {
   const [isClassifying, setIsClassifying] = useState(false)
   const [classification, setClassification] = useState<ClassificationResult | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<QuestionCategory | null>(null)
-  const [showConfirmation, setShowConfirmation] = useState(false)
-  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false)
-  const [streamMessage, setStreamMessage] = useState("")
-  const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([])
   const { t } = useTranslations()
 
   useEffect(() => {
@@ -43,111 +39,22 @@ export default function ClassifyPage() {
     }
   }, [router])
 
-  // 移除classifyTopic函数，因为分类已经在主页完成
-
-  // 使用流式API确认选择
+  // 确认选择并跳转到学习页面
   const handleConfirm = async () => {
     if (!selectedCategory) return;
-
-    setShowConfirmation(true);
-    setIsGeneratingQuestions(true);
-    setStreamMessage("🚀 开始生成学习问题...");
-    setGeneratedQuestions([]);
     
     // 保存分类信息
     localStorage.setItem('xknow-category', selectedCategory);
     
-    // 获取用户配置信息
-    const savedConfig = localStorage.getItem('xknow-config');
-    const userConfig = savedConfig ? JSON.parse(savedConfig) : undefined;
-
-    // 生成引导问题，现在包含用户配置
-    try {
-      const response = await fetch('/api/generate-questions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          topic: query,
-          category: selectedCategory,
-          config: userConfig, // 传递用户配置
-          stream: true // 启用流式输出
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to start stream');
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let questions: any[] = [];
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n');
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.slice(6));
-
-                switch (data.type) {
-                  case 'start':
-                    setStreamMessage("🎯 " + data.message);
-                    break;
-
-                  case 'progress':
-                    setStreamMessage("⚡ " + data.message);
-                    break;
-
-                  case 'question':
-                    setStreamMessage("✨ " + data.message);
-                    questions[data.index] = data.question;
-                    setGeneratedQuestions([...questions]);
-                    break;
-
-                  case 'complete':
-                    setStreamMessage("🎉 " + data.message);
-                    questions = data.questions;
-                    setGeneratedQuestions(questions);
-
-                    // 保存生成的问题并跳转到学习页面
-                    localStorage.setItem('xknow-pregenerated-questions', JSON.stringify(questions));
-                    setTimeout(() => {
-                      router.push('/learn'); // 现在跳转到learn页面
-                    }, 1500);
-                    return;
-
-                  case 'error':
-                    throw new Error(data.error);
-                }
-              } catch (parseError) {
-                console.error('Error parsing stream data:', parseError);
-              }
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Background question generation failed:', error);
-      setStreamMessage("🔄 生成遇到问题，正在为您跳转到学习页面...");
-      // 错误时仍跳转到learn页面，learn页面会重新生成
-      setTimeout(() => {
-        router.push('/learn');
-      }, 2000);
-    } finally {
-      setIsGeneratingQuestions(false);
-    }
+    // 立即跳转到学习页面，提供流畅体验
+    router.push('/learn');
+    
+    // 注意：quiz生成现在移动到feedback阶段，基于引导式问题生成
   };
 
   const handleBack = () => {
     localStorage.removeItem('xknow-query')
+    localStorage.removeItem('xknow-quiz') // 清理预生成的quiz数据
     router.push('/')
   }
 
@@ -194,44 +101,6 @@ export default function ClassifyPage() {
       description: "系统性学习文科知识要点"
     }
   ]
-
-  if (showConfirmation) {
-    return (
-      <div className="min-h-screen bg-white/95 backdrop-blur-sm flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.3 }}
-            className="w-16 h-16 bg-gray-900 rounded-2xl flex items-center justify-center mx-auto mb-8"
-          >
-            <CheckCircle className="w-8 h-8 text-white" />
-          </motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-2xl font-light text-gray-900 mb-3"
-          >
-            选择确认
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="text-gray-500 font-light"
-          >
-            正在准备你的学习内容
-          </motion.p>
-        </motion.div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -384,88 +253,26 @@ export default function ClassifyPage() {
           </motion.div>
         )}
 
-        {/* 流式生成状态显示 */}
-        {isGeneratingQuestions && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-100"
-          >
-            <div className="text-center mb-4">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full mx-auto mb-3"
-              />
-              <p className="text-sm text-gray-600 font-medium">{streamMessage}</p>
-            </div>
-            
-            {/* 实时显示生成的问题 */}
-            {generatedQuestions.length > 0 && (
-              <div className="space-y-3">
-                {generatedQuestions.map((question, index) => (
-                  question && (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.5 }}
-                      className="p-4 bg-white rounded-xl border border-gray-200"
-                    >
-                      <div className="flex items-start space-x-3">
-                        <div className="w-6 h-6 bg-gray-900 text-white rounded-full flex items-center justify-center text-xs font-medium">
-                          {index + 1}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900 mb-1">
-                            {question.question}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {question.followUp}
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )
-                ))}
-              </div>
-            )}
-          </motion.div>
-        )}
-
         {/* 确认按钮 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.5 }}
-          className="text-center"
+          transition={{ duration: 0.6, delay: 0.8 }}
+          className="flex justify-center"
         >
           <motion.button
             onClick={handleConfirm}
-            disabled={!selectedCategory || isGeneratingQuestions}
-            whileHover={selectedCategory && !isGeneratingQuestions ? { y: -2 } : {}}
-            whileTap={selectedCategory && !isGeneratingQuestions ? { y: 0 } : {}}
+            disabled={!selectedCategory}
+            whileHover={selectedCategory ? { y: -2 } : {}}
+            whileTap={selectedCategory ? { y: 0 } : {}}
             className={`inline-flex items-center space-x-3 px-8 py-4 rounded-2xl font-medium transition-all duration-200 ${
-              selectedCategory && !isGeneratingQuestions
+              selectedCategory
                 ? 'bg-gray-900 text-white hover:bg-gray-800'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
-            {isGeneratingQuestions ? (
-              <>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="w-4 h-4 border border-gray-300 border-t-white rounded-full"
-                />
-                <span>生成学习问题中...</span>
-              </>
-            ) : (
-              <>
-                <span>确认选择</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
+            <span>确认选择</span>
+            <ArrowRight className="w-4 h-4" />
           </motion.button>
         </motion.div>
       </div>

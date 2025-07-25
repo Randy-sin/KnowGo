@@ -14,6 +14,9 @@ export default function ConfigurePage() {
   const [selectedLevel, setSelectedLevel] = useState("")
   const [selectedStyle, setSelectedStyle] = useState("")
   const [query, setQuery] = useState("")
+  const [classification, setClassification] = useState<{category: string} | null>(null)
+  const [isClassifying, setIsClassifying] = useState(true)
+
   const { t } = useTranslations()
 
   // 将useEffect移到组件顶部，避免条件性调用
@@ -25,6 +28,53 @@ export default function ConfigurePage() {
     } else {
       // If no query, redirect back to home
       router.push('/')
+      return
+    }
+
+    // 检查是否已有分类结果
+    const savedClassification = localStorage.getItem('xknow-classification')
+    if (savedClassification) {
+      try {
+        const classificationData = JSON.parse(savedClassification)
+        setClassification(classificationData)
+        setIsClassifying(false)
+        console.log('加载了已保存的分类结果:', classificationData)
+      } catch (error) {
+        console.error('Failed to parse classification:', error)
+      }
+    }
+
+    // 如果没有分类结果，设置一个监听器等待后台分类完成
+    if (!savedClassification) {
+      const checkClassification = () => {
+        const newClassification = localStorage.getItem('xknow-classification')
+        if (newClassification) {
+          try {
+            const classificationData = JSON.parse(newClassification)
+            setClassification(classificationData)
+            setIsClassifying(false)
+            console.log('后台分类完成，已更新:', classificationData)
+          } catch (error) {
+            console.error('Failed to parse new classification:', error)
+          }
+        }
+      }
+
+      // 定期检查分类结果 (每500ms检查一次，最多检查10次)
+      let attempts = 0
+      const maxAttempts = 10
+      const interval = setInterval(() => {
+        checkClassification()
+        attempts++
+        if (attempts >= maxAttempts) {
+          setIsClassifying(false)
+          console.log('分类超时，停止等待')
+          clearInterval(interval)
+        }
+      }, 500)
+
+      // 清理函数
+      return () => clearInterval(interval)
     }
   }, [router])
 
@@ -87,14 +137,57 @@ export default function ConfigurePage() {
     { id: "einstein", title: t('configure.styles.einstein.title'), description: t('configure.styles.einstein.description') }
   ]
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (selectedLevel && selectedStyle) {
-      // Store configuration and proceed
-      localStorage.setItem('xknow-config', JSON.stringify({
+      // Store configuration
+      const config = {
         level: selectedLevel,
         style: selectedStyle
-      }))
-      router.push('/classify')
+      };
+      localStorage.setItem('xknow-config', JSON.stringify(config));
+      
+      // 立即跳转到classify页面，提供流畅体验
+      router.push('/classify');
+      
+      // 后台异步生成问题（不阻塞跳转）
+      generateQuestionsInBackground(config)
+    }
+  }
+
+  // 后台生成问题的函数
+  const generateQuestionsInBackground = async (config: {level: string, style: string}) => {
+    try {
+      const savedQuery = localStorage.getItem('xknow-query');
+      const savedClassification = localStorage.getItem('xknow-classification');
+      
+      if (savedQuery && savedClassification) {
+        console.log('开始后台生成问题...')
+        
+        const classification = JSON.parse(savedClassification);
+        
+        const response = await fetch('/api/generate-questions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            topic: savedQuery,
+            category: classification.category,
+            config: config
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // 保存生成的问题
+          localStorage.setItem('xknow-pregenerated-questions', JSON.stringify(data.questions));
+          console.log('后台问题生成完成:', data.questions.length, '个问题')
+        } else {
+          console.error('问题生成失败:', response.status)
+        }
+      }
+    } catch (error) {
+      console.error('后台问题生成出错:', error);
     }
   }
 
@@ -150,6 +243,8 @@ export default function ConfigurePage() {
         <h1 className="heading-lg mb-2">
           {t('configure.title')}
         </h1>
+        
+
       </motion.div>
 
       <div className="w-full max-w-4xl space-y-16">
@@ -319,7 +414,7 @@ export default function ConfigurePage() {
             onClick={handleContinue}
             disabled={!selectedLevel || !selectedStyle}
             className={`btn-primary-minimal px-8 py-3 text-base transition-all duration-300 ${
-              selectedLevel && selectedStyle 
+              selectedLevel && selectedStyle
                 ? '' 
                 : 'opacity-50 cursor-not-allowed'
             }`}

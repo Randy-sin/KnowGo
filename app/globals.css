@@ -572,3 +572,16 @@ body {
 .micro-bounce:active {
   transform: scale(0.98);
 }
+
+/* 全屏游戏容器 */
+.fullscreen-game-container:fullscreen {
+  border-radius: 0 !important;
+  border: none !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+}
+
+.fullscreen-game-container:fullscreen iframe {
+  height: 100vh !important;
+  border-radius: 0 !important;
+}
