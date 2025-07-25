@@ -48,24 +48,23 @@ export default function SimulatePage() {
         }
       }
       
-      // 优先使用预生成的游戏
+      // 只使用预生成的游戏
       if (pregeneratedGame) {
         try {
           const game = JSON.parse(pregeneratedGame)
           setCurrentGame(game)
-          console.log('使用预生成的游戏:', game.title)
+          console.log('✅ 使用预生成的游戏:', game.title)
         } catch (error) {
-          console.error('Failed to parse pregenerated game:', error)
-          // 如果预生成游戏解析失败，重新生成
-          setTimeout(() => {
-            generateInteractiveGame(savedQuery, savedCategory || 'science')
-          }, 500)
+          console.error('预生成游戏解析失败:', error)
+          // 预生成游戏解析失败，返回configure页面重新生成
+          alert('游戏数据损坏，请返回重新生成')
+          router.push('/configure')
         }
       } else {
-        // 没有预生成游戏，重新生成
-        setTimeout(() => {
-          generateInteractiveGame(savedQuery, savedCategory || 'science')
-        }, 500)
+        // 没有预生成游戏，返回configure页面
+        console.log('❌ 没有找到预生成游戏，返回configure页面')
+        alert('请先完成游戏配置')
+        router.push('/configure')
       }
     } else {
       router.push('/')
@@ -84,97 +83,11 @@ export default function SimulatePage() {
     }
   }, [])
 
-  // 生成互动游戏函数 - 在所有Hooks之后定义
-  const generateInteractiveGame = useCallback(async (topic: string, gameCategory: string) => {
-    setIsGeneratingGame(true)
-    setGenerationMessage("AI正在为您设计专属游戏...")
-    
-    try {
-      const response = await fetch('/api/generate-game', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          topic: topic,
-          category: gameCategory,
-          userLevel: userLevel,
-          learningObjective: `通过互动游戏深度理解${topic}的核心概念`,
-          stream: true
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to generate game')
-      }
-
-      if (!response.body) {
-        throw new Error('No response body')
-      }
-
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-
-      while (true) {
-        const { done, value } = await reader.read()
-        
-        if (done) break
-
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
-
-        for (const line of lines) {
-          if (line.trim() === '') continue
-          
-          if (line.startsWith('data: ')) {
-            try {
-              const jsonStr = line.slice(6).trim()
-              if (!jsonStr) continue
-              
-              const data: GameStreamEvent = JSON.parse(jsonStr)
-              
-              switch (data.type) {
-                case 'start':
-                case 'progress':
-                  setGenerationMessage(data.message || '正在生成...')
-                  break
-                  
-                case 'complete':
-                  if (data.game) {
-                    setCurrentGame(data.game)
-                    setGenerationMessage('游戏生成完成！')
-                    console.log('Game generated successfully:', data.game.title)
-                  }
-                  break
-                  
-                case 'error':
-                  console.error('Game generation error:', data.error)
-                  setGenerationMessage('游戏生成失败，请重试')
-                  throw new Error(data.error)
-              }
-            } catch (parseError) {
-              console.error('Error parsing stream data:', parseError)
-              continue
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error generating game:', error)
-      setGenerationMessage('游戏生成失败，请重试')
-      
-      // 不设置备用游戏，让用户重试
-      setCurrentGame(null)
-    } finally {
-      setIsGeneratingGame(false)
-    }
-  }, [])
-
-  // 备用游戏函数已移除，因为用户要求不使用任何备用内容
-
-  const handleRegenerateGame = () => {
-    setCurrentGame(null)
-    generateInteractiveGame(query, category)
+  // 返回configure页面重新配置游戏
+  const handleReconfigureGame = () => {
+    // 清除当前游戏数据，强制重新配置
+    localStorage.removeItem('xknow-pregenerated-game')
+    router.push('/configure')
   }
 
   const handleFullscreen = async () => {
@@ -273,11 +186,11 @@ export default function SimulatePage() {
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
                transition={{ delay: 0.6 }}
-               onClick={handleRegenerateGame}
-               disabled={isGeneratingGame}
-               className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-white rounded-full shadow-sm border border-gray-200 transition-all duration-200 disabled:opacity-50"
+               onClick={handleReconfigureGame}
+               className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-white rounded-full shadow-sm border border-gray-200 transition-all duration-200"
+               title="重新配置游戏"
              >
-               <RefreshCw className={`w-4 h-4 ${isGeneratingGame ? 'animate-spin' : ''}`} />
+               <RefreshCw className="w-4 h-4" />
              </motion.button>
            </>
          )}
@@ -417,19 +330,19 @@ export default function SimulatePage() {
                 <Play className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                准备开始互动学习
+                游戏配置错误
               </h3>
               <p className="text-gray-600 mb-6">
-                点击按钮生成您的专属学习游戏
+                请返回配置页面重新生成游戏
               </p>
               <motion.button
                 whileHover={{ y: -2 }}
                 whileTap={{ y: 0 }}
-                onClick={() => generateInteractiveGame(query, category)}
+                onClick={handleReconfigureGame}
                 className="inline-flex items-center space-x-2 px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors"
               >
-                <Play className="w-4 h-4" />
-                <span>生成互动游戏</span>
+                <RefreshCw className="w-4 h-4" />
+                <span>重新配置游戏</span>
               </motion.button>
             </div>
           )}

@@ -139,6 +139,15 @@ export interface AnimationVariants {
   transition?: Record<string, any>
 }
 
+// 游戏设计相关类型
+export interface GameDesignConcept {
+  gameTitle: string
+  gameDescription: string
+  coreGameplay: string
+  winCondition: string
+  designRationale: string
+}
+
 // API响应类型
 export interface ApiResponse<T = any> {
   success: boolean

@@ -148,9 +148,9 @@ export default function ConfigurePage() {
       // 立即跳转到classify页面，提供流畅体验
       router.push('/classify');
       
-      // 后台异步生成问题和重新生成游戏（不阻塞跳转）
+      // 后台异步生成问题和游戏（不阻塞跳转）
       generateQuestionsInBackground(config)
-      regenerateGameWithConfig(config)
+      generateGameWithTwoStages(config)
     }
   }
 
@@ -191,18 +191,42 @@ export default function ConfigurePage() {
     }
   }
 
-  // 根据用户配置重新生成游戏的函数
-  const regenerateGameWithConfig = async (config: {level: string, style: string}) => {
+  // 根据用户配置执行完整的两阶段游戏生成流程
+  const generateGameWithTwoStages = async (config: {level: string, style: string}) => {
     try {
       const savedQuery = localStorage.getItem('xknow-query');
       const savedClassification = localStorage.getItem('xknow-classification');
       
       if (savedQuery && savedClassification) {
-        console.log('开始根据用户配置重新生成游戏...')
+        console.log('🎨 开始两阶段游戏生成流程...')
         
         const classification = JSON.parse(savedClassification);
         
-        let response = await fetch('/api/generate-game', {
+        // 第一阶段：设计游戏概念
+        console.log('第一阶段：游戏设计师开始工作...')
+        const designResponse = await fetch('/api/design-game', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            topic: savedQuery,
+            category: classification.category,
+            userLevel: config.level,
+            learningObjective: `通过创新游戏深度理解${savedQuery}的核心概念`
+          })
+        });
+
+        if (!designResponse.ok) {
+          throw new Error(`游戏设计失败: ${designResponse.status}`)
+        }
+
+        const { gameDesign } = await designResponse.json();
+        console.log('✅ 第一阶段完成，游戏设计:', gameDesign.gameTitle)
+
+        // 第二阶段：基于设计生成代码
+        console.log('第二阶段：代码工程师开始实现...')
+        const gameResponse = await fetch('/api/generate-game', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -212,41 +236,26 @@ export default function ConfigurePage() {
             category: classification.category,
             userLevel: config.level,
             learningObjective: `通过互动游戏深度理解${savedQuery}的核心概念`,
+            gameDesign: gameDesign, // 传入设计方案
             stream: false
           })
         });
 
-        // 如果失败，重试一次
-        if (!response.ok && response.status === 500) {
-          console.log('游戏生成失败，等待2秒后重试...')
-          await new Promise(resolve => setTimeout(resolve, 2000))
-          
-          response = await fetch('/api/generate-game', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              topic: savedQuery,
-              category: classification.category,
-              userLevel: config.level,
-              learningObjective: `通过互动游戏深度理解${savedQuery}的核心概念`,
-              stream: false
-            })
-          });
+        if (!gameResponse.ok) {
+          throw new Error(`游戏代码生成失败: ${gameResponse.status}`)
         }
 
-        if (response.ok) {
-          const { game } = await response.json();
-          // 保存重新生成的游戏，覆盖之前的预生成结果
-          localStorage.setItem('xknow-pregenerated-game', JSON.stringify(game));
-          console.log('个性化游戏重新生成完成:', game.title)
-        } else {
-          console.error('游戏重新生成失败:', response.status)
-        }
+        const { game } = await gameResponse.json();
+        
+        // 保存生成的游戏
+        localStorage.setItem('xknow-pregenerated-game', JSON.stringify(game));
+        console.log('🎉 两阶段游戏生成完成:', game.title)
+        
+        return game;
       }
     } catch (error) {
-      console.error('后台游戏重新生成出错:', error);
+      console.error('两阶段游戏生成失败:', error);
+      throw error;
     }
   }
 

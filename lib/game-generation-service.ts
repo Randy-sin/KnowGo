@@ -3,6 +3,7 @@ export interface GameGenerationRequest {
   category: 'science' | 'history' | 'others'
   userLevel: 'beginner' | 'intermediate' | 'expert'
   learningObjective: string
+  gameDesign?: import('./game-designer-service').GameDesignConcept // 可选的设计方案
 }
 
 export interface GameResponse {
@@ -14,11 +15,17 @@ export interface GameResponse {
 
 /**
  * 为不同学科生成互动HTML游戏
+ * 现在支持基于设计方案的代码生成
  */
 export async function generateInteractiveGame(request: GameGenerationRequest): Promise<GameResponse> {
-  const { topic, category, userLevel, learningObjective } = request
+  const { topic, category, userLevel, learningObjective, gameDesign } = request
   
-  const prompt = buildGamePrompt(topic, category, userLevel, learningObjective)
+  // 强制要求必须有游戏设计方案
+  if (!gameDesign) {
+    throw new Error('gameDesign is required. All games must go through the two-stage design process.')
+  }
+  
+  const prompt = buildCodeImplementationPrompt(topic, category, userLevel, learningObjective, gameDesign)
   
   try {
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent', {
@@ -95,9 +102,9 @@ export async function generateInteractiveGame(request: GameGenerationRequest): P
 }
 
 /**
- * 构建游戏生成的智能提示词
+ * 基于设计方案构建代码实现提示词
  */
-function buildGamePrompt(topic: string, category: string, userLevel: string, learningObjective: string): string {
+function buildCodeImplementationPrompt(topic: string, category: string, userLevel: string, learningObjective: string, gameDesign: import('./game-designer-service').GameDesignConcept): string {
   const designSystemCSS = `
 /* 硅谷极简设计系统 - 与主应用保持一致 */
 :root {
@@ -211,217 +218,76 @@ body {
 }
 `
 
-  // Removed unused gameTypes variable
+  return `你是世界顶级的前端游戏开发工程师，专门将创意游戏设计转化为高质量的HTML5互动游戏代码。游戏设计师已经为你提供了完整的设计方案，你的任务是将这个设计方案完美实现为可运行的代码。
 
-  return `你是世界顶级的教育游戏设计师，专门为苹果、OpenAI等顶级科技公司设计真正的**闯关类学习游戏**。你必须创建一个有明确游戏目标、挑战机制和胜利条件的完整游戏。
+**📋 游戏设计师提供的完整设计方案：**
 
-**🎯 CRITICAL 游戏设计理念：**
-这不是教学演示，而是**真正的游戏**！用户必须通过固定的玩法来完成挑战，成功后游戏结束，失败则继续尝试。
+**🎮 游戏设计方案：**
 
-**学习背景：**
-- 主题：${topic}
-- 学科：${category === 'science' ? '理科' : category === 'history' ? '历史' : '文科'}
-- 用户水平：${userLevel}
-- 学习目标：${learningObjective}
+**游戏标题：** ${gameDesign.gameTitle}
 
-**🎮 CRITICAL 游戏机制要求：**
+**游戏描述：** ${gameDesign.gameDescription}
 
-你必须根据主题"${topic}"创造性地设计独特的游戏机制：
-- **明确的挑战目标**：用户知道要达成什么成功条件
-- **富有教育意义的失败反馈**：帮助用户理解概念
-- **适合主题的交互方式**：不局限于滑块调参，可以是拖拽、点击、绘制、排序等
-- **实时视觉反馈**：用户操作立即产生可见效果
-- **重试机制**：失败后可以继续尝试并获得提示
+**核心玩法：** ${gameDesign.coreGameplay}
 
-**🏆 必须包含的游戏元素：**
-1. **明确的挑战目标** - 用户知道要达成什么
-2. **失败反馈机制** - 未达成目标时的提示和鼓励
-3. **成功庆祝动画** - 达成目标时的胜利效果
-4. **参数控制面板** - 让用户调节关键变量
-5. **实时视觉反馈** - 参数变化立即显示效果
-6. **尝试次数统计** - 增加游戏紧张感
-7. **重置/重新开始** - 允许用户多次尝试
+**胜利条件：** ${gameDesign.winCondition}
 
-**🎨 硅谷极简美学 (强制要求)：**
-- 纯白背景 (#ffffff) + 深灰文字 (#1a1a1a)
-- 微妙阴影和12px圆角
-- 无鲜艳色彩，只用灰度 + 单一强调色
-- 系统字体：ui-sans-serif, system-ui, -apple-system
+**设计理念：** ${gameDesign.designRationale}
 
-**⚡ 技术实现 (必须完整可运行)：**
+**🚀 代码实现任务说明：**
 
-**HTML结构要求：**
-- 完整的 <!DOCTYPE html> 文档结构
-- 包含 <head> 标签，设置 charset="UTF-8" 和 viewport
-- 使用 <canvas> 或 <svg> 来绘制游戏画面
-- 参数控制面板：滑块 <input type="range"> 用于调节参数
-- 游戏状态显示：显示尝试次数、当前参数值
-- 操作按钮：开始游戏、重置游戏的 <button> 元素
+游戏设计师已经为你提供了完整的设计蓝图，你必须将这个设计**逐一实现**为可运行的HTML5游戏代码。
 
-**CSS样式要求：**
-- 所有样式必须内联在 <style> 标签中
-- 严格使用提供的CSS变量系统
-- 实现响应式布局，适配手机和桌面
-- 添加微妙的动画和过渡效果
+**⚡ 核心实现要求：**
 
-**JavaScript逻辑要求：**
-- 纯Vanilla JavaScript，不依赖任何外部库
-- 实现游戏主循环：参数更新 → 计算结果 → 绘制画面
-- 处理用户交互：滑块变化、按钮点击
-- 实现胜利检测逻辑和失败重试机制
-- 添加动画效果：轨迹绘制、胜利庆祝、失败提示
+1. **100%遵循设计方案**：严格按照上述设计方案实现，不得遗漏任何功能点
+2. **完整的HTML5游戏**：生成完整的<!DOCTYPE html>到</html>的单文件游戏
+3. **无外部依赖**：所有CSS和JavaScript必须内联，确保游戏可独立运行
+4. **设计系统统一**：严格使用提供的CSS变量，保持视觉一致性
+5. **响应式体验**：游戏适配桌面和移动端，最少600px高度
+6. **流畅交互**：实现所有设计方案中的反馈机制和动画效果
+7. **完整游戏循环**：包含状态管理、事件处理、胜负判定等完整逻辑
 
-**📝 通用HTML游戏结构模板：**
-\`\`\`html
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[根据主题生成标题]</title>
-    <style>
-        /* 使用提供的CSS变量系统 */
-        :root { --bg-primary: #ffffff; --fg-primary: #1a1a1a; /* ... */ }
-        body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
-        .game-container { width: 100%; height: 100%; margin: 0 auto; min-height: 600px; }
-        /* 根据游戏类型设计相应的交互界面样式 */
-    </style>
-</head>
-<body>
-    <div class="game-container">
-        <!-- 游戏控制区域 - 根据主题设计不同的交互方式 -->
-        <div class="control-area">
-            <!-- 可能是：滑块、按钮、拖拽区域、输入框、选择器等 -->
-        </div>
-        
-        <!-- 游戏显示区域 - Canvas、SVG或DOM元素 -->
-        <div class="game-display">
-            <!-- 根据主题选择：Canvas绘图、DOM动画、SVG图形等 -->
-        </div>
-        
-        <!-- 游戏状态区域 -->
-        <div class="game-status">
-            <!-- 得分、尝试次数、提示信息、进度等 -->
-        </div>
-    </div>
+**🏆 核心功能实现清单（必须全部完成）：**
 
-    <script>
-        // 根据主题实现完全不同的游戏逻辑和交互方式
-    </script>
-</body>
-</html>
-\`\`\`
-
-**🎮 多样化交互方式示例：**
-- **拖拽类**：拖拽元素到目标位置（如历史事件排序）
-- **点击类**：点击正确选项或区域（如地理位置识别）
-- **输入类**：输入答案或命令（如编程逻辑）
-- **滑块类**：调节参数观察变化（如物理实验）
-- **绘制类**：鼠标绘制图形或路径（如几何作图）
-- **时序类**：按正确顺序执行操作（如化学实验步骤）
-- **策略类**：做出决策选择（如经济模拟）
-
-**🚨 CRITICAL 代码生成要求：**
-
-你必须根据主题"${topic}"创造性地设计并生成一个**完整可运行的HTML学习游戏**：
-
-**🎨 创意设计要求：**
-- 深度分析"${topic}"的核心概念和学习难点
-- 创造最适合该主题的独特游戏机制（不局限于参数调节）
-- 设计符合该主题特点的交互方式和控制方法
-- 选择最能体现概念的视觉呈现方式
-
-**🛠️ 技术实现要求：**
-- 完整的HTML5文档结构（<!DOCTYPE html>到</html>）
-- 内联CSS样式（严格使用设计系统变量）
-- 完整的JavaScript游戏逻辑（无外部依赖）
-- 根据游戏类型选择：Canvas绘图/DOM操作/SVG图形
-- 实现完整的用户交互系统
-- 流畅的动画效果和即时反馈
-- **重要：不要限制容器尺寸，使用100%宽度和充足高度充分利用屏幕空间**
-- **游戏区域应该占据大部分屏幕，最少600px高度，建议800px以上**
-
-**🎮 游戏机制要求：**
-- 明确的挑战目标和胜利条件
-- 富有教育意义的失败反馈机制
-- 鼓励探索和重复游玩的设计
-- 概念理解与游戏乐趣的完美结合
+1. **严格按照核心玩法实现**：${gameDesign.coreGameplay}
+2. **实现胜利条件**：${gameDesign.winCondition}
+3. **完整游戏循环**：包含开始、游戏中、成功、失败等状态
+4. **即时反馈系统**：用户操作的实时视觉反馈
+5. **重试机制**：失败后可以重新开始游戏
+6. **成功庆祝动画和失败提示**
 
 **CRITICAL JSON输出格式：**
+
+请严格按照以下格式输出，不要任何其他内容：
+
 \`\`\`json
 {
-  "html": "<!DOCTYPE html><html lang=\\"zh-CN\\"><head><meta charset=\\"UTF-8\\"><meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\"><title>游戏标题</title><style>/* 完整CSS样式 */</style></head><body><!-- 完整HTML结构 --><script>/* 完整JavaScript逻辑 */</script></body></html>",
-  "title": "简洁的游戏标题",
-  "instructions": "清晰的游戏规则和目标",
-  "gameType": "challenge-based-game"
+  "html": "<!DOCTYPE html><html lang=\\"zh-CN\\"><head><meta charset=\\"UTF-8\\"><meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\"><title>${gameDesign.gameTitle}</title><style>/* 完整CSS实现 */</style></head><body><!-- 完整HTML结构和游戏逻辑 --><script>/* 完整JavaScript实现 */</script></body></html>",
+  "title": "${gameDesign.gameTitle}",
+  "instructions": "${gameDesign.gameDescription}",
+  "gameType": "design-based-implementation"
 }
 \`\`\`
 
-**⚠️ 重要提醒：**
-- html字段必须是完整的、可直接运行的HTML代码
-- 所有引号必须正确转义 (使用 \\")
-- 代码必须压缩在一行中，但保持可读性
-- 必须包含完整的游戏逻辑，不能有未实现的函数
-- **关键：游戏容器使用100%宽度和充足高度，不要设置max-width或max-height限制**
-- **游戏画面应该足够大，充分利用可用空间，营造沉浸式体验**
+**⚠️ 最终代码质量要求：**
+- html字段必须是完整可运行的HTML代码（从<!DOCTYPE html>到</html>）
+- 严格按照设计方案实现所有功能，不得遗漏
+- 确保游戏逻辑完整，所有函数都有完整实现
+- 正确转义所有引号，代码在一行中但保持逻辑清晰
+- 游戏容器使用100%宽度和充足高度，提供沉浸体验
+- 必须包含设计方案中的所有视觉元素和交互功能
 
-**强制设计系统 (CSS变量)：**
+**硅谷极简设计系统（强制使用）：**
 ${designSystemCSS}
 
-**🚀 成功标准检查清单：**
-✅ 有明确的胜利条件 (如：篮球进筐)
-✅ 有失败重试机制 (可以无限尝试)
-✅ 参数调节直接影响游戏结果
-✅ 包含视觉动画反馈
-✅ 有尝试次数或得分统计
-✅ 胜利时有庆祝效果
-✅ 失败时有智能提示
-✅ HTML完整可运行
-✅ 严格遵循设计系统
+**🎯 最终任务：**
+现在请将游戏设计师的"${gameDesign.gameTitle}"设计方案完美实现为可运行的HTML5游戏代码！
 
-**❌ 禁止创建的内容：**
-- 静态的数学图表展示
-- 纯教学性的参数演示
-- 没有明确目标的"探索工具"
-- 只有可视化没有游戏挑战
-
-**🎯 创意游戏设计挑战：**
-
-请为"${topic}"创造一个独特的学习游戏！
-
-**💡 设计思路指导：**
-不要被"参数调节"限制思维，要根据主题特点选择最合适的交互方式：
-- 抛物线 → 投篮轨迹调节游戏
-- 历史事件 → 时间线拖拽排序游戏  
-- 化学反应 → 实验步骤操作游戏
-- 地理知识 → 地图点击识别游戏
-- 编程逻辑 → 代码拼图组合游戏
-- 生物结构 → 器官拖拽组装游戏
-
-**🚨 CRITICAL FINAL INSTRUCTION:**
-
-请立即为主题"${topic}"生成一个完整的学习游戏！
-
-**输出要求：只返回JSON，不要任何其他文字、解释或对话！**
-
-必须严格按照以下格式输出：
-
-\`\`\`json
-{
-  "html": "[完整的HTML5游戏代码，包含所有CSS和JavaScript]",
-  "title": "[游戏标题]", 
-  "instructions": "[游戏规则]",
-  "gameType": "challenge-based-game"
+**重要：只输出JSON格式，不要任何解释或对话！严格按照设计方案实现所有功能！**`
 }
-\`\`\`
-
-**⚠️ 绝对不要输出任何JSON格式之外的内容！**
-5. 让用户在享受游戏的过程中自然掌握"${topic}"！
-
-请严格按照JSON格式输出，html字段包含完整可运行的创意游戏代码。`
 
 
-}
 
 /**
  * 解析AI生成的游戏内容
