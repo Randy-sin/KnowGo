@@ -4,8 +4,10 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 
 export default function LearnPage() {
+  const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [config, setConfig] = useState<{level: string, style: string} | null>(null)
@@ -14,6 +16,26 @@ export default function LearnPage() {
   const [userResponses, setUserResponses] = useState<string[]>([])
   const [currentResponse, setCurrentResponse] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+
+  // 如果用户未登录，重定向到登录页
+  if (isLoaded && !isSignedIn) {
+    return <RedirectToSignIn />
+  }
+
+  // 加载状态
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
+        </motion.div>
+      </div>
+    )
+  }
 
   // 基于README的三阶段AI引导流程
   const generateLearningStages = (topic: string) => {

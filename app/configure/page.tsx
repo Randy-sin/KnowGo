@@ -2,14 +2,36 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowRight, Trophy, Star, Award, Check, Sparkles, ArrowLeft } from "lucide-react"
+import { ArrowRight, Trophy, Star, Award, Check, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 
 export default function ConfigurePage() {
+  const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
   const [selectedLevel, setSelectedLevel] = useState("")
   const [selectedStyle, setSelectedStyle] = useState("")
   const [query, setQuery] = useState("")
+
+  // 如果用户未登录，重定向到登录页
+  if (isLoaded && !isSignedIn) {
+    return <RedirectToSignIn />
+  }
+
+  // 加载状态
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
+        </motion.div>
+      </div>
+    )
+  }
 
   useEffect(() => {
     // Load the saved query to display context
@@ -95,16 +117,21 @@ export default function ConfigurePage() {
         <ArrowLeft className="w-5 h-5" />
       </motion.button>
 
-      {/* Context indicator - subtle and top-right */}
+      {/* 右上角用户信息 */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
         className="absolute top-8 right-8"
       >
-        <div className="flex items-center space-x-2 text-xs text-gray-400">
-          <span>Topic:</span>
-          <span className="text-gray-600 font-medium">{query}</span>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 text-xs text-gray-400">
+            <span>Topic:</span>
+            <span className="text-gray-600 font-medium">{query}</span>
+          </div>
+          <div className="text-xs text-gray-500">
+            Welcome, {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+          </div>
         </div>
       </motion.div>
 
@@ -138,14 +165,14 @@ export default function ConfigurePage() {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-4">
-            {levels.map((level, index) => (
+            {levels.map((level, levelIndex) => (
               <motion.button
                 key={level.id}
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ 
                   duration: 0.5, 
-                  delay: 0.4 + index * 0.1,
+                  delay: 0.4 + levelIndex * 0.1,
                   ease: [0.16, 1, 0.3, 1]
                 }}
                 whileHover={{ 
@@ -165,7 +192,7 @@ export default function ConfigurePage() {
                   <motion.div 
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    transition={{ delay: 0.6 + index * 0.1, type: "spring", stiffness: 500 }}
+                    transition={{ delay: 0.6 + levelIndex * 0.1, type: "spring", stiffness: 500 }}
                     className="absolute -top-2 -right-2 w-4 h-4 bg-black rounded-full border-2 border-white"
                   />
                 )}
@@ -244,7 +271,7 @@ export default function ConfigurePage() {
               }
             }}
           >
-            {styles.map((style, index) => (
+            {styles.map((style) => (
               <motion.button
                 key={style.id}
                 variants={{

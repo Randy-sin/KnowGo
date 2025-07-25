@@ -2,8 +2,10 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { ArrowRight, Search, Sparkles } from "lucide-react"
+import { ArrowRight, Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
+import Link from "next/link"
 
 export default function HomePage() {
   const router = useRouter()
@@ -20,6 +22,26 @@ export default function HomePage() {
 
   return (
     <div className="hero-minimal container-minimal">
+      {/* 右上角登录状态 */}
+      <div className="absolute top-8 right-8">
+        <SignedOut>
+          <Link href="/sign-in">
+            <button className="btn-ghost-minimal">
+              Sign in
+            </button>
+          </Link>
+        </SignedOut>
+        <SignedIn>
+          <UserButton 
+            appearance={{
+              elements: {
+                avatarBox: "w-8 h-8 rounded-full border border-gray-200 hover:border-gray-300 transition-colors"
+              }
+            }}
+          />
+        </SignedIn>
+      </div>
+
       {/* Brand mark */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}

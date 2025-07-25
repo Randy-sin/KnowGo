@@ -2,14 +2,15 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, RotateCcw, Play, Pause, Info } from "lucide-react"
+import { ArrowLeft, RotateCcw, Play, Info } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 
 export default function SimulatePage() {
+  const { isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [query, setQuery] = useState("")
-  const [userResponses, setUserResponses] = useState<string[]>([])
   const [isPlaying, setIsPlaying] = useState(false)
   const [showHint, setShowHint] = useState(false)
   
@@ -25,15 +26,31 @@ export default function SimulatePage() {
   const [trajectory, setTrajectory] = useState<{x: number, y: number}[]>([])
   const [animationFrame, setAnimationFrame] = useState<number | null>(null)
 
+  // 如果用户未登录，重定向到登录页
+  if (isLoaded && !isSignedIn) {
+    return <RedirectToSignIn />
+  }
+
+  // 加载状态
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
+        </motion.div>
+      </div>
+    )
+  }
+
   useEffect(() => {
     const savedQuery = localStorage.getItem('knowgo-query')
-    const savedResponses = localStorage.getItem('knowgo-responses')
     
     if (savedQuery) {
       setQuery(savedQuery)
-      if (savedResponses) {
-        setUserResponses(JSON.parse(savedResponses))
-      }
     } else {
       router.push('/')
     }
@@ -48,9 +65,9 @@ export default function SimulatePage() {
         targetZone: { x: 650, y: 380, width: 60, height: 20 },
         hint: "Adjust a, b, and c to see how they affect the parabola shape!",
         failureHints: [
-          "Try making 'a' more negative to create a steeper curve downward.",
-          "Adjust 'b' to change the tilt and direction of the parabola.",
-          "The parameter 'c' controls where your parabola starts vertically."
+          "Try making &apos;a&apos; more negative to create a steeper curve downward.",
+          "Adjust &apos;b&apos; to change the tilt and direction of the parabola.",
+          "The parameter &apos;c&apos; controls where your parabola starts vertically."
         ]
       },
       "抛物线": {
@@ -59,16 +76,16 @@ export default function SimulatePage() {
         targetZone: { x: 650, y: 380, width: 60, height: 20 },
         hint: "调节a、b、c参数，看看它们如何影响抛物线的形状！",
         failureHints: [
-          "尝试让'a'更负，创造更陡峭的向下曲线。",
-          "调节'b'来改变抛物线的倾斜和方向。", 
-          "参数'c'控制抛物线的垂直起始位置。"
+          "尝试让&apos;a&apos;更负，创造更陡峭的向下曲线。",
+          "调节&apos;b&apos;来改变抛物线的倾斜和方向。", 
+          "参数&apos;c&apos;控制抛物线的垂直起始位置。"
         ]
       },
       "machine learning": {
         title: "Recommendation Engine",
         subtitle: "See how algorithms learn your preferences",
         targetZone: { x: 600, y: 200, width: 100, height: 200 },
-        hint: "Each 'shot' represents a recommendation. Watch how the system learns!",
+        hint: "Each shot represents a recommendation. Watch how the system learns!",
         failureHints: [
           "The algorithm is learning from your choices...",
           "Notice how recommendations get better over time?",
@@ -341,7 +358,7 @@ export default function SimulatePage() {
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                   disabled={isPlaying}
                 />
-                <p className="text-xs text-gray-500">Controls the curve's opening direction and steepness</p>
+                <p className="text-xs text-gray-500">Controls the curve&apos;s opening direction and steepness</p>
               </div>
 
               {/* 参数 b 控制 */}
