@@ -5,11 +5,14 @@ import { motion } from "framer-motion"
 import { ArrowLeft, Globe, Map, BookOpen, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
+import { LanguageToggle } from "@/components/ui/language-toggle"
+import { useTranslations } from "@/lib/use-translations"
 
 export default function GeographyPage() {
   const { isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   const [query, setQuery] = useState("")
+  const { t } = useTranslations()
 
   useEffect(() => {
     const savedQuery = localStorage.getItem('xknow-query')
@@ -52,7 +55,7 @@ export default function GeographyPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* 导航 */}
+      {/* 导航和语言切换 */}
       <div className="absolute top-8 left-8 z-10">
         <motion.button
           initial={{ opacity: 0 }}
@@ -63,6 +66,11 @@ export default function GeographyPage() {
         >
           <ArrowLeft className="w-4 h-4" />
         </motion.button>
+      </div>
+      
+      {/* 语言切换按钮 */}
+      <div className="absolute top-8 right-8 z-10">
+        <LanguageToggle />
       </div>
 
       <div className="container mx-auto px-6 py-20">
@@ -77,13 +85,13 @@ export default function GeographyPage() {
             <Globe className="w-8 h-8 text-gray-600" />
           </div>
           <h1 className="text-4xl font-light text-gray-900 mb-4">
-            文科学习
+            {t('geography.title')}
           </h1>
           <p className="text-lg text-gray-600 mb-2">
             系统学习 <span className="font-medium text-gray-900">"{query}"</span> 相关知识
           </p>
           <p className="text-sm text-gray-500">
-            涵盖地理、语言、社会、艺术等文科领域
+            {t('geography.subtitle')}
           </p>
         </motion.div>
 

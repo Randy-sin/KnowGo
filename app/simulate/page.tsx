@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, RotateCcw, Play, Info } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
+import { useTranslations } from "@/lib/use-translations"
 
 export default function SimulatePage() {
   const { isLoaded, isSignedIn } = useUser()
@@ -13,6 +14,7 @@ export default function SimulatePage() {
   const [query, setQuery] = useState("")
   const [isPlaying, setIsPlaying] = useState(false)
   const [showHint, setShowHint] = useState(false)
+  const { t } = useTranslations()
   
   // 模拟器参数 - 改为二次函数参数
   const [paramA, setParamA] = useState(-0.01) // 控制开口方向和大小
@@ -296,11 +298,11 @@ export default function SimulatePage() {
           >
             <div className="card-minimal p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium">Interactive Simulation</h2>
+                <h2 className="text-lg font-medium">{t('simulate.interactiveSimulation')}</h2>
                 <div className="flex items-center space-x-2 text-xs text-gray-500">
-                  <span>Attempts: {attempts}</span>
+                  <span>{t('simulate.attempts')}: {attempts}</span>
                   <span>•</span>
-                  <span>Hits: {hits}</span>
+                  <span>{t('simulate.hits')}: {hits}</span>
                 </div>
               </div>
               
@@ -325,7 +327,7 @@ export default function SimulatePage() {
                     }`}
                   >
                     <Play className="w-4 h-4 mr-2" />
-                    {isPlaying ? 'Running...' : 'Run Simulation'}
+                    {isPlaying ? t('simulate.running') : t('simulate.runSimulation')}
                   </motion.button>
                   
                   <motion.button
@@ -335,12 +337,12 @@ export default function SimulatePage() {
                     className="btn-ghost-minimal px-4 py-2 text-sm"
                   >
                     <RotateCcw className="w-4 h-4 mr-2" />
-                    Reset
+                    {t('simulate.reset')}
                   </motion.button>
                 </div>
                 
                 <div className="text-xs text-gray-500">
-                  Goal: Land in the gray target zone
+                  {t('simulate.goal')}
                 </div>
               </div>
             </div>
@@ -356,7 +358,7 @@ export default function SimulatePage() {
             
             {/* 参数控制 */}
             <div className="card-minimal p-6">
-              <h3 className="text-lg font-medium mb-4">Parameters</h3>
+              <h3 className="text-lg font-medium mb-4">{t('simulate.parameters')}</h3>
               
               <div className="space-y-4">
                 <div>
@@ -426,10 +428,10 @@ export default function SimulatePage() {
                 >
                   <div className="flex items-start space-x-2">
                     <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm text-blue-900 font-medium mb-1">
-                        Try adjusting the parameters!
-                      </p>
+                                      <div>
+                    <p className="text-sm text-blue-900 font-medium mb-1">
+                      {t('simulate.tryAdjusting')}
+                    </p>
                       <p className="text-xs text-blue-700">
                         {config.failureHints[attempts % config.failureHints.length]}
                       </p>
@@ -445,7 +447,7 @@ export default function SimulatePage() {
                 <Info className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm text-gray-700 font-medium mb-1">
-                    How it works
+                    {t('simulate.howItWorks')}
                   </p>
                   <p className="text-xs text-gray-600">
                     {config.hint}

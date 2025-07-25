@@ -1,0 +1,90 @@
+{
+  "common": {
+    "signIn": "登录",
+    "builtForCuriousMinds": "为好奇的心灵而建",
+    "language": "语言",
+    "welcome": "欢迎",
+    "topic": "主题",
+    "back": "返回",
+    "continue": "继续",
+    "loading": "加载中"
+  },
+  "home": {
+    "title": "小知",
+    "subtitle": "您的AI学习伙伴。想问什么，学什么。",
+    "searchPlaceholder": "今天您想学什么？",
+    "suggestions": {
+      "machineLearning": "机器学习",
+      "reactHooks": "React Hooks",
+      "designSystems": "设计系统", 
+      "dataScience": "数据科学"
+    }
+  },
+  "configure": {
+    "title": "配置",
+    "knowledgeLevel": "知识水平",
+    "knowledgeLevelDesc": "选择您的理解程度",
+    "learningStyle": "学习风格",
+    "learningStyleDesc": "选择您偏好的学习方式",
+    "startLearning": "开始学习",
+    "levels": {
+      "beginner": {
+        "title": "初学者",
+        "description": "从基础开始，详细解释"
+      },
+      "intermediate": {
+        "title": "中级", 
+        "description": "有一些知识，专注关键概念"
+      },
+      "expert": {
+        "title": "专家",
+        "description": "深度分析，包含高级概念和应用"
+      }
+    },
+    "styles": {
+      "structured": { "title": "课堂式", "description": "系统化教学" },
+      "story": { "title": "故事化", "description": "生动有趣" },
+      "dialogue": { "title": "对话式", "description": "互动问答" },
+      "mentor": { "title": "导师式", "description": "专业指导" },
+      "detailed": { "title": "深入式", "description": "全面分析" },
+      "quick": { "title": "快速式", "description": "要点概述" },
+      "poetic": { "title": "诗意式", "description": "优雅表达" },
+      "casual": { "title": "轻松式", "description": "轻松幽默" },
+      "analytical": { "title": "案例式", "description": "实例分析" },
+      "confucius": { "title": "儒家式", "description": "古典智慧" },
+      "novel": { "title": "叙事式", "description": "故事化解释" },
+      "einstein": { "title": "爱因斯坦式", "description": "科学思维" }
+    }
+  },
+  "learn": {
+    "generatingQuestions": "AI正在为您生成个性化学习问题...",
+    "shareThoughts": "分享您的想法...",
+    "beginLearning": "开始学习"
+  },
+  "simulate": {
+    "interactiveSimulation": "交互式模拟",
+    "attempts": "尝试次数",
+    "hits": "命中次数",
+    "runSimulation": "运行模拟",
+    "running": "运行中...",
+    "reset": "重置",
+    "goal": "目标：落在灰色目标区域内",
+    "parameters": "参数",
+    "howItWorks": "工作原理",
+    "tryAdjusting": "尝试调整参数！"
+  },
+  "classify": {
+    "title": "分类中",
+    "subtitle": "理解您的问题"
+  },
+  "geography": {
+    "title": "地理学习",
+    "subtitle": "探索世界",
+    "backToClassify": "返回分类"
+  },
+  "history": {
+    "title": "历史学习",
+    "subtitle": "穿越时光之旅", 
+    "backToClassify": "返回分类"
+  }
+} 

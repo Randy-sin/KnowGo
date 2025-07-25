@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     // 分类问题
     const classification = await classifyQuestion(topic)
 
-    return NextResponse.json({ classification })
+    return NextResponse.json(classification)
   } catch (error) {
     console.error('Error classifying question:', error)
     return NextResponse.json(

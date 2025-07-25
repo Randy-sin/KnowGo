@@ -5,11 +5,14 @@ import { motion } from "framer-motion"
 import { ArrowLeft, Clock, Play, BookOpen } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
+import { LanguageToggle } from "@/components/ui/language-toggle"
+import { useTranslations } from "@/lib/use-translations"
 
 export default function HistoryPage() {
   const { isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   const [query, setQuery] = useState("")
+  const { t } = useTranslations()
 
   useEffect(() => {
     const savedQuery = localStorage.getItem('xknow-query')
@@ -52,7 +55,7 @@ export default function HistoryPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* 导航 */}
+      {/* 导航和语言切换 */}
       <div className="absolute top-8 left-8 z-10">
         <motion.button
           initial={{ opacity: 0 }}
@@ -63,6 +66,11 @@ export default function HistoryPage() {
         >
           <ArrowLeft className="w-4 h-4" />
         </motion.button>
+      </div>
+      
+      {/* 语言切换按钮 */}
+      <div className="absolute top-8 right-8 z-10">
+        <LanguageToggle />
       </div>
 
       <div className="container mx-auto px-6 py-20">
@@ -77,13 +85,13 @@ export default function HistoryPage() {
             <Clock className="w-8 h-8 text-gray-600" />
           </div>
           <h1 className="text-4xl font-light text-gray-900 mb-4">
-            历史学习
+            {t('history.title')}
           </h1>
           <p className="text-lg text-gray-600 mb-2">
             探索 <span className="font-medium text-gray-900">"{query}"</span> 的历史脉络
           </p>
           <p className="text-sm text-gray-500">
-            通过可视化内容深入了解历史知识
+            {t('history.subtitle')}
           </p>
         </motion.div>
 

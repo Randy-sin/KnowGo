@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
+import { useTranslations } from "@/lib/use-translations"
 
 export default function LearnPage() {
   const { isLoaded, isSignedIn } = useUser()
@@ -17,6 +18,7 @@ export default function LearnPage() {
   const [isTyping, setIsTyping] = useState(false)
   const [stages, setStages] = useState<LearningStage[]>([])
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
+  const { t } = useTranslations()
 
   // 生成 AI 学习问题
   const generateLearningQuestions = async (topic: string, userConfig: {level: string, style: string}) => {
@@ -122,13 +124,32 @@ export default function LearnPage() {
         setIsTyping(false)
         setTimeout(() => setIsTyping(true), 800)
       } else {
-        // 完成所有阶段，保存回答并进入模拟器
+        // 完成所有阶段，保存回答并根据分类跳转到相应的深度学习页面
         localStorage.setItem('xknow-responses', JSON.stringify(newResponses))
         // 清除预生成的问题，因为已经使用完毕
         localStorage.removeItem('xknow-pregenerated-questions')
         console.log('All stages completed. Responses:', newResponses)
-        // 跳转到模拟器页面
-        router.push('/simulate')
+        
+        // 根据分类跳转到相应的深度学习页面
+        const category = localStorage.getItem('xknow-category')
+        let targetRoute = '/simulate' // 默认跳转到模拟器
+        
+        switch (category) {
+          case 'science':
+            targetRoute = '/simulate' // 理科跳转到交互模拟器
+            break
+          case 'history':
+            targetRoute = '/history'  // 历史跳转到视频学习页面
+            break
+          case 'others':
+            targetRoute = '/geography' // 其他跳转到文科学习页面
+            break
+          default:
+            targetRoute = '/simulate' // 默认情况
+        }
+        
+        console.log('Redirecting to:', targetRoute, 'based on category:', category)
+        router.push(targetRoute)
       }
     }
   }
@@ -150,7 +171,7 @@ export default function LearnPage() {
         >
           <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse mx-auto"></div>
           {isLoadingQuestions && (
-            <p className="text-sm text-gray-500">AI 正在为你生成个性化学习问题...</p>
+            <p className="text-sm text-gray-500">{t('learn.generatingQuestions')}</p>
           )}
         </motion.div>
       </div>
@@ -234,7 +255,7 @@ export default function LearnPage() {
                     transition={{ duration: 0.6, delay: 1.5 }}
                     value={currentResponse}
                     onChange={(e) => setCurrentResponse(e.target.value)}
-                    placeholder="Share your thoughts..."
+                    placeholder={t('learn.shareThoughts')}
                     className="w-full h-32 px-0 py-4 text-lg font-light text-gray-800 placeholder:text-gray-400 bg-transparent border-none resize-none focus:outline-none"
                     style={{
                       fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif'
@@ -269,7 +290,7 @@ export default function LearnPage() {
                     }`}
                   >
                     <span>
-                      {currentStage === stages.length - 1 ? 'Begin Learning' : 'Continue'}
+                      {currentStage === stages.length - 1 ? t('learn.beginLearning') : t('common.continue')}
                     </span>
                     <ArrowRight className="w-4 h-4" />
                   </motion.button>

@@ -1,4 +1,4 @@
-export type QuestionCategory = "science" | "history" | "geography";
+export type QuestionCategory = "science" | "history" | "others";
 
 export interface ClassificationResult {
   category: QuestionCategory;
@@ -13,25 +13,25 @@ export async function classifyQuestion(topic: string): Promise<ClassificationRes
 
 **分类标准：**
 1. **science（理科）**：数学、物理、化学、生物等理科知识点
-   - 例如：抛物线、浮力、化学反应、细胞分裂、函数、力学等
+   - 例如：抛物线、浮力、化学反应、细胞分裂、函数、力学、机器学习、代码、算法等
    
 2. **history（历史）**：历史事件、历史人物、历史时期等
    - 例如：第二次世界大战、唐朝、拿破仑、工业革命等
    
-3. **geography（地理及其他）**：地理、语言、社会、艺术等文科知识点
+3. **others（其他）**：地理、语言、社会、艺术等文科知识点
    - 例如：地形地貌、气候、国家地区、文学作品、语法等
 
 **输出要求：**
 请严格按照以下JSON格式输出，不要添加任何其他内容：
 
 {
-  "category": "science|history|geography",
+  "category": "science|history|others",
   "confidence": 0.95,
   "reasoning": "简短的分类理由"
 }
 
 注意：
-- category 必须是 "science"、"history" 或 "geography" 之一
+- category 必须是 "science"、"history" 或 "others" 之一
 - confidence 是 0-1 之间的数值，表示分类的置信度
 - reasoning 用一句话说明分类理由
 
@@ -77,7 +77,7 @@ export async function classifyQuestion(topic: string): Promise<ClassificationRes
       const result = JSON.parse(cleanContent) as ClassificationResult;
       
       // 验证结果格式
-      if (!result.category || !['science', 'history', 'geography'].includes(result.category)) {
+      if (!result.category || !['science', 'history', 'others'].includes(result.category)) {
         throw new Error('Invalid category in response');
       }
       

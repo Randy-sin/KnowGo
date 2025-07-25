@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ArrowRight, Trophy, Star, Award, Check, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
+import { LanguageToggle } from "@/components/ui/language-toggle"
+import { useTranslations } from "@/lib/use-translations"
 
 export default function ConfigurePage() {
   const { isLoaded, isSignedIn, user } = useUser()
@@ -12,6 +14,7 @@ export default function ConfigurePage() {
   const [selectedLevel, setSelectedLevel] = useState("")
   const [selectedStyle, setSelectedStyle] = useState("")
   const [query, setQuery] = useState("")
+  const { t } = useTranslations()
 
   // 将useEffect移到组件顶部，避免条件性调用
   useEffect(() => {
@@ -48,40 +51,40 @@ export default function ConfigurePage() {
   const levels = [
     {
       id: "beginner",
-      title: "Beginner",
-      description: "Start from basics with detailed explanations",
+      title: t('configure.levels.beginner.title'),
+      description: t('configure.levels.beginner.description'),
       icon: Trophy,
       recommended: false
     },
     {
       id: "intermediate", 
-      title: "Intermediate",
-      description: "Have some knowledge, focus on key concepts",
+      title: t('configure.levels.intermediate.title'),
+      description: t('configure.levels.intermediate.description'),
       icon: Star,
       recommended: false
     },
     {
       id: "expert",
-      title: "Expert",
-      description: "Deep analysis with advanced concepts and applications",
+      title: t('configure.levels.expert.title'),
+      description: t('configure.levels.expert.description'),
       icon: Award,
       recommended: true
     }
   ]
 
   const styles = [
-    { id: "structured", title: "Classroom", description: "Systematic teaching" },
-    { id: "story", title: "Storytelling", description: "Vivid and engaging" },
-    { id: "dialogue", title: "Dialogue", description: "Interactive Q&A" },
-    { id: "mentor", title: "Mentor", description: "Professional guidance" },
-    { id: "detailed", title: "In-depth", description: "Comprehensive analysis" },
-    { id: "quick", title: "Quick", description: "Key points overview" },
-    { id: "poetic", title: "Poetic", description: "Elegant expression" },
-    { id: "casual", title: "Casual", description: "Relaxed and humorous" },
-    { id: "analytical", title: "Case Study", description: "Example-based analysis" },
-    { id: "confucius", title: "Confucian", description: "Classical wisdom" },
-    { id: "novel", title: "Narrative", description: "Story-based explanation" },
-    { id: "einstein", title: "Einsteinian", description: "Scientific thinking" }
+    { id: "structured", title: t('configure.styles.structured.title'), description: t('configure.styles.structured.description') },
+    { id: "story", title: t('configure.styles.story.title'), description: t('configure.styles.story.description') },
+    { id: "dialogue", title: t('configure.styles.dialogue.title'), description: t('configure.styles.dialogue.description') },
+    { id: "mentor", title: t('configure.styles.mentor.title'), description: t('configure.styles.mentor.description') },
+    { id: "detailed", title: t('configure.styles.detailed.title'), description: t('configure.styles.detailed.description') },
+    { id: "quick", title: t('configure.styles.quick.title'), description: t('configure.styles.quick.description') },
+    { id: "poetic", title: t('configure.styles.poetic.title'), description: t('configure.styles.poetic.description') },
+    { id: "casual", title: t('configure.styles.casual.title'), description: t('configure.styles.casual.description') },
+    { id: "analytical", title: t('configure.styles.analytical.title'), description: t('configure.styles.analytical.description') },
+    { id: "confucius", title: t('configure.styles.confucius.title'), description: t('configure.styles.confucius.description') },
+    { id: "novel", title: t('configure.styles.novel.title'), description: t('configure.styles.novel.description') },
+    { id: "einstein", title: t('configure.styles.einstein.title'), description: t('configure.styles.einstein.description') }
   ]
 
   const handleContinue = () => {
@@ -91,7 +94,7 @@ export default function ConfigurePage() {
         level: selectedLevel,
         style: selectedStyle
       }))
-      router.push('/learn')
+      router.push('/classify')
     }
   }
 
@@ -118,7 +121,7 @@ export default function ConfigurePage() {
         <ArrowLeft className="w-5 h-5" />
       </motion.button>
 
-      {/* 右上角用户信息 */}
+      {/* 右上角语言切换和用户信息 */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -126,12 +129,13 @@ export default function ConfigurePage() {
         className="absolute top-8 right-8"
       >
         <div className="flex items-center space-x-4">
+          <LanguageToggle />
           <div className="flex items-center space-x-2 text-xs text-gray-400">
-            <span>Topic:</span>
+            <span>{t('common.topic')}:</span>
             <span className="text-gray-600 font-medium">{query}</span>
           </div>
           <div className="text-xs text-gray-500">
-            Welcome, {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+            {t('common.welcome')}, {user?.firstName || user?.emailAddresses[0]?.emailAddress}
           </div>
         </div>
       </motion.div>
@@ -144,7 +148,7 @@ export default function ConfigurePage() {
         className="text-center mb-16"
       >
         <h1 className="heading-lg mb-2">
-          Configure
+          {t('configure.title')}
         </h1>
       </motion.div>
 
@@ -161,8 +165,8 @@ export default function ConfigurePage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <h2 className="text-xl font-semibold mb-2">Knowledge level</h2>
-            <p className="text-body text-sm">Choose your understanding level</p>
+            <h2 className="text-xl font-semibold mb-2">{t('configure.knowledgeLevel')}</h2>
+            <p className="text-body text-sm">{t('configure.knowledgeLevelDesc')}</p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-4">
@@ -253,8 +257,8 @@ export default function ConfigurePage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
           >
-            <h2 className="text-xl font-semibold mb-2">Learning style</h2>
-            <p className="text-body text-sm">Select your preferred approach</p>
+            <h2 className="text-xl font-semibold mb-2">{t('configure.learningStyle')}</h2>
+            <p className="text-body text-sm">{t('configure.learningStyleDesc')}</p>
           </motion.div>
 
           <motion.div 
@@ -331,7 +335,7 @@ export default function ConfigurePage() {
               boxShadow: "0 8px 25px 0 rgba(0, 0, 0, 0.15)"
             } : {}}
           >
-            Start Learning
+{t('configure.startLearning')}
             <motion.div
               animate={selectedLevel && selectedStyle ? { 
                 x: [0, 2, 0],

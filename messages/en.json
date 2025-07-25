@@ -1,0 +1,90 @@
+{
+  "common": {
+    "signIn": "Sign in",
+    "builtForCuriousMinds": "Built for curious minds",
+    "language": "Language",
+    "welcome": "Welcome",
+    "topic": "Topic",
+    "back": "Back",
+    "continue": "Continue",
+    "loading": "Loading"
+  },
+  "home": {
+    "title": "Xknow",
+    "subtitle": "Your AI learning companion. Ask anything, learn everything.",
+    "searchPlaceholder": "What would you like to learn today?",
+    "suggestions": {
+      "machineLearning": "Machine Learning",
+      "reactHooks": "React Hooks", 
+      "designSystems": "Design Systems",
+      "dataScience": "Data Science"
+    }
+  },
+  "configure": {
+    "title": "Configure",
+    "knowledgeLevel": "Knowledge level",
+    "knowledgeLevelDesc": "Choose your understanding level",
+    "learningStyle": "Learning style",
+    "learningStyleDesc": "Select your preferred approach",
+    "startLearning": "Start Learning",
+    "levels": {
+      "beginner": {
+        "title": "Beginner",
+        "description": "Start from basics with detailed explanations"
+      },
+      "intermediate": {
+        "title": "Intermediate", 
+        "description": "Have some knowledge, focus on key concepts"
+      },
+      "expert": {
+        "title": "Expert",
+        "description": "Deep analysis with advanced concepts and applications"
+      }
+    },
+    "styles": {
+      "structured": { "title": "Classroom", "description": "Systematic teaching" },
+      "story": { "title": "Storytelling", "description": "Vivid and engaging" },
+      "dialogue": { "title": "Dialogue", "description": "Interactive Q&A" },
+      "mentor": { "title": "Mentor", "description": "Professional guidance" },
+      "detailed": { "title": "In-depth", "description": "Comprehensive analysis" },
+      "quick": { "title": "Quick", "description": "Key points overview" },
+      "poetic": { "title": "Poetic", "description": "Elegant expression" },
+      "casual": { "title": "Casual", "description": "Relaxed and humorous" },
+      "analytical": { "title": "Case Study", "description": "Example-based analysis" },
+      "confucius": { "title": "Confucian", "description": "Classical wisdom" },
+      "novel": { "title": "Narrative", "description": "Story-based explanation" },
+      "einstein": { "title": "Einsteinian", "description": "Scientific thinking" }
+    }
+  },
+  "learn": {
+    "generatingQuestions": "AI is generating personalized learning questions for you...",
+    "shareThoughts": "Share your thoughts...",
+    "beginLearning": "Begin Learning"
+  },
+  "simulate": {
+    "interactiveSimulation": "Interactive Simulation",
+    "attempts": "Attempts",
+    "hits": "Hits",
+    "runSimulation": "Run Simulation",
+    "running": "Running...",
+    "reset": "Reset",
+    "goal": "Goal: Land in the gray target zone",
+    "parameters": "Parameters",
+    "howItWorks": "How it works",
+    "tryAdjusting": "Try adjusting the parameters!"
+  },
+  "classify": {
+    "title": "Classifying",
+    "subtitle": "Understanding your question"
+  },
+  "geography": {
+    "title": "Geography Learning",
+    "subtitle": "Explore the world",
+    "backToClassify": "Back to Classification"
+  },
+  "history": {
+    "title": "History Learning", 
+    "subtitle": "Journey through time",
+    "backToClassify": "Back to Classification"
+  }
+} 

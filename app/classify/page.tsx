@@ -6,6 +6,8 @@ import { ArrowLeft, ArrowRight, Brain, Clock, Globe, CheckCircle } from "lucide-
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import type { QuestionCategory, ClassificationResult } from "@/lib/classifier-service"
+import { LanguageToggle } from "@/components/ui/language-toggle"
+import { useTranslations } from "@/lib/use-translations"
 
 export default function ClassifyPage() {
   const { isLoaded, isSignedIn } = useUser()
@@ -15,100 +17,134 @@ export default function ClassifyPage() {
   const [classification, setClassification] = useState<ClassificationResult | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<QuestionCategory | null>(null)
   const [showConfirmation, setShowConfirmation] = useState(false)
-  const [generatedQuestions, setGeneratedQuestions] = useState<any>(null)
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false)
+  const [streamMessage, setStreamMessage] = useState("")
+  const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([])
+  const { t } = useTranslations()
 
   useEffect(() => {
     const savedQuery = localStorage.getItem('xknow-query')
-    if (savedQuery) {
+    const savedClassification = localStorage.getItem('xknow-classification')
+    
+    if (savedQuery && savedClassification) {
       setQuery(savedQuery)
-      // 分类和问题生成并行执行，但分类完成后立即显示结果
-      classifyTopic(savedQuery)
-      generateContent(savedQuery)
+      try {
+        const classification = JSON.parse(savedClassification)
+        setClassification(classification)
+        setSelectedCategory(classification.category)
+      } catch (error) {
+        console.error('Failed to parse saved classification:', error)
+        // 如果解析失败，跳转回主页重新开始
+        router.push('/')
+      }
     } else {
+      // 如果没有保存的数据，跳转回主页
       router.push('/')
     }
   }, [router])
 
-  // 分类问题
-  const classifyTopic = async (topic: string) => {
-    setIsClassifying(true)
+  // 移除classifyTopic函数，因为分类已经在主页完成
+
+  // 使用流式API确认选择
+  const handleConfirm = async () => {
+    if (!selectedCategory) return;
+
+    setShowConfirmation(true);
+    setIsGeneratingQuestions(true);
+    setStreamMessage("🚀 开始生成学习问题...");
+    setGeneratedQuestions([]);
+    
+    // 保存分类信息
+    localStorage.setItem('xknow-category', selectedCategory);
+    
+    // 获取用户配置信息
+    const savedConfig = localStorage.getItem('xknow-config');
+    const userConfig = savedConfig ? JSON.parse(savedConfig) : undefined;
+
+    // 生成引导问题，现在包含用户配置
     try {
-      const response = await fetch('/api/classify-question', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ topic })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to classify question')
-      }
-
-      const data = await response.json()
-      setClassification(data.classification)
-      // 预选AI推荐的类别
-      setSelectedCategory(data.classification.category)
-      // 分类完成后立即显示结果
-      setIsClassifying(false)
-    } catch (error) {
-      console.error('Error classifying question:', error)
-      setIsClassifying(false)
-    }
-  }
-
-  // 生成内容（只有理科调用API，其他为静态）
-  const generateContent = async (topic: string) => {
-    try {
-      console.log('Starting content generation for topic:', topic)
-      // 只为理科生成问题，其他分类使用静态页面
       const response = await fetch('/api/generate-questions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ topic })
-      })
+        body: JSON.stringify({
+          topic: query,
+          category: selectedCategory,
+          config: userConfig, // 传递用户配置
+          stream: true // 启用流式输出
+        })
+      });
 
-      if (response.ok) {
-        const data = await response.json()
-        setGeneratedQuestions(data.questions)
+      if (!response.ok) {
+        throw new Error('Failed to start stream');
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let questions: any[] = [];
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+
+                switch (data.type) {
+                  case 'start':
+                    setStreamMessage("🎯 " + data.message);
+                    break;
+
+                  case 'progress':
+                    setStreamMessage("⚡ " + data.message);
+                    break;
+
+                  case 'question':
+                    setStreamMessage("✨ " + data.message);
+                    questions[data.index] = data.question;
+                    setGeneratedQuestions([...questions]);
+                    break;
+
+                  case 'complete':
+                    setStreamMessage("🎉 " + data.message);
+                    questions = data.questions;
+                    setGeneratedQuestions(questions);
+
+                    // 保存生成的问题并跳转到学习页面
+                    localStorage.setItem('xknow-pregenerated-questions', JSON.stringify(questions));
+                    setTimeout(() => {
+                      router.push('/learn'); // 现在跳转到learn页面
+                    }, 1500);
+                    return;
+
+                  case 'error':
+                    throw new Error(data.error);
+                }
+              } catch (parseError) {
+                console.error('Error parsing stream data:', parseError);
+              }
+            }
+          }
+        }
       }
     } catch (error) {
-      console.error('Error generating content:', error)
+      console.error('Background question generation failed:', error);
+      setStreamMessage("🔄 生成遇到问题，正在为您跳转到学习页面...");
+      // 错误时仍跳转到learn页面，learn页面会重新生成
+      setTimeout(() => {
+        router.push('/learn');
+      }, 2000);
+    } finally {
+      setIsGeneratingQuestions(false);
     }
-  }
-
-  // 确认选择
-  const handleConfirm = () => {
-    if (!selectedCategory) return
-    
-    setShowConfirmation(true)
-    
-    // 保存分类结果
-    localStorage.setItem('xknow-category', selectedCategory)
-    
-    // 根据分类决定跳转路径
-    let targetRoute = '/configure'
-    
-    if (selectedCategory === 'science') {
-      // 理科：保存预生成的问题，正常流程
-      if (generatedQuestions) {
-        localStorage.setItem('xknow-pregenerated-questions', JSON.stringify(generatedQuestions))
-      }
-      targetRoute = '/configure'
-    } else if (selectedCategory === 'history') {
-      // 历史：跳转到历史静态页面
-      targetRoute = '/history'
-    } else if (selectedCategory === 'geography') {
-      // 地理：跳转到地理静态页面
-      targetRoute = '/geography'
-    }
-    
-    setTimeout(() => {
-      router.push(targetRoute)
-    }, 1200)
-  }
+  };
 
   const handleBack = () => {
     localStorage.removeItem('xknow-query')
@@ -151,8 +187,8 @@ export default function ClassifyPage() {
       description: "通过视频内容生动了解历史知识"
     },
     {
-      id: "geography" as QuestionCategory,
-      title: "文科",
+      id: "others" as QuestionCategory,
+      title: "其他",
       subtitle: "地理・语言・社会・艺术",
       icon: Globe,
       description: "系统性学习文科知识要点"
@@ -348,6 +384,55 @@ export default function ClassifyPage() {
           </motion.div>
         )}
 
+        {/* 流式生成状态显示 */}
+        {isGeneratingQuestions && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-100"
+          >
+            <div className="text-center mb-4">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full mx-auto mb-3"
+              />
+              <p className="text-sm text-gray-600 font-medium">{streamMessage}</p>
+            </div>
+            
+            {/* 实时显示生成的问题 */}
+            {generatedQuestions.length > 0 && (
+              <div className="space-y-3">
+                {generatedQuestions.map((question, index) => (
+                  question && (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="p-4 bg-white rounded-xl border border-gray-200"
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className="w-6 h-6 bg-gray-900 text-white rounded-full flex items-center justify-center text-xs font-medium">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900 mb-1">
+                            {question.question}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {question.followUp}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+
         {/* 确认按钮 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -357,17 +442,30 @@ export default function ClassifyPage() {
         >
           <motion.button
             onClick={handleConfirm}
-            disabled={!selectedCategory}
-            whileHover={selectedCategory ? { y: -2 } : {}}
-            whileTap={selectedCategory ? { y: 0 } : {}}
+            disabled={!selectedCategory || isGeneratingQuestions}
+            whileHover={selectedCategory && !isGeneratingQuestions ? { y: -2 } : {}}
+            whileTap={selectedCategory && !isGeneratingQuestions ? { y: 0 } : {}}
             className={`inline-flex items-center space-x-3 px-8 py-4 rounded-2xl font-medium transition-all duration-200 ${
-              selectedCategory
+              selectedCategory && !isGeneratingQuestions
                 ? 'bg-gray-900 text-white hover:bg-gray-800'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
-            <span>确认选择</span>
-            <ArrowRight className="w-4 h-4" />
+            {isGeneratingQuestions ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="w-4 h-4 border border-gray-300 border-t-white rounded-full"
+                />
+                <span>生成学习问题中...</span>
+              </>
+            ) : (
+              <>
+                <span>确认选择</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </motion.button>
         </motion.div>
       </div>
