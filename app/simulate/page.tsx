@@ -26,28 +26,9 @@ export default function SimulatePage() {
   const [trajectory, setTrajectory] = useState<{x: number, y: number}[]>([])
   const [animationFrame, setAnimationFrame] = useState<number | null>(null)
 
-  // 如果用户未登录，重定向到登录页
-  if (isLoaded && !isSignedIn) {
-    return <RedirectToSignIn />
-  }
-
-  // 加载状态
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
-        </motion.div>
-      </div>
-    )
-  }
-
+  // 将第一个useEffect移到组件顶部
   useEffect(() => {
-    const savedQuery = localStorage.getItem('knowgo-query')
+    const savedQuery = localStorage.getItem('xknow-query')
     
     if (savedQuery) {
       setQuery(savedQuery)
@@ -71,130 +52,67 @@ export default function SimulatePage() {
         ]
       },
       "抛物线": {
-        title: "二次函数探索器", 
-        subtitle: "y = ax² + bx + c - 发现参数的力量",
+        title: "Quadratic Function Explorer",
+        subtitle: "y = ax² + bx + c - Discover the power of parameters",
         targetZone: { x: 650, y: 380, width: 60, height: 20 },
-        hint: "调节a、b、c参数，看看它们如何影响抛物线的形状！",
+        hint: "Adjust a, b, and c to see how they affect the parabola shape!",
         failureHints: [
-          "尝试让&apos;a&apos;更负，创造更陡峭的向下曲线。",
-          "调节&apos;b&apos;来改变抛物线的倾斜和方向。", 
-          "参数&apos;c&apos;控制抛物线的垂直起始位置。"
+          "Try making &apos;a&apos; more negative to create a steeper curve downward.",
+          "Adjust &apos;b&apos; to change the tilt and direction of the parabola.",
+          "The parameter &apos;c&apos; controls where your parabola starts vertically."
+        ]
+      },
+      "机器学习": {
+        title: "Data Pattern Simulator",
+        subtitle: "Watch AI learn from data patterns",
+        targetZone: { x: 600, y: 300, width: 80, height: 60 },
+        hint: "Adjust learning parameters to see how AI finds patterns!",
+        failureHints: [
+          "Try increasing the learning rate to speed up pattern recognition.",
+          "More data points help the model find better patterns.",
+          "Balance complexity - too simple or too complex both have issues."
         ]
       },
       "machine learning": {
-        title: "Recommendation Engine",
-        subtitle: "See how algorithms learn your preferences",
-        targetZone: { x: 600, y: 200, width: 100, height: 200 },
-        hint: "Each shot represents a recommendation. Watch how the system learns!",
+        title: "Data Pattern Simulator", 
+        subtitle: "Watch AI learn from data patterns",
+        targetZone: { x: 600, y: 300, width: 80, height: 60 },
+        hint: "Adjust learning parameters to see how AI finds patterns!",
         failureHints: [
-          "The algorithm is learning from your choices...",
-          "Notice how recommendations get better over time?",
-          "This is how your phone learns what you like!"
+          "Try increasing the learning rate to speed up pattern recognition.",
+          "More data points help the model find better patterns.",
+          "Balance complexity - too simple or too complex both have issues."
         ]
       },
       "react": {
-        title: "Component Interaction",
-        subtitle: "Visualize how React components respond",
-        targetZone: { x: 600, y: 300, width: 80, height: 100 },
-        hint: "Each interaction triggers a state change. Watch the instant response!",
+        title: "Component State Simulator",
+        subtitle: "See how React components respond to state changes",
+        targetZone: { x: 580, y: 320, width: 100, height: 40 },
+        hint: "Modify component props to see reactive updates!",
         failureHints: [
-          "See how fast the interface responds?",
-          "Every click creates an immediate reaction.",
-          "This responsiveness is what makes modern web apps feel alive!"
+          "Components re-render when state changes - try different values.",
+          "Props flow down, events bubble up in React components.",
+          "Find the right balance of state updates for smooth interactions."
         ]
       }
     }
     
-    return configs[topic.toLowerCase() as keyof typeof configs] || configs["parabola"]
+    return configs[topic.toLowerCase() as keyof typeof configs] || {
+      title: "Interactive Simulator",
+      subtitle: "Explore the dynamics of your topic",
+      targetZone: { x: 600, y: 350, width: 80, height: 50 },
+      hint: "Experiment with different parameter values!",
+      failureHints: [
+        "Try adjusting the first parameter to see its effect.",
+        "The second parameter controls a different aspect.",
+        "Fine-tune all parameters to achieve the target result."
+      ]
+    }
   }
 
   const config = getSimulatorConfig(query)
 
-  // 二次函数计算 - y = ax² + bx + c
-  const calculateQuadraticPath = (a: number, b: number, c: number) => {
-    const points: {x: number, y: number}[] = []
-    
-    // 从x=50开始，到x=750结束，模拟投射路径
-    for (let x = 50; x <= 750; x += 2) {
-      // 使用二次函数公式
-      const relativeX = (x - 50) / 10 // 缩放x坐标以适合显示
-      const y = 400 - (a * relativeX * relativeX + b * relativeX + c)
-      
-      // 确保坐标是有效数字
-      if (isFinite(x) && isFinite(y)) {
-        // 如果y值过高或过低，停止计算
-        if (y > 500 || y < 0) break
-        points.push({ x, y })
-      } else {
-        break
-      }
-    }
-    
-    return points
-  }
-
-  // 开始模拟
-  const startSimulation = () => {
-    if (isPlaying) return
-    
-    setAttempts(prev => prev + 1)
-    setIsPlaying(true)
-    setTrajectory([])
-    setBallPosition({ x: 50, y: 400 })
-    
-    const points = calculateQuadraticPath(paramA, paramB, paramC)
-    let currentIndex = 0
-    
-    const animate = () => {
-      if (currentIndex < points.length && points[currentIndex]) {
-        const currentPoint = points[currentIndex]
-        // 确保当前点有有效坐标
-        if (currentPoint && typeof currentPoint.x === 'number' && typeof currentPoint.y === 'number') {
-          setBallPosition(currentPoint)
-          setTrajectory(prev => [...prev, currentPoint])
-        }
-        currentIndex++
-        const frame = requestAnimationFrame(animate)
-        setAnimationFrame(frame)
-      } else {
-        setIsPlaying(false)
-        // 检查最后一个有效点
-        const lastValidPoint = points[points.length - 1]
-        if (lastValidPoint && typeof lastValidPoint.x === 'number' && typeof lastValidPoint.y === 'number') {
-          checkHit(lastValidPoint)
-        }
-      }
-    }
-    
-    animate()
-  }
-
-  // 检查是否命中目标
-  const checkHit = (finalPos: {x: number, y: number}) => {
-    const { x, y, width, height } = config.targetZone
-    const hit = finalPos.x >= x && finalPos.x <= x + width && 
-                finalPos.y >= y && finalPos.y <= y + height
-    
-    if (hit) {
-      setHits(prev => prev + 1)
-      setShowHint(false)
-    } else {
-      setShowHint(true)
-    }
-  }
-
-  // 重置模拟
-  const resetSimulation = () => {
-    if (animationFrame) {
-      cancelAnimationFrame(animationFrame)
-    }
-    setIsPlaying(false)
-    setBallPosition({ x: 50, y: 400 })
-    setTrajectory([])
-    setShowHint(false)
-  }
-
-  // 绘制画布
+  // 将第二个useEffect移到这里（绘制画布）
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -218,246 +136,324 @@ export default function SimulatePage() {
       ctx.strokeStyle = '#6b7280'
       ctx.lineWidth = 2
       ctx.beginPath()
-      
-      // 找到第一个有效点
-      const firstValidPoint = trajectory.find(point => point && typeof point.x === 'number' && typeof point.y === 'number')
-      if (firstValidPoint) {
-        ctx.moveTo(firstValidPoint.x, firstValidPoint.y)
-        
-        trajectory.forEach(point => {
-          // 确保点存在且有有效的x,y坐标
-          if (point && typeof point.x === 'number' && typeof point.y === 'number') {
-            ctx.lineTo(point.x, point.y)
-          }
-        })
-        
-        ctx.stroke()
+      ctx.moveTo(trajectory[0].x, trajectory[0].y)
+      for (let i = 1; i < trajectory.length; i++) {
+        ctx.lineTo(trajectory[i].x, trajectory[i].y)
+      }
+      ctx.stroke()
+    }
+    
+    // 绘制小球
+    ctx.fillStyle = '#1f2937'
+    ctx.beginPath()
+    ctx.arc(ballPosition.x, ballPosition.y, 6, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // 绘制二次函数曲线预览
+    ctx.strokeStyle = '#dc2626'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    let firstPoint = true
+    for (let x = 0; x < 800; x += 2) {
+      const y = paramA * x * x + paramB * x + paramC
+      if (y >= 0 && y <= 500) {
+        if (firstPoint) {
+          ctx.moveTo(x, y)
+          firstPoint = false
+        } else {
+          ctx.lineTo(x, y)
+        }
       }
     }
+    ctx.stroke()
+  }, [ballPosition, trajectory, paramA, paramB, paramC, config.targetZone])
+
+  // 如果用户未登录，重定向到登录页
+  if (isLoaded && !isSignedIn) {
+    return <RedirectToSignIn />
+  }
+
+  // 加载状态
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // 模拟动画函数
+  const simulateParabola = () => {
+    setIsPlaying(true)
+    setAttempts(prev => prev + 1)
     
-    // 绘制球 - 添加安全检查
-    if (ballPosition && typeof ballPosition.x === 'number' && typeof ballPosition.y === 'number') {
-      ctx.fillStyle = '#1f2937'
-      ctx.beginPath()
-      ctx.arc(ballPosition.x, ballPosition.y, 8, 0, Math.PI * 2)
-      ctx.fill()
+    const newTrajectory: {x: number, y: number}[] = []
+    let currentX = 50
+    
+    const animate = () => {
+      currentX += 3
+      const currentY = paramA * currentX * currentX + paramB * currentX + paramC
+      
+      newTrajectory.push({ x: currentX, y: currentY })
+      setTrajectory([...newTrajectory])
+      setBallPosition({ x: currentX, y: currentY })
+      
+      // 检查是否击中目标
+      if (
+        currentX >= config.targetZone.x &&
+        currentX <= config.targetZone.x + config.targetZone.width &&
+        currentY >= config.targetZone.y &&
+        currentY <= config.targetZone.y + config.targetZone.height
+      ) {
+        setHits(prev => prev + 1)
+        setIsPlaying(false)
+        setShowHint(false)
+        return
+      }
+      
+      // 检查是否超出边界
+      if (currentX > 800 || currentY > 500 || currentY < 0) {
+        setIsPlaying(false)
+        setShowHint(true)
+        return
+      }
+      
+      const frameId = requestAnimationFrame(animate)
+      setAnimationFrame(frameId)
     }
     
-    // 绘制坐标轴参考线
-    ctx.strokeStyle = '#d1d5db'
-    ctx.lineWidth = 1
-    ctx.setLineDash([5, 5])
-    
-    // 绘制起始点参考线
-    ctx.beginPath()
-    ctx.moveTo(50, 0)
-    ctx.lineTo(50, 500)
-    ctx.stroke()
-    
-    // 绘制中心水平线
-    ctx.beginPath()
-    ctx.moveTo(0, 400)
-    ctx.lineTo(800, 400)
-    ctx.stroke()
-    
-    ctx.setLineDash([]) // 重置虚线
-    
-  }, [ballPosition, trajectory, paramA, paramB, paramC, config])
-
-  const handleBack = () => {
-    router.push('/learn')
+    animate()
   }
 
-  const getCurrentHint = () => {
-    if (!showHint) return ""
-    const hintIndex = Math.min(attempts - hits - 1, config.failureHints.length - 1)
-    return config.failureHints[Math.max(0, hintIndex)]
+  const resetSimulation = () => {
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame)
+      setAnimationFrame(null)
+    }
+    setIsPlaying(false)
+    setBallPosition({ x: 50, y: 400 })
+    setTrajectory([])
+    setShowHint(false)
   }
 
-  const accuracy = attempts > 0 ? Math.round((hits / attempts) * 100) : 0
+  const handleNewQuery = () => {
+    localStorage.removeItem('xknow-query')
+    localStorage.removeItem('xknow-config')
+    router.push('/')
+  }
+
+  if (!query) {
+    return null
+  }
 
   return (
     <div className="min-h-screen bg-white">
-      
       {/* 导航 */}
       <div className="absolute top-8 left-8 z-10">
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          onClick={handleBack}
+          transition={{ delay: 0.5 }}
+          onClick={handleNewQuery}
           className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors duration-300"
         >
           <ArrowLeft className="w-4 h-4" />
         </motion.button>
       </div>
 
-      <div className="flex flex-col lg:flex-row h-screen">
+      {/* 主内容区域 */}
+      <div className="container mx-auto px-6 py-12">
         
-        {/* 左侧：模拟器画布 */}
-        <div className="flex-1 flex items-center justify-center p-8">
+        {/* 标题区域 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center mb-12"
+        >
+          <h1 className="text-3xl font-light text-gray-900 mb-2">
+            {config.title}
+          </h1>
+          <p className="text-gray-600 text-sm">
+            {config.subtitle}
+          </p>
+        </motion.div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          
+          {/* 模拟器画布 */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-4xl"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="lg:col-span-2"
           >
-            
-            {/* 标题 */}
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-light text-gray-900 mb-2">{config.title}</h1>
-              <p className="text-sm text-gray-500">{config.subtitle}</p>
-            </div>
-
-            {/* 画布 */}
-            <div className="relative bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
-              <canvas
-                ref={canvasRef}
-                width={800}
-                height={500}
-                className="w-full h-auto"
-              />
-              
-              {/* 统计信息 */}
-              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 text-sm">
-                <div className="flex space-x-4 text-gray-600">
+            <div className="card-minimal p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-medium">Interactive Simulation</h2>
+                <div className="flex items-center space-x-2 text-xs text-gray-500">
                   <span>Attempts: {attempts}</span>
+                  <span>•</span>
                   <span>Hits: {hits}</span>
-                  <span>Accuracy: {accuracy}%</span>
+                </div>
+              </div>
+              
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <canvas
+                  ref={canvasRef}
+                  width={800}
+                  height={500}
+                  className="w-full h-auto"
+                />
+              </div>
+              
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex space-x-2">
+                  <motion.button
+                    onClick={simulateParabola}
+                    disabled={isPlaying}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`btn-primary-minimal px-4 py-2 text-sm ${
+                      isPlaying ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    {isPlaying ? 'Running...' : 'Run Simulation'}
+                  </motion.button>
+                  
+                  <motion.button
+                    onClick={resetSimulation}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="btn-ghost-minimal px-4 py-2 text-sm"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Reset
+                  </motion.button>
+                </div>
+                
+                <div className="text-xs text-gray-500">
+                  Goal: Land in the gray target zone
                 </div>
               </div>
             </div>
           </motion.div>
-        </div>
 
-        {/* 右侧：控制面板 */}
-        <div className="w-full lg:w-80 bg-gray-50 border-l border-gray-100 p-8">
+          {/* 控制面板 */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="space-y-8"
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="space-y-6"
           >
             
             {/* 参数控制 */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-medium text-gray-900">Parameters</h3>
+            <div className="card-minimal p-6">
+              <h3 className="text-lg font-medium mb-4">Parameters</h3>
               
-              {/* 参数 a 控制 */}
-              <div className="space-y-3">
-                <label className="text-sm text-gray-600 flex justify-between">
-                  <span>a (curvature)</span>
-                  <span className="font-medium">{paramA.toFixed(3)}</span>
-                </label>
-                <input
-                  type="range"
-                  min="-0.05"
-                  max="0.05"
-                  step="0.001"
-                  value={paramA}
-                  onChange={(e) => setParamA(Number(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                  disabled={isPlaying}
-                />
-                <p className="text-xs text-gray-500">Controls the curve&apos;s opening direction and steepness</p>
-              </div>
-
-              {/* 参数 b 控制 */}
-              <div className="space-y-3">
-                <label className="text-sm text-gray-600 flex justify-between">
-                  <span>b (slope)</span>
-                  <span className="font-medium">{paramB.toFixed(2)}</span>
-                </label>
-                <input
-                  type="range"
-                  min="-2"
-                  max="2"
-                  step="0.1"
-                  value={paramB}
-                  onChange={(e) => setParamB(Number(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                  disabled={isPlaying}
-                />
-                <p className="text-xs text-gray-500">Controls the linear component and tilt</p>
-              </div>
-
-              {/* 参数 c 控制 */}
-              <div className="space-y-3">
-                <label className="text-sm text-gray-600 flex justify-between">
-                  <span>c (y-intercept)</span>
-                  <span className="font-medium">{paramC.toFixed(0)}</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="150"
-                  step="5"
-                  value={paramC}
-                  onChange={(e) => setParamC(Number(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                  disabled={isPlaying}
-                />
-                <p className="text-xs text-gray-500">Controls the starting height</p>
-              </div>
-
-              {/* 当前方程显示 */}
-              <div className="bg-gray-100 rounded-lg p-3">
-                <p className="text-sm font-mono text-center">
-                  y = {paramA.toFixed(3)}x² + {paramB.toFixed(2)}x + {paramC.toFixed(0)}
-                </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Parameter a: {paramA.toFixed(3)}
+                  </label>
+                  <input
+                    type="range"
+                    min="-0.05"
+                    max="0.05"
+                    step="0.001"
+                    value={paramA}
+                    onChange={(e) => setParamA(parseFloat(e.target.value))}
+                    className="slider w-full"
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    Controls curve direction and steepness
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Parameter b: {paramB.toFixed(2)}
+                  </label>
+                  <input
+                    type="range"
+                    min="-2"
+                    max="2"
+                    step="0.1"
+                    value={paramB}
+                    onChange={(e) => setParamB(parseFloat(e.target.value))}
+                    className="slider w-full"
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    Controls tilt and trajectory angle
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Parameter c: {paramC.toFixed(0)}
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="400"
+                    step="5"
+                    value={paramC}
+                    onChange={(e) => setParamC(parseFloat(e.target.value))}
+                    className="slider w-full"
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    Controls starting height
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* 控制按钮 */}
-            <div className="space-y-4">
-              <motion.button
-                onClick={startSimulation}
-                disabled={isPlaying}
-                whileHover={!isPlaying ? { scale: 1.02 } : {}}
-                whileTap={!isPlaying ? { scale: 0.98 } : {}}
-                className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
-                  isPlaying 
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-gray-900 text-white hover:bg-gray-800'
-                }`}
-              >
-                <Play className="w-4 h-4" />
-                <span>{isPlaying ? 'Simulating...' : 'Launch'}</span>
-              </motion.button>
-
-              <motion.button
-                onClick={resetSimulation}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center space-x-2 px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-300"
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>Reset</span>
-              </motion.button>
-            </div>
-
-            {/* AI提示 */}
+            {/* 提示信息 */}
             <AnimatePresence>
               {showHint && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="bg-blue-50 border border-blue-100 rounded-lg p-4"
+                  className="card-minimal p-4 bg-blue-50 border-blue-200"
                 >
                   <div className="flex items-start space-x-2">
                     <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-blue-800">{getCurrentHint()}</p>
+                    <div>
+                      <p className="text-sm text-blue-900 font-medium mb-1">
+                        Try adjusting the parameters!
+                      </p>
+                      <p className="text-xs text-blue-700">
+                        {config.failureHints[attempts % config.failureHints.length]}
+                      </p>
+                    </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* 学习提示 */}
-            <div className="bg-gray-100 rounded-lg p-4">
-              <p className="text-xs text-gray-600 leading-relaxed">
-                {config.hint}
-              </p>
+            {/* 基础信息 */}
+            <div className="card-minimal p-4">
+              <div className="flex items-start space-x-2">
+                <Info className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-gray-700 font-medium mb-1">
+                    How it works
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {config.hint}
+                  </p>
+                </div>
+              </div>
             </div>
+
           </motion.div>
         </div>
       </div>

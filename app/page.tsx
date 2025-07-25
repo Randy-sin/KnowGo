@@ -16,7 +16,7 @@ export default function HomePage() {
     if (!input.trim()) return
     
     // Save search query and redirect to configuration immediately
-    localStorage.setItem('knowgo-query', input.trim())
+    localStorage.setItem('xknow-query', input.trim())
     router.push('/configure')
   }
 
@@ -62,7 +62,7 @@ export default function HomePage() {
         className="space-y-large mb-16"
       >
         <h1 className="heading-xl">
-          KnowGo
+          Xknow
         </h1>
         <p className="text-body-large max-w-lg mx-auto">
           Your AI learning companion. Ask anything, learn everything.

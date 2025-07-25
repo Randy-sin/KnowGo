@@ -13,6 +13,18 @@ export default function ConfigurePage() {
   const [selectedStyle, setSelectedStyle] = useState("")
   const [query, setQuery] = useState("")
 
+  // 将useEffect移到组件顶部，避免条件性调用
+  useEffect(() => {
+    // Load the saved query to display context
+    const savedQuery = localStorage.getItem('xknow-query')
+    if (savedQuery) {
+      setQuery(savedQuery)
+    } else {
+      // If no query, redirect back to home
+      router.push('/')
+    }
+  }, [router])
+
   // 如果用户未登录，重定向到登录页
   if (isLoaded && !isSignedIn) {
     return <RedirectToSignIn />
@@ -32,17 +44,6 @@ export default function ConfigurePage() {
       </div>
     )
   }
-
-  useEffect(() => {
-    // Load the saved query to display context
-    const savedQuery = localStorage.getItem('knowgo-query')
-    if (savedQuery) {
-      setQuery(savedQuery)
-    } else {
-      // If no query, redirect back to home
-      router.push('/')
-    }
-  }, [router])
 
   const levels = [
     {
@@ -86,7 +87,7 @@ export default function ConfigurePage() {
   const handleContinue = () => {
     if (selectedLevel && selectedStyle) {
       // Store configuration and proceed
-      localStorage.setItem('knowgo-config', JSON.stringify({
+      localStorage.setItem('xknow-config', JSON.stringify({
         level: selectedLevel,
         style: selectedStyle
       }))
@@ -96,7 +97,7 @@ export default function ConfigurePage() {
 
   const handleBack = () => {
     // Clear any saved data and go back to home
-    localStorage.removeItem('knowgo-query')
+    localStorage.removeItem('xknow-query')
     router.push('/')
   }
 

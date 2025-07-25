@@ -1,237 +1,157 @@
-# KnowGo - 重塑学习的定义
+# Xknow
 
-> 让传统应试知识不再枯燥，通过AI引导将知识与生活融合，激发学生学习兴趣的革命性教育平台
+An AI-powered learning companion that transforms curiosity into deep understanding through personalized, interactive experiences.
 
-## 🌟 项目愿景
+## 🌟 Vision
 
-KnowGo致力于打破传统应试教育的枯燥模式，通过AI智能引导，将抽象的学科知识与生活实际相结合，让学习变成一场充满发现和乐趣的冒险之旅。
+Xknow reimagines learning by making it personal, interactive, and deeply engaging. Instead of passive consumption, we create active exploration where every question becomes a journey of discovery.
 
-## 🎯 核心理念
+## 🎯 Core Philosophy
 
-### 从生活出发，回归生活
-- **生活化引入**：用熟悉的生活场景引出知识点
-- **互动式推导**：逐步从现象推导到理论
-- **实践化应用**：将学到的知识应用到实际问题中
+- **Curiosity-Driven**: Start with what sparks your interest
+- **AI-Guided**: Intelligent tutoring that adapts to your learning style  
+- **Interactive Discovery**: Learn through hands-on simulation and exploration
+- **Deep Understanding**: Move beyond memorization to genuine comprehension
 
-### AI驱动的个性化学习
-- **智能引导**：AI根据用户兴趣和理解程度调整教学策略
-- **自适应学习路径**：根据用户表现动态调整难度和节奏
-- **个性化反馈**：提供针对性的学习建议和改进方向
+## 🚀 MVP Features
 
-## 🚀 MVP功能规划
+### 1. **Intelligent Learning Flow**
+- **Query Processing**: Natural language input for any topic
+- **Personalization**: Adaptive learning based on knowledge level and style preferences  
+- **AI Tutoring**: Three-stage guided learning process
 
-### 1. 知识点探索引擎
-**输入**：用户输入学科概念（如"抛物线"）
+### 2. **Three-Stage Learning Process**
+- **Life Connection**: Connect new concepts to personal experiences
+- **Observation**: Guided exploration and pattern recognition
+- **Concept Building**: Deep understanding through interactive discovery
 
-**AI引导流程**：
-1. **生活化引入**
-   - "你有没有投过篮球，投出的球像一条弯弯的线？"
-   - 激发用户的生活经验连接
+### 3. **Interactive Simulators**
+- **Dynamic Visualizations**: Real-time parameter adjustment
+- **Hands-on Learning**: Learn by doing, not just reading
+- **Immediate Feedback**: Instant results and adaptive hints
 
-2. **观察与发现**
-   - "如果我们把那条线记录下来，会发现它有个很特别的形状"
-   - 引导用户观察和思考
+## 💻 Technical Architecture
 
-3. **概念建立**
-   - "它不是圆，不是直线，它是一个叫抛物线的东西"
-   - 自然引出学术概念
+### **Frontend Stack**
+- **Next.js 15** (App Router) - Modern React framework
+- **TypeScript** - Type-safe development
+- **Tailwind CSS 4** - Utility-first styling
+- **Framer Motion 12** - Smooth animations
+- **Lucide React** - Consistent icons
+- **Radix UI** - Accessible components  
+- **CVA** - Component variants
 
-4. **逐步推导**
-   - 从生活轨迹 → 数学抽象 → 建立方程 → 图像分析
-   - 步步深入，层层递进
+### **Authentication**
+- **Clerk** - Complete authentication solution
+- Custom UI integration
+- Social login support
 
-### 2. 互动式模拟器
-**投篮模拟器示例**：
-- 用户选择角度和力度
-- 实时看到球的轨迹
-- AI提示："投不中？这不是你的问题，而是抛物线的方程没调对"
-- 通过调节参数理解抛物线性质
+### **Design System**
+- **Silicon Valley Minimalist** aesthetic
+- **Variable-based** color system
+- **Micro-interactions** for engagement
+- **Responsive** design patterns
 
-**功能特点**：
-- 🎮 游戏化界面，降低学习门槛
-- 🔧 参数可调节，理解变量影响
-- 📊 可视化展示，直观理解概念
-- 💡 AI实时提示，引导思考方向
-
-### 3. 深度思考引导
-**反思式提问**：
-- "为什么你的三分球'差一点'没进？"
-- 引导用户思考误差和精度问题
-
-**知识拓展**：
-- 篮球投射轨迹 vs 抛物线模型对比
-- 误差分析和实际应用
-- 连接更广泛的物理和数学概念
-
-### 4. 个人学习档案
-- 📝 学习轨迹记录
-- 🎯 知识点掌握情况
-- 📈 学习进度可视化
-- 🏆 成就系统和激励机制
-
-## 🏗️ 技术架构
-
-### 前端技术栈
-- **框架**：Next.js 15 (App Router)
-- **语言**：TypeScript
-- **样式**：Tailwind CSS + shadcn/ui
-- **动画**：Framer Motion
-- **图表**：Recharts/D3.js
-- **3D可视化**：Three.js/React Three Fiber
-
-### 后端技术栈
-- **API**：Next.js 15 Server Actions
-- **数据库**：PostgreSQL + Prisma ORM
-- **AI集成**：OpenAI GPT-4/Claude API
-- **认证**：NextAuth.js
-- **文件存储**：AWS S3/Cloudinary
-
-### 部署与运维
-- **部署平台**：Vercel
-- **数据库托管**：Supabase/PlanetScale
-- **监控**：Sentry + Vercel Analytics
-- **CI/CD**：GitHub Actions
-
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
-KnowGo/
-├── app/                       # Next.js 15 App Router
-│   ├── (auth)/               # 认证相关页面
-│   ├── explore/              # 知识点探索
-│   ├── simulator/            # 互动模拟器
-│   ├── profile/              # 个人中心
-│   ├── api/                  # API路由
-│   ├── globals.css           # 全局样式
-│   ├── layout.tsx            # 根布局
-│   └── page.tsx              # 首页
-├── components/               # 可复用组件
-│   ├── ui/                   # 基础UI组件
-│   ├── simulators/           # 模拟器组件
-│   └── learning/             # 学习相关组件
-├── lib/                      # 工具函数
-│   ├── ai/                   # AI集成
-│   ├── db/                   # 数据库配置
-│   └── utils.ts              # 通用工具
-├── types/                    # TypeScript类型定义
-├── public/                   # 静态资源
-├── docs/                     # 项目文档
-└── design-system.md          # 设计系统文档
+app/
+├── page.tsx              # Landing page with search
+├── configure/page.tsx    # Learning preferences setup
+├── learn/page.tsx        # AI-guided learning sessions
+├── simulate/page.tsx     # Interactive simulators
+├── sign-in/              # Authentication
+└── layout.tsx           # Root layout with Clerk
+
+components/ui/           # Reusable UI components
+├── button.tsx
+├── card.tsx  
+└── input.tsx
+
+lib/
+└── utils.ts            # Utility functions
+
+types/
+└── index.ts           # TypeScript definitions
 ```
 
-## 🎮 MVP核心功能流程
+## 🗺️ Page Mapping
 
-### 1. 用户旅程
-1. **注册/登录** → 个性化设置
-2. **选择学科** → 输入想要学习的概念
-3. **AI引导** → 生活化场景引入
-4. **互动探索** → 通过模拟器理解概念
-5. **深度思考** → AI提出拓展性问题
-6. **知识总结** → 保存到个人档案
+| Route | Purpose | Features |
+|-------|---------|----------|
+| `/` | **Discovery Hub** | Search, authentication, topic exploration |
+| `/configure` | **Personalization** | Learning level, style preferences |
+| `/learn` | **AI Tutoring** | Three-stage guided learning |
+| `/simulate` | **Interactive Practice** | Dynamic simulations and experimentation |
 
-### 2. AI引导策略
-- **情境化教学**：结合用户兴趣和生活经验
-- **苏格拉底式提问**：引导用户自主发现
-- **即时反馈**：根据用户操作提供个性化建议
-- **适应性调整**：根据理解程度调整教学节奏
+## 🎨 Core Functionalities
 
-## 🚀 未来发展方向
+### **Home Page (`/`)**
+- **Hero Search Interface**: Natural language topic input
+- **Quick Suggestions**: Popular learning topics
+- **Authentication Integration**: Seamless sign-in/sign-up
+- **Minimal Design**: Focus on discovery
 
-### Phase 2: 多学科拓展
-- 📚 覆盖更多学科（物理、化学、生物、历史等）
-- 🔗 跨学科知识连接和融合
-- 🎭 更丰富的情境化教学场景
+### **Configure Page (`/configure`)**  
+- **Knowledge Level Selection**: Beginner → Expert
+- **Learning Style Preferences**: 12 different approaches
+- **Visual Feedback**: Interactive selection with animations
+- **Progress Tracking**: Multi-step configuration flow
 
-### Phase 3: 社交化学习
-- 👥 学习小组和协作功能
-- 🏆 竞赛和挑战系统
-- 👨‍🏫 教师端功能和课堂管理
+### **Learn Page (`/learn`)**
+- **AI-Guided Questions**: Three-stage learning process
+- **Personal Reflection**: Thought-provoking prompts
+- **Progressive Disclosure**: Gradual concept building
+- **Adaptive Pacing**: User-controlled learning speed
 
-### Phase 4: 智能化升级
-- 🧠 更先进的AI个性化算法
-- 📊 学习数据分析和预测
-- 🎯 智能学习路径规划
+### **Simulate Page (`/simulate`)**
+- **Interactive Canvas**: Real-time visual simulations  
+- **Parameter Controls**: Hands-on experimentation
+- **Immediate Feedback**: Live results and hints
+- **Topic-Specific Simulations**: Customized for each subject
 
-### Phase 5: 生态化平台
-- 📱 移动端App开发
-- 🎮 VR/AR沉浸式学习体验
-- 🌐 开放API和第三方集成
+## 🤖 AI Guiding Strategies
 
-## 🎯 成功指标
+### **Stage 1: Life Connection**
+- Connect abstract concepts to personal experiences
+- Activate prior knowledge and emotional engagement
+- Create meaningful context for learning
 
-### 用户体验指标
-- **学习兴趣提升率**：通过前后测评估
-- **知识点掌握度**：互动测试完成质量
-- **平台粘性**：日活跃用户和停留时间
-- **用户满意度**：NPS评分和用户反馈
+### **Stage 2: Observation**  
+- Guided exploration of patterns and behaviors
+- Structured observation with targeted questions
+- Building analytical thinking skills
 
-### 教育效果指标
-- **学习效率**：相比传统方法的时间节省
-- **知识迁移能力**：跨情境应用测试
-- **创新思维培养**：开放性问题解答质量
-- **学习自驱力**：主动探索行为数据
+### **Stage 3: Concept Building**
+- Deep dive into underlying principles
+- Interactive exploration through simulation
+- Consolidation of understanding
 
-## 🔧 开发环境设置
+## 🎓 User Journey
 
-### 环境要求
-- Node.js 18.0+
-- pnpm 8.0+
-- PostgreSQL 14+
+1. **Discovery**: User searches for a topic of interest
+2. **Personalization**: Configure learning preferences  
+3. **Guided Learning**: Three-stage AI tutoring process
+4. **Interactive Practice**: Hands-on simulation and experimentation
+5. **Mastery**: Deep understanding through active exploration
 
-### 快速开始
-```bash
-# 克隆项目
-git clone https://github.com/your-org/KnowGo.git
-cd KnowGo
+## 🔮 Future Development
 
-# 安装依赖
-npm install
+### **Phase 2: Enhanced Learning**
+- Multi-modal content (video, audio, interactive)
+- Collaborative learning features
+- Advanced AI tutoring capabilities
 
-# 设置环境变量
-cp .env.example .env.local
+### **Phase 3: Community**  
+- Peer learning networks
+- Expert mentorship connections
+- Community-generated content
 
-# 启动开发服务器
-npm run dev
-```
-
-### 环境变量配置
-```env
-# 数据库
-DATABASE_URL="postgresql://..."
-
-# AI API
-OPENAI_API_KEY="sk-..."
-ANTHROPIC_API_KEY="sk-ant-..."
-
-# 认证
-NEXTAUTH_SECRET="..."
-NEXTAUTH_URL="http://localhost:3000"
-
-# 文件存储
-AWS_ACCESS_KEY_ID="..."
-AWS_SECRET_ACCESS_KEY="..."
-AWS_S3_BUCKET="..."
-```
-
-## 🤝 贡献指南
-
-我们欢迎所有形式的贡献，包括但不限于：
-- 🐛 Bug修复
-- ✨ 新功能开发
-- 📚 文档完善
-- 🎨 UI/UX优化
-- 🧪 测试用例编写
-
-请参考 [CONTRIBUTING.md](./CONTRIBUTING.md) 了解详细的贡献流程。
-
-## 📄 许可证
-
-本项目采用 MIT 许可证。详见 [LICENSE](./LICENSE) 文件。
-
-## 🙏 致谢
-
-感谢所有为重塑教育而努力的开发者、教育工作者和学生们！
+### **Phase 4: Personalization**
+- Advanced learning analytics
+- Adaptive difficulty adjustment  
+- Long-term learning path optimization
 
 ---
 
-**KnowGo - 让每一个知识点都成为一次探险的起点** 🌟 
+**Xknow**: Where curiosity meets intelligent guidance. Transform any question into a journey of discovery. 

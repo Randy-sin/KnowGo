@@ -10,22 +10,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "KnowGo",
+  title: "Xknow",
   description: "Your AI learning companion. Ask anything, learn everything.",
   keywords: ["AI", "learning", "education", "knowledge", "artificial intelligence"],
-  authors: [{ name: "KnowGo" }],
-  creator: "KnowGo",
+  authors: [{ name: "Xknow" }],
+  creator: "Xknow",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://knowgo.ai",
-    title: "KnowGo",
+    url: "https://xknow.ai",
+    title: "Xknow",
     description: "Your AI learning companion. Ask anything, learn everything.",
-    siteName: "KnowGo",
+    siteName: "Xknow",
   },
   twitter: {
     card: "summary_large_image",
-    title: "KnowGo",
+    title: "Xknow",
     description: "Your AI learning companion. Ask anything, learn everything.",
   },
 };

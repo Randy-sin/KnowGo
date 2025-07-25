@@ -7,15 +7,31 @@ import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 
 export default function LearnPage() {
-  const { isLoaded, isSignedIn, user } = useUser()
+  const { isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [config, setConfig] = useState<{level: string, style: string} | null>(null)
   const [showContent, setShowContent] = useState(false)
   const [currentStage, setCurrentStage] = useState(0)
-  const [userResponses, setUserResponses] = useState<string[]>([])
   const [currentResponse, setCurrentResponse] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+
+  // 将useEffect移到组件顶部，避免条件性调用
+  useEffect(() => {
+    const savedQuery = localStorage.getItem('xknow-query')
+    const savedConfig = localStorage.getItem('xknow-config')
+    
+    if (savedQuery && savedConfig) {
+      setQuery(savedQuery)
+      setConfig(JSON.parse(savedConfig))
+      
+      // 渐进式显示内容
+      setTimeout(() => setShowContent(true), 600)
+      setTimeout(() => setIsTyping(true), 1200)
+    } else {
+      router.push('/')
+    }
+  }, [router])
 
   // 如果用户未登录，重定向到登录页
   if (isLoaded && !isSignedIn) {
@@ -149,26 +165,9 @@ export default function LearnPage() {
   const stages = generateLearningStages(query)
   const currentStageData = stages[currentStage]
 
-  useEffect(() => {
-    const savedQuery = localStorage.getItem('knowgo-query')
-    const savedConfig = localStorage.getItem('knowgo-config')
-    
-    if (savedQuery && savedConfig) {
-      setQuery(savedQuery)
-      setConfig(JSON.parse(savedConfig))
-      
-      // 渐进式显示内容
-      setTimeout(() => setShowContent(true), 600)
-      setTimeout(() => setIsTyping(true), 1200)
-    } else {
-      router.push('/')
-    }
-  }, [router])
-
   const handleContinue = () => {
     if (currentResponse.trim()) {
-      const newResponses = [...userResponses, currentResponse.trim()]
-      setUserResponses(newResponses)
+      const newResponses = [currentResponse.trim()]
       setCurrentResponse("")
       
       if (currentStage < stages.length - 1) {
@@ -178,7 +177,7 @@ export default function LearnPage() {
         setTimeout(() => setIsTyping(true), 800)
       } else {
         // 完成所有阶段，保存回答并进入模拟器
-        localStorage.setItem('knowgo-responses', JSON.stringify(newResponses))
+        localStorage.setItem('xknow-responses', JSON.stringify(newResponses))
         console.log('All stages completed. Responses:', newResponses)
         // 跳转到模拟器页面
         router.push('/simulate')
@@ -187,8 +186,8 @@ export default function LearnPage() {
   }
 
   const handleNewQuery = () => {
-    localStorage.removeItem('knowgo-query')
-    localStorage.removeItem('knowgo-config')
+    localStorage.removeItem('xknow-query')
+    localStorage.removeItem('xknow-config')
     router.push('/')
   }
 

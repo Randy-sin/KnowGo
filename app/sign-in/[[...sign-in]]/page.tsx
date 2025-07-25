@@ -30,7 +30,7 @@ export default function Page() {
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-3xl font-light text-gray-900 mb-2">
-            Welcome to KnowGo
+            Welcome to Xknow
           </h1>
           <p className="text-gray-500 text-sm">
             Sign in to continue or create a new account
