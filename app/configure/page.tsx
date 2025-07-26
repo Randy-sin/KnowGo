@@ -279,7 +279,7 @@ export default function ConfigurePage() {
   }
 
   return (
-    <div className="hero-minimal container-minimal">
+    <div className="min-h-screen py-8 container-minimal relative">
       {/* Minimal back button */}
       <motion.button
         initial={{ opacity: 0, x: -10 }}
@@ -310,21 +310,21 @@ export default function ConfigurePage() {
         </div>
       </motion.div>
 
-      {/* Main Header - simplified */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-        className="text-center mb-16"
-      >
-        <h1 className="heading-lg mb-2">
-          {t('configure.title')}
-        </h1>
-        
+      {/* Main Content Container */}
+      <div className="flex flex-col items-center justify-start pt-16 pb-24">
+        {/* Main Header - simplified */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center mb-16"
+        >
+          <h1 className="heading-lg mb-2">
+            {t('configure.title')}
+          </h1>
+        </motion.div>
 
-      </motion.div>
-
-      <div className="w-full max-w-4xl space-y-16">
+        <div className="w-full max-w-4xl space-y-16">
         {/* Knowledge Level */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
