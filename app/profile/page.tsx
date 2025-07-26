@@ -69,7 +69,7 @@ export default function ProfilePage() {
   // 处理查看详情
   const handleViewDetails = (sessionId: string) => {
     setSelectedSessionId(sessionId)
-    setShowDetailModal(true)
+      setShowDetailModal(true)
   }
 
   // 关闭模态框

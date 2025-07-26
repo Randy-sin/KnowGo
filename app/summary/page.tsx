@@ -465,7 +465,7 @@ export default function SummaryPage() {
                         
                         {/* 选项列表 */}
                         <div className="space-y-2">
-                          {quiz.quiz_options.map((option, optionIndex) => {
+                          {quiz.quiz_options && Array.isArray(quiz.quiz_options) ? quiz.quiz_options.map((option, optionIndex) => {
                             const isCorrect = optionIndex === quiz.correct_answer
                             const isUserChoice = optionIndex === quiz.user_answer
                             const isWrongChoice = isUserChoice && !isCorrect
@@ -499,7 +499,11 @@ export default function SummaryPage() {
                                 </div>
                               </div>
                             )
-                          })}
+                          }) : (
+                            <div className="text-center py-4">
+                              <p className="text-gray-500 text-sm">选项加载中...</p>
+                            </div>
+                          )}
                         </div>
                         
                         {/* 解析 */}

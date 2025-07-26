@@ -274,7 +274,7 @@ export function LearningSessionModal({ isOpen, onClose, sessionId }: LearningSes
                           <div className="mb-4">
                             <div className="text-gray-900 font-light leading-relaxed mb-4">{quiz.quiz_question}</div>
                             <div className="space-y-2">
-                              {quiz.quiz_options.map((option: string, optionIndex: number) => {
+                              {quiz.quiz_options && Array.isArray(quiz.quiz_options) ? quiz.quiz_options.map((option: string, optionIndex: number) => {
                                 const cleanOption = option.replace(/^[A-Z]\.\s*/, '').trim()
                                 return (
                                   <div key={optionIndex} className={`text-sm p-3 rounded-xl border font-light ${
@@ -287,7 +287,11 @@ export function LearningSessionModal({ isOpen, onClose, sessionId }: LearningSes
                                     {quiz.user_answer !== null && optionIndex === quiz.user_answer && optionIndex !== quiz.correct_answer && <span className="ml-2 text-gray-500 text-xs">← 你的选择</span>}
                                   </div>
                                 )
-                              })}
+                              }) : (
+                                <div className="text-center py-4">
+                                  <p className="text-gray-500 text-sm">选项加载中...</p>
+                                </div>
+                              )}
                             </div>
                           </div>
                           {quiz.explanation && (
