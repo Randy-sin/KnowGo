@@ -318,6 +318,9 @@ function parseGameResponse(content: string, topic: string): GameResponse {
     cleanContent = cleanContent
       // 移除控制字符
       .replace(/[\x00-\x1F\x7F]/g, '')
+      // 预处理常见的JSON问题
+      .replace(/,(\s*[}\]])/g, '$1') // 移除尾随逗号
+      .replace(/(["\]])\s*(["\[])/g, '$1,$2') // 修复缺失的逗号
     
     // 尝试修复JSON结构
     if (!cleanContent.endsWith('}')) {
@@ -348,19 +351,44 @@ function parseGameResponse(content: string, topic: string): GameResponse {
     try {
       console.log('Attempting aggressive JSON repair...')
       
-      // 寻找html和title字段 - 修复regex以正确处理HTML内容
-      const htmlMatch = content.match(/"html"\s*:\s*"((?:[^"\\]|\\.)*)"/)
-      const titleMatch = content.match(/"title"\s*:\s*"([^"]*?)"/)
+      // 改进的字段提取 - 支持复杂HTML内容
+      let htmlMatch = content.match(/"html"\s*:\s*"((?:[^"\\]|\\[\s\S])*)"/)
+      let titleMatch = content.match(/"title"\s*:\s*"([^"]*?)"/)
+      
+      // 如果严格匹配失败，尝试更宽松的匹配
+      if (!htmlMatch) {
+        console.log('Trying fallback HTML extraction...')
+        // 匹配到下一个字段或JSON结束
+        htmlMatch = content.match(/"html"\s*:\s*"([\s\S]*?)"\s*(?:,\s*"|\s*})/)
+      }
+      if (!titleMatch) {
+        console.log('Trying fallback title extraction...')
+        titleMatch = content.match(/"title"\s*:\s*"([^"}]*?)"/)
+      }
       
       if (htmlMatch && titleMatch) {
         console.log('Successfully extracted fields using regex')
+        
+        // 改进的字符串清理逻辑
+        let htmlContent = htmlMatch[1]
+        
+        // 处理HTML内容中的转义序列
+        htmlContent = htmlContent
+          .replace(/\\"/g, '"')          // 转义的引号
+          .replace(/\\n/g, '\n')         // 换行符
+          .replace(/\\t/g, '\t')         // 制表符
+          .replace(/\\r/g, '\r')         // 回车符
+          .replace(/\\\\/g, '\\')        // 转义的反斜杠
+          .replace(/\\'/g, "'")          // 转义的单引号
+          .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16))) // Unicode
+        
+        let titleContent = titleMatch[1]
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, '\\')
+        
         return {
-          html: htmlMatch[1]
-            .replace(/\\"/g, '"')
-            .replace(/\\n/g, '\n')
-            .replace(/\\t/g, '\t')
-            .replace(/\\\\/g, '\\'),
-          title: titleMatch[1].replace(/\\"/g, '"'),
+          html: htmlContent,
+          title: titleContent,
           instructions: '通过调节参数来探索和学习概念！',
           gameType: 'interactive-learning',
           topic: topic
