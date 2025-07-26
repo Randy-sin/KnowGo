@@ -382,7 +382,7 @@ function parseGameResponse(content: string, topic: string): GameResponse {
           .replace(/\\'/g, "'")          // 转义的单引号
           .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16))) // Unicode
         
-        let titleContent = titleMatch[1]
+        const titleContent = titleMatch[1]
           .replace(/\\"/g, '"')
           .replace(/\\\\/g, '\\')
         
