@@ -6,13 +6,36 @@
 import { APIRetryService } from './api-retry-service'
 import { LearningSession, LearningInteraction, QuizRecord } from './supabase'
 
+export interface ReflectionData {
+  question: string
+  userResponse: string
+  timestamp: string
+}
+
+export interface GameSessionData {
+  gameTitle: string
+  gameType: string
+  completedLevels: number
+  totalLevels: number
+  learningGoals: string[]
+  completedAt?: string
+}
+
+export interface VideoSessionData {
+  videoTitle: string
+  duration: number
+  watched: boolean
+  keyTopics: string[]
+  generatedAt: string
+}
+
 export interface SummaryRequest {
   session: LearningSession
   interactions: LearningInteraction[]
   quizRecords: QuizRecord[]
-  reflections?: any[]
-  gameSession?: any
-  videoSession?: any
+  reflections?: ReflectionData[]
+  gameSession?: GameSessionData
+  videoSession?: VideoSessionData
 }
 
 export interface SummaryResponse {

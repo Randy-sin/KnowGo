@@ -3,12 +3,19 @@
  * 处理网络超时、连接错误、503错误等情况
  */
 
+interface APIError {
+  name?: string
+  message?: string
+  status?: number
+  code?: string
+}
+
 interface RetryOptions {
   maxRetries?: number
   initialDelay?: number
   maxDelay?: number
   timeout?: number
-  retryCondition?: (error: any) => boolean
+  retryCondition?: (error: APIError) => boolean
 }
 
 export class APIRetryService {
@@ -28,7 +35,7 @@ export class APIRetryService {
       retryCondition = this.defaultRetryCondition
     } = retryOptions
 
-    let lastError: any
+    let lastError: Error | APIError = new Error('Unknown error')
     
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
@@ -61,14 +68,15 @@ export class APIRetryService {
         
         lastError = new Error(`HTTP ${response.status}`)
         
-      } catch (error: any) {
-        lastError = error
-        console.log(`❌ 第${attempt + 1}次尝试失败:`, error.message)
+      } catch (error: unknown) {
+        const apiError = error as Error & APIError
+        lastError = apiError
+        console.log(`❌ 第${attempt + 1}次尝试失败:`, apiError.message)
         
         // 检查是否应该重试
-        if (!retryCondition(error)) {
-          console.log(`❌ 错误类型${error.name}不需要重试`)
-          throw error
+        if (!retryCondition(apiError)) {
+          console.log(`❌ 错误类型${apiError.name}不需要重试`)
+          throw apiError
         }
       }
       
@@ -87,7 +95,7 @@ export class APIRetryService {
   /**
    * 默认重试条件
    */
-  private static defaultRetryCondition(error: any): boolean {
+  private static defaultRetryCondition(error: APIError): boolean {
     // 网络相关错误
     if (error.name === 'AbortError' || 
         error.name === 'TimeoutError' ||
@@ -99,7 +107,7 @@ export class APIRetryService {
     }
     
     // HTTP状态码
-    if (error.status >= 500 || error.status === 429) {
+    if (error.status && (error.status >= 500 || error.status === 429)) {
       return true
     }
     
@@ -114,7 +122,7 @@ export class APIRetryService {
     initialDelay: 2000,
     maxDelay: 8000,
     timeout: 20000, // 20秒超时
-    retryCondition: (error: any) => {
+    retryCondition: (error: APIError) => {
       // Gemini API特定的重试条件
       return APIRetryService.defaultRetryCondition(error) || 
              error.status === 503 || // 服务不可用

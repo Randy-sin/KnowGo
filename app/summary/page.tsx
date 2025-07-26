@@ -204,7 +204,7 @@ export default function SummaryPage() {
       user_id: user?.id || '',
       original_query: topic,
       ai_classification: {},
-      user_confirmed_category: category as any,
+      user_confirmed_category: category as 'science' | 'history' | 'others',
       learning_config: { level: userLevel, style: 'unknown' },
       status: 'completed',
       current_stage: 'summary',

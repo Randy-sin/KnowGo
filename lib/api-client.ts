@@ -16,6 +16,16 @@ interface APIError {
   retryable: boolean
 }
 
+interface QuizData {
+  id: string
+  title: string
+  question: string
+  options: string[]
+  correctAnswer: number
+  explanation: string
+  topic: string
+}
+
 export class APIClient {
   /**
    * 带重试机制的API调用
@@ -64,13 +74,14 @@ export class APIClient {
           retryable: response.status >= 500 || response.status === 429
         }
 
-      } catch (error: any) {
-        console.warn(`❌ 第${attempt + 1}次尝试失败:`, error.message)
+      } catch (error: unknown) {
+        const err = error as Error & { name?: string }
+        console.warn(`❌ 第${attempt + 1}次尝试失败:`, err.message)
         
         lastError = {
-          message: this.getErrorMessage(error),
-          code: error.name || 'UNKNOWN_ERROR',
-          retryable: this.isRetryableError(error)
+          message: this.getErrorMessage(err),
+          code: err.name || 'UNKNOWN_ERROR',
+          retryable: this.isRetryableError(err)
         }
       }
 
@@ -100,8 +111,10 @@ export class APIClient {
     userAnswer: string
     category: string
     userLevel: string
-  }): Promise<{ quiz?: any }> {
-    return this.call<{ quiz?: any }>('/api/generate-quiz', {
+  }): Promise<{ quiz?: QuizData }> {
+    console.log('🎯 APIClient.generateQuiz 调用:', data)
+    
+    const result = this.call<{ quiz?: QuizData }>('/api/generate-quiz', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -116,12 +129,15 @@ export class APIClient {
       timeout: 20000,
       showRetryToUser: true
     })
+    
+    console.log('🎯 APIClient.generateQuiz 返回结果:', result)
+    return result
   }
 
   /**
    * 判断错误是否可重试
    */
-  private static isRetryableError(error: any): boolean {
+  private static isRetryableError(error: Error & { name?: string }): boolean {
     // 网络相关错误
     if (error.name === 'AbortError' || 
         error.name === 'TypeError' ||
@@ -137,7 +153,7 @@ export class APIClient {
   /**
    * 获取用户友好的错误信息
    */
-  private static getErrorMessage(error: any): string {
+  private static getErrorMessage(error: Error & { name?: string }): string {
     if (error.name === 'AbortError') {
       return '请求超时，网络连接不稳定'
     }

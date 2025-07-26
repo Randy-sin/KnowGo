@@ -13,10 +13,13 @@ import { LearningSessionService } from "@/lib/learning-session-service"
 export default function ClassifyPage() {
   const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
+
   const [query, setQuery] = useState("")
-  const [isClassifying] = useState(false)
   const [classification, setClassification] = useState<ClassificationResult | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<QuestionCategory | null>(null)
+  const [isClassifying, setIsClassifying] = useState(true)
+  const [isConfirming, setIsConfirming] = useState(false) // 添加确认状态
+  const { t } = useTranslations()
 
   useEffect(() => {
     const savedQuery = localStorage.getItem('xknow-query')
@@ -41,33 +44,41 @@ export default function ClassifyPage() {
 
   // 确认选择并跳转到学习页面
   const handleConfirm = async () => {
-    if (!selectedCategory) return;
+    if (!selectedCategory || isConfirming) return;
+    
+    setIsConfirming(true) // 开始确认状态
     
     // 保存分类信息到localStorage（保持现有逻辑）
     localStorage.setItem('xknow-category', selectedCategory);
     
-    // 如果用户已登录且有学习会话，更新数据库中的分类确认
-    if (user?.id) {
-      const sessionId = localStorage.getItem('xknow-session-id')
-      if (sessionId) {
-        try {
-          await LearningSessionService.confirmCategory(sessionId, selectedCategory)
-          console.log('✅ 用户分类确认已保存到数据库')
-        } catch (error) {
-          console.error('❌ 保存分类确认失败:', error)
-          // 数据库操作失败不影响用户体验
+    try {
+      // 如果用户已登录且有学习会话，更新数据库中的分类确认
+      if (user?.id) {
+        const sessionId = localStorage.getItem('xknow-session-id')
+        if (sessionId) {
+          try {
+            await LearningSessionService.confirmCategory(sessionId, selectedCategory)
+            console.log('✅ 用户分类确认已保存到数据库')
+          } catch (error) {
+            console.error('❌ 保存分类确认失败:', error)
+            // 数据库操作失败不影响用户体验
+          }
         }
       }
-    }
-    
-    // 立即跳转到学习页面，提供流畅体验
-    router.push('/learn');
-    
-    // 🎮 游戏生成已移至configure页面，所有科目都在配置完成后开始生成
-    
-    // 🎬 历史科目额外生成视频（游戏完成后播放）
-    if (selectedCategory === 'history') {
-      generateHistoryVideoInBackground();
+      
+      // 🎬 历史科目额外生成视频（游戏完成后播放）
+      if (selectedCategory === 'history') {
+        generateHistoryVideoInBackground();
+      }
+      
+      // 添加短暂延迟以显示动画效果，然后跳转
+      setTimeout(() => {
+        router.push('/learn');
+      }, 300)
+      
+    } catch (error) {
+      console.error('确认失败:', error)
+      setIsConfirming(false)
     }
   };
 
@@ -172,7 +183,15 @@ export default function ClassifyPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--background))]">
+    <motion.div 
+      className="min-h-screen bg-[rgb(var(--background))]"
+      initial={{ opacity: 1 }}
+      animate={{ 
+        opacity: isConfirming ? 0.95 : 1,
+        filter: isConfirming ? 'blur(0.5px)' : 'blur(0px)'
+      }}
+      transition={{ duration: 0.3 }}
+    >
       {/* 导航 */}
       <div className="absolute top-8 left-8 z-10">
         <motion.button
@@ -325,26 +344,43 @@ export default function ClassifyPage() {
         {/* 确认按钮 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={{ 
+            opacity: isConfirming ? 0.8 : 1, 
+            y: 0,
+            scale: isConfirming ? 0.98 : 1
+          }}
           transition={{ duration: 0.6, delay: 0.8 }}
           className="flex justify-center"
         >
           <motion.button
             onClick={handleConfirm}
-            disabled={!selectedCategory}
-            whileHover={selectedCategory ? { y: -2 } : {}}
-            whileTap={selectedCategory ? { y: 0 } : {}}
+            disabled={!selectedCategory || isConfirming}
+            whileHover={selectedCategory && !isConfirming ? { y: -2 } : {}}
+            whileTap={selectedCategory && !isConfirming ? { y: 0 } : {}}
             className={`inline-flex items-center space-x-3 px-8 py-4 rounded-2xl font-medium transition-all duration-200 ${
-              selectedCategory
+              selectedCategory && !isConfirming
                 ? 'bg-[rgb(var(--foreground))] text-[rgb(var(--background))] hover:bg-[rgb(var(--foreground))]/90'
                 : 'bg-[rgb(var(--muted))] text-[rgb(var(--muted-foreground))] cursor-not-allowed'
             }`}
           >
-            <span>确认选择</span>
-            <ArrowRight className="w-4 h-4" />
+            {isConfirming ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-4 h-4 border border-[rgb(var(--muted-foreground))] border-t-[rgb(var(--background))] rounded-full"
+                />
+                <span>正在确认...</span>
+              </>
+            ) : (
+              <>
+                <span>确认选择</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </motion.button>
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
 } 
