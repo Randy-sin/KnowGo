@@ -340,7 +340,7 @@ export default function SimulatePage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           onClick={handleBack}
-          className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors duration-300"
+          className="w-10 h-10 flex items-center justify-center bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full text-gray-600 hover:text-gray-900 hover:bg-white hover:border-gray-300 transition-all duration-300 shadow-sm hover:shadow-md"
         >
           <ArrowLeft className="w-4 h-4" />
         </motion.button>
@@ -348,13 +348,13 @@ export default function SimulatePage() {
 
       {/* 简约刷新按钮 - 右上角 */}
       {currentGame && (
-        <div className="absolute top-8 right-8 z-20 flex space-x-4">
+        <div className="absolute top-8 right-8 z-20 flex space-x-3">
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
             onClick={handleRefreshGame}
-            className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors duration-300"
+            className="w-10 h-10 flex items-center justify-center bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full text-gray-600 hover:text-gray-900 hover:bg-white hover:border-gray-300 transition-all duration-300 shadow-sm hover:shadow-md"
             title="刷新游戏"
           >
             <RefreshCw className="w-4 h-4" />
@@ -365,7 +365,7 @@ export default function SimulatePage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
             onClick={handleGameComplete}
-            className="px-3 py-1 text-sm text-gray-400 hover:text-gray-600 transition-colors duration-300"
+            className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-all duration-300 shadow-sm hover:shadow-md"
             title={category === 'history' ? "完成游戏，观看历史视频" : "完成游戏，进入反馈"}
           >
             完成
@@ -422,19 +422,21 @@ export default function SimulatePage() {
                     htmlPreview: currentGame.html?.substring(0, 100) + '...'
                   })
                   return (
-                    <div className="w-full h-full flex items-center justify-center p-8">
-                    <motion.div
+                    <div className="w-full h-full flex items-center justify-center p-4">
+                      <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-                        className="w-full max-w-4xl h-full max-h-[80vh] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
-                    >
+                        className="w-[95vw] h-[95vh] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-auto"
+                      >
                       <iframe
                         key={gameKey} // 添加key以强制刷新iframe
                         srcDoc={currentGame.html}
-                        className="w-full h-full border-0"
+                        className="w-full h-full border-0 overflow-auto"
                         title={currentGame.title}
                         sandbox="allow-scripts allow-same-origin allow-forms"
+                        scrolling="yes"
+                        style={{ WebkitOverflowScrolling: 'touch' }}
                         onLoad={() => console.log('🎮 iframe加载完成')}
                         onError={(e) => console.error('🎮 iframe加载错误:', e)}
                       />
@@ -446,13 +448,13 @@ export default function SimulatePage() {
                 /* 无游戏状态 */
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-lg font-light text-gray-900 mb-4">
+                    <div className="text-lg font-light text-gray-900 mb-6">
                       无可用游戏
                     </div>
                     <motion.button
                       onClick={() => router.push('/configure')}
-                      className="px-6 py-2 text-gray-900 hover:text-gray-600 transition-colors duration-300 text-sm font-light"
-                      whileHover={{ y: -1 }}
+                      className="px-6 py-3 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-all duration-300 shadow-sm hover:shadow-md"
+                      whileHover={{ y: -2 }}
                       whileTap={{ y: 0 }}
                     >
                       重新开始

@@ -1,5 +1,10 @@
 import { supabase, TABLES, LearningSession, LearningInteraction, QuizRecord, ReflectionRecord, GameSession, VideoSession, UserStats } from './supabase'
 
+// 增强版学习会话接口，包含智能摘要
+interface EnhancedLearningSession extends LearningSession {
+  intelligentSummary: string
+}
+
 /**
  * 学习会话数据服务
  * 处理用户学习过程中的所有数据操作
@@ -452,8 +457,8 @@ export class LearningSessionService {
   /**
    * 为学习会话生成智能摘要
    */
-  static generateSessionSummary(session: LearningSession, interactions?: any[], quizRecords?: any[]): string {
-    const { original_query, user_confirmed_category, status, total_duration, learning_config } = session
+  static generateSessionSummary(session: LearningSession, interactions?: LearningInteraction[], quizRecords?: QuizRecord[]): string {
+    const { original_query, user_confirmed_category, status, learning_config } = session
     
     // 基础信息
     const categoryMap = {
@@ -526,7 +531,7 @@ export class LearningSessionService {
   /**
    * 获取用户学习历史（增强版，包含智能摘要）
    */
-  static async getUserLearningHistoryWithSummaries(userId: string, limit: number = 10): Promise<any[]> {
+  static async getUserLearningHistoryWithSummaries(userId: string, limit: number = 10): Promise<EnhancedLearningSession[]> {
     try {
       const sessions = await this.getUserLearningHistory(userId, limit)
       
