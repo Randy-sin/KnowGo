@@ -33,15 +33,15 @@ export async function POST(request: NextRequest) {
       
       // 只有在没有传入设计方案时才调用设计师
       if (!gameDesign) {
-        console.log('🎨 第一阶段：开始游戏设计...')
-        
-        const designRequest: GameDesignRequest = {
-          topic,
-          category,
-          userLevel,
-          learningObjective: learningObjective || `通过创新游戏深度理解${topic}的核心概念`
-        }
-        
+      console.log('🎨 第一阶段：开始游戏设计...')
+      
+      const designRequest: GameDesignRequest = {
+        topic,
+        category,
+        userLevel,
+        learningObjective: learningObjective || `通过创新游戏深度理解${topic}的核心概念`
+      }
+      
         finalGameDesign = await designGameConcept(designRequest)
         console.log('✅ 第一阶段完成，游戏设计:', finalGameDesign.gameTitle)
       } else {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       }
       
       const game = await generateInteractiveGame(gameRequest)
-      console.log('🎉 第二阶段完成，游戏生成:', game.title)
+              console.log('🎉 第二阶段完成，游戏生成:', game.title)
       
       return NextResponse.json({ game })
     } catch (error) {

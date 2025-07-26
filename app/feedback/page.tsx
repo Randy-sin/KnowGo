@@ -184,7 +184,7 @@ export default function FeedbackPage() {
           userAnswer: currentUserAnswer,    // 传入用户回答
           category: category,
           userLevel: userLevel,
-          stream: true // 启用流式输出
+          stream: false // 改为非流式输出
         })
       })
 
@@ -192,73 +192,26 @@ export default function FeedbackPage() {
         throw new Error('Failed to generate quiz')
       }
 
-      if (!response.body) {
-        throw new Error('No response body')
-      }
-
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-
-      while (true) {
-        const { done, value } = await reader.read()
+      const result = await response.json()
+      
+      if (result.quiz) {
+        setCurrentQuiz(result.quiz)
+        setQuizGenerationMessage("题目生成完成！")
+        console.log('Quiz generated successfully:', result.quiz)
         
-        if (done) break
-
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
-
-        for (const line of lines) {
-          if (line.trim() === '') continue
-          
-          if (line.startsWith('data: ')) {
-            try {
-              const jsonStr = line.slice(6).trim()
-              if (!jsonStr) continue
-              
-              const data = JSON.parse(jsonStr)
-              
-              switch (data.type) {
-                case 'start':
-                  console.log('Quiz generation started:', data.message)
-                  setQuizGenerationMessage(data.message)
-                  break
-                  
-                case 'progress':
-                  console.log('Progress:', data.message)
-                  setQuizGenerationMessage(data.message)
-                  break
-                  
-                case 'complete':
-                  if (data.quiz) {
-                    setCurrentQuiz(data.quiz)
-                    setQuizGenerationMessage("题目生成完成！")
-                    console.log('Quiz generated successfully:', data.quiz)
-                    
-                    // 保存quiz到localStorage，使用问题索引区分
-                    localStorage.setItem(`xknow-quiz-${currentIndex}`, JSON.stringify(data.quiz))
-                    console.log(`✅ Quiz已保存到localStorage[${currentIndex}]`)
-                    
-                    // 如果用户已登录，同时保存到数据库
-                    if (user?.id) {
-                      saveQuizToDatabase(data.quiz, currentIndex).catch((error: unknown) => {
-                        console.error('保存quiz到数据库失败:', error)
-                        // 数据库操作失败不影响用户体验
-                      })
-                    }
-                  }
-                  break
-                  
-                case 'error':
-                  console.error('Quiz generation error:', data.error)
-                  setQuizGenerationMessage("题目生成失败")
-                  throw new Error(data.error)
-              }
-            } catch (parseError) {
-              console.error('Error parsing stream data:', parseError)
-              continue
-            }
-          }
+        // 保存quiz到localStorage，使用问题索引区分
+        localStorage.setItem(`xknow-quiz-${currentIndex}`, JSON.stringify(result.quiz))
+        console.log(`✅ Quiz已保存到localStorage[${currentIndex}]`)
+        
+        // 如果用户已登录，同时保存到数据库
+        if (user?.id) {
+          saveQuizToDatabase(result.quiz, currentIndex).catch((error: unknown) => {
+            console.error('保存quiz到数据库失败:', error)
+            // 数据库操作失败不影响用户体验
+          })
         }
+      } else {
+        throw new Error('No quiz in response')
       }
     } catch (error) {
       console.error('Error generating quiz:', error)

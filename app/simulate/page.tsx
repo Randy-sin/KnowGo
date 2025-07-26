@@ -77,7 +77,7 @@ export default function SimulatePage() {
       throw error
     }
   }
-
+  
   // 智能等待游戏生成的机制
   const waitForGameOrShowExisting = useCallback(async (currentTopic: string, currentCategory: string, currentUserLevel: string) => {
     console.log('🔍 检查游戏状态...')
@@ -299,8 +299,8 @@ export default function SimulatePage() {
       setGameCompleted(true);
       loadAndPlayVideo();
     } else {
-      // 非历史科目直接跳转到反馈
-      router.push('/feedback');
+      // 非历史科目直接跳转到学习总结
+      router.push('/summary');
     }
   };
 
@@ -423,22 +423,22 @@ export default function SimulatePage() {
                   })
                   return (
                     <div className="w-full h-full flex items-center justify-center p-8">
-                      <motion.div
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
                         className="w-full max-w-4xl h-full max-h-[80vh] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
-                      >
-                        <iframe
-                          key={gameKey} // 添加key以强制刷新iframe
-                          srcDoc={currentGame.html}
-                          className="w-full h-full border-0"
-                          title={currentGame.title}
-                          sandbox="allow-scripts allow-same-origin allow-forms"
-                          onLoad={() => console.log('🎮 iframe加载完成')}
-                          onError={(e) => console.error('🎮 iframe加载错误:', e)}
-                        />
-                      </motion.div>
+                    >
+                      <iframe
+                        key={gameKey} // 添加key以强制刷新iframe
+                        srcDoc={currentGame.html}
+                        className="w-full h-full border-0"
+                        title={currentGame.title}
+                        sandbox="allow-scripts allow-same-origin allow-forms"
+                        onLoad={() => console.log('🎮 iframe加载完成')}
+                        onError={(e) => console.error('🎮 iframe加载错误:', e)}
+                      />
+                    </motion.div>
                     </div>
                   )
                 })()
@@ -567,7 +567,7 @@ export default function SimulatePage() {
                         </motion.a>
                         
                         <motion.button
-                          onClick={() => router.push('/feedback')}
+                          onClick={() => router.push('/summary')}
                           className="btn-ghost-minimal w-full py-3"
                           whileHover={{ y: -1 }}
                           whileTap={{ y: 0 }}
@@ -622,7 +622,7 @@ export default function SimulatePage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-                      onClick={() => router.push('/feedback')}
+                      onClick={() => router.push('/summary')}
                       className="btn-primary-minimal w-full py-4"
                       whileHover={{ y: -2 }}
                       whileTap={{ y: 0 }}
