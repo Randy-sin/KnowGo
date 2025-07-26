@@ -8,6 +8,7 @@ import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { useTranslations } from "@/lib/use-translations"
 import { QuizQuestion } from "@/lib/quiz-service"
 import { LearningSessionService } from "@/lib/learning-session-service"
+import Markdown from "@/components/ui/markdown"
 
 interface UserResponse {
   question: string
@@ -751,9 +752,11 @@ export default function FeedbackPage() {
                         </div>
                       ) : currentData?.aiAnalysis && currentData.aiAnalysis.trim() ? (
                         <>
-                          <p className="text-gray-600 leading-relaxed font-light">
-                            {currentData?.aiAnalysis || '正在生成分析...'}
-                          </p>
+                          <div className="text-gray-600 leading-relaxed font-light">
+                            <Markdown>
+                              {currentData?.aiAnalysis || '正在生成分析...'}
+                            </Markdown>
+                          </div>
                           
                           {currentData?.insights && currentData.insights.length > 0 && (
                             <div className="pt-4 border-t border-gray-100">
