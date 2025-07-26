@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { motion, useScroll, useTransform } from "framer-motion"
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import { ArrowRight, Sparkles, Clock, ArrowDown } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs"
@@ -72,6 +72,7 @@ export default function HomePage() {
   const router = useRouter()
   const { isLoaded, isSignedIn, user } = useUser()
   const [input, setInput] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false) // 添加提交状态
   const containerRef = useRef(null)
   const newsRef = useRef(null)
   
@@ -319,7 +320,9 @@ export default function HomePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim()) return
+    if (!input.trim() || isSubmitting) return
+
+    setIsSubmitting(true) // 开始加载状态
 
     // 🔍 添加调试信息
     console.log('🔍 用户状态检查:')
@@ -329,42 +332,53 @@ export default function HomePage() {
     console.log('- 查询内容:', input.trim())
 
     try {
-      const response = await fetch('/api/classify-question', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ query: input.trim() })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to classify question')
-      }
-
-      const data = await response.json()
-      console.log('分类结果:', data)
+      // 🚀 立即跳转提供即时反馈，后台处理分类
+      const query = input.trim()
+      localStorage.setItem('xknow-query', query)
       
-      // 保存到localStorage
-      localStorage.setItem('xknow-query', input.trim())
-      localStorage.setItem('xknow-classification', JSON.stringify(data))
-      
-      // 🔍 检查数据库操作条件
-      if (user?.id) {
-        console.log('✅ 用户已登录，准备创建学习会话')
-        console.log('- 用户ID:', user.id)
-        await createInitialLearningSession(user.id, input.trim(), data)
-      } else {
-        console.log('⚠️ 用户未登录，跳过数据库操作')
-        console.log('- isLoaded:', isLoaded)
-        console.log('- isSignedIn:', isSignedIn)
-        console.log('- user:', user)
-      }
-      
+      // 立即跳转到 configure 页面
       router.push('/configure')
+      
+      // 🔄 后台异步处理分类和数据库操作，不阻塞用户体验
+      setTimeout(async () => {
+        try {
+          const response = await fetch('/api/classify-question', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ query })
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            console.log('分类结果:', data)
+            
+            // 保存分类结果
+            localStorage.setItem('xknow-classification', JSON.stringify(data))
+            
+            // 🔍 检查数据库操作条件
+            if (user?.id) {
+              console.log('✅ 用户已登录，准备创建学习会话')
+              try {
+                await createInitialLearningSession(user.id, query, data)
+              } catch (dbError) {
+                console.error('❌ 数据库操作失败，但不影响用户体验:', dbError)
+              }
+            } else {
+              console.log('⚠️ 用户未登录，跳过数据库操作')
+            }
+          } else {
+            console.error('分类请求失败:', response.status)
+          }
+        } catch (error) {
+          console.error('后台分类处理失败:', error)
+        }
+      }, 100) // 短暂延迟确保页面跳转完成
+      
     } catch (error) {
       console.error('提交失败:', error)
-    } finally {
-      // setIsLoading(false) // This state variable is not defined in the original file
+      setIsSubmitting(false)
     }
   }
 
@@ -536,32 +550,45 @@ export default function HomePage() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={t('home.searchPlaceholder')}
-                  className="input-minimal pr-16"
+                  disabled={isSubmitting}
+                  className={`input-minimal pr-16 transition-all duration-200 ${
+                    isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
                 />
                 <motion.button
                   type="submit"
-                  disabled={!input.trim()}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  disabled={!input.trim() || isSubmitting}
+                  whileHover={!isSubmitting ? { scale: 1.05 } : {}}
+                  whileTap={!isSubmitting ? { scale: 0.95 } : {}}
                   transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-3 text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
-                  <ArrowRight className="w-5 h-5" />
+                  {isSubmitting ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="w-5 h-5 border border-[rgb(var(--border))] border-t-[rgb(var(--foreground))] rounded-full"
+                    />
+                  ) : (
+                    <ArrowRight className="w-5 h-5" />
+                  )}
                 </motion.button>
+                
+
               </form>
 
               {/* Quick suggestions */}
               <motion.div
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                animate={{ opacity: isSubmitting ? 0.5 : 1 }}
                 transition={{ duration: 0.6, delay: 0.35 }}
                 className="flex flex-wrap justify-center gap-2 text-sm"
               >
                 {[
-                  { key: 'machineLearning', fallback: 'Machine Learning' },
+                  { key: 'machineLearning', fallback: '机器学习' },
                   { key: 'reactHooks', fallback: 'React Hooks' },
-                  { key: 'designSystems', fallback: 'Design Systems' },
-                  { key: 'dataScience', fallback: 'Data Science' }
+                  { key: 'designSystems', fallback: '设计系统' },
+                  { key: 'dataScience', fallback: '数据科学' }
                 ].map((suggestion, index) => (
                   <motion.button
                     key={suggestion.key}
@@ -572,13 +599,16 @@ export default function HomePage() {
                       delay: 0.45 + index * 0.05,
                       ease: [0.25, 0.1, 0.25, 1]
                     }}
-                    whileHover={{ 
+                    whileHover={!isSubmitting ? { 
                       scale: 1.05, 
                       transition: { duration: 0.2 }
-                    }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setInput(t(`home.suggestions.${suggestion.key}`) || suggestion.fallback)}
-                    className="btn-ghost-minimal btn-text font-medium"
+                    } : {}}
+                    whileTap={!isSubmitting ? { scale: 0.95 } : {}}
+                    onClick={() => !isSubmitting && setInput(t(`home.suggestions.${suggestion.key}`) || suggestion.fallback)}
+                    disabled={isSubmitting}
+                    className={`btn-ghost-minimal btn-text font-medium transition-all duration-200 ${
+                      isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[rgb(var(--muted))]/50'
+                    }`}
                   >
                     {t(`home.suggestions.${suggestion.key}`) || suggestion.fallback}
                   </motion.button>

@@ -402,7 +402,37 @@ body {
   letter-spacing: 0.005em;
 }
 
-/* Enhanced button styles */
+/* Enhanced button styles - Silicon Valley Minimal Design */
+.button-primary {
+  background: rgb(var(--foreground));
+  color: rgb(var(--background));
+  border: 1px solid rgb(var(--foreground));
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: -0.005em;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.button-primary:hover {
+  background: rgb(var(--gray-700));
+  transform: translateY(-1px) translateZ(0);
+  box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.15);
+}
+
+.button-primary:active {
+  transform: translateY(0) translateZ(0);
+  box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.2);
+}
+
 .btn-primary-minimal {
   background: rgb(var(--foreground));
   color: rgb(var(--background));
