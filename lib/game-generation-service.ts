@@ -11,6 +11,7 @@ export interface GameResponse {
   title: string
   instructions: string
   gameType: string
+  topic?: string  // 添加topic字段用于匹配检查
 }
 
 /**
@@ -124,19 +125,21 @@ body {
   background: var(--bg-primary);
   color: var(--fg-primary);
   margin: 0;
-  padding: 20px;
+  padding: 0;
   line-height: 1.6;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .game-container {
   width: 100%;
+  height: 100vh;
   margin: 0 auto;
   background: var(--bg-primary);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .control-panel {
@@ -244,7 +247,7 @@ body {
 2. **完整的HTML5游戏**：生成完整的<!DOCTYPE html>到</html>的单文件游戏
 3. **无外部依赖**：所有CSS和JavaScript必须内联，确保游戏可独立运行
 4. **设计系统统一**：严格使用提供的CSS变量，保持视觉一致性
-5. **响应式体验**：游戏适配桌面和移动端，最少600px高度
+5. **全屏游戏体验**：游戏占满整个屏幕，无边框无padding，提供沉浸式体验
 6. **流畅交互**：实现所有设计方案中的反馈机制和动画效果
 7. **完整游戏循环**：包含状态管理、事件处理、胜负判定等完整逻辑
 
@@ -275,7 +278,7 @@ body {
 - 严格按照设计方案实现所有功能，不得遗漏
 - 确保游戏逻辑完整，所有函数都有完整实现
 - 正确转义所有引号，代码在一行中但保持逻辑清晰
-- 游戏容器使用100%宽度和充足高度，提供沉浸体验
+- 游戏使用全屏设计，无边框无边距，提供完全沉浸的学习体验
 - 必须包含设计方案中的所有视觉元素和交互功能
 
 **硅谷极简设计系统（强制使用）：**
@@ -284,7 +287,19 @@ ${designSystemCSS}
 **🎯 最终任务：**
 现在请将游戏设计师的"${gameDesign.gameTitle}"设计方案完美实现为可运行的HTML5游戏代码！
 
-**重要：只输出JSON格式，不要任何解释或对话！严格按照设计方案实现所有功能！**`
+**重要：只输出严格的JSON格式，不要任何解释或对话！**
+
+**JSON格式要求：**
+- 确保所有引号都正确转义（在HTML字符串中使用 \\" 而不是 "）
+- 所有反斜杠必须双重转义（\\\\ 而不是 \\）
+- 不要在JSON中包含换行符，保持所有代码在单行内
+- 严格遵循 {"html": "...", "title": "..."} 格式
+- HTML代码必须正确转义，避免JSON解析错误
+
+**输出格式示例：**
+{"html": "<!DOCTYPE html><html><head><title>Game</title></head><body><h1>Hello</h1></body></html>", "title": "游戏标题"}
+
+**严格按照设计方案实现所有功能！**`
 }
 
 
@@ -293,29 +308,28 @@ ${designSystemCSS}
  * 解析AI生成的游戏内容
  */
 function parseGameResponse(content: string, topic: string): GameResponse {
+  let cleanContent = ''
+  
   try {
-    // 清理内容
-    let cleanContent = content.trim()
+    cleanContent = content.trim()
     
-    // 如果内容以中文开头，说明AI没有按要求返回JSON
-    if (/^[好的谢对不起抱歉]/.test(cleanContent)) {
-      console.error('AI returned conversational response instead of JSON:', cleanContent.substring(0, 100))
-      throw new Error('AI返回了对话回复而不是JSON格式，请重试')
-    }
-    
-    // 移除markdown代码块标记
-    if (cleanContent.startsWith('```json')) {
-      cleanContent = cleanContent.replace(/^```json\s*/, '').replace(/\s*```$/, '')
-    } else if (cleanContent.startsWith('```')) {
-      cleanContent = cleanContent.replace(/^```\s*/, '').replace(/\s*```$/, '')
-    }
-
-    // 尝试找到JSON部分
+    // 提取JSON内容
     const jsonMatch = cleanContent.match(/\{[\s\S]*\}/)
     if (jsonMatch) {
       cleanContent = jsonMatch[0]
     }
 
+    // 强化的JSON清理逻辑
+    cleanContent = cleanContent
+      // 移除控制字符
+      .replace(/[\x00-\x1F\x7F]/g, '')
+    
+    // 尝试修复JSON结构
+    if (!cleanContent.endsWith('}')) {
+      cleanContent += '}'
+    }
+
+    console.log('Attempting to parse cleaned JSON...')
     const result = JSON.parse(cleanContent)
     
     // 验证必要字段
@@ -327,11 +341,40 @@ function parseGameResponse(content: string, topic: string): GameResponse {
       html: result.html,
       title: result.title || `${topic} 互动学习`,
       instructions: result.instructions || '通过调节参数来探索和学习概念！',
-      gameType: result.gameType || 'interactive-learning'
+      gameType: result.gameType || 'interactive-learning',
+      topic: topic
     }
   } catch (error) {
     console.error('Failed to parse game response:', error)
-    console.error('Original content:', content.substring(0, 200))
+    console.error('Original content (first 500 chars):', content.substring(0, 500))
+    console.error('Cleaned content (first 500 chars):', cleanContent?.substring(0, 500))
+    
+    // 尝试更激进的修复方法
+    try {
+      console.log('Attempting aggressive JSON repair...')
+      
+      // 寻找html和title字段 - 修复regex以正确处理HTML内容
+      const htmlMatch = content.match(/"html"\s*:\s*"((?:[^"\\]|\\.)*)"/)
+      const titleMatch = content.match(/"title"\s*:\s*"([^"]*?)"/)
+      
+      if (htmlMatch && titleMatch) {
+        console.log('Successfully extracted fields using regex')
+        return {
+          html: htmlMatch[1]
+            .replace(/\\"/g, '"')
+            .replace(/\\n/g, '\n')
+            .replace(/\\t/g, '\t')
+            .replace(/\\\\/g, '\\'),
+          title: titleMatch[1].replace(/\\"/g, '"'),
+          instructions: '通过调节参数来探索和学习概念！',
+          gameType: 'interactive-learning',
+          topic: topic
+        }
+      }
+    } catch (repairError) {
+      console.error('Aggressive repair also failed:', repairError)
+    }
+    
     throw new Error('游戏生成格式错误，请重试')
   }
 }

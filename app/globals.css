@@ -542,6 +542,22 @@ body {
   animation: softPulse 2s infinite;
 }
 
+/* 游戏等待状态的优雅脉动 */
+@keyframes gentleGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.animate-gentle-glow {
+  animation: gentleGlow 2s ease-in-out infinite;
+}
+
 /* Subtle dividers */
 .divider {
   height: 1px;

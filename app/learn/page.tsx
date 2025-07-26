@@ -204,6 +204,35 @@ export default function LearnPage() {
     }
   }
 
+  // 后台生成反思问题的函数
+  const generateReflectionInBackground = async () => {
+    try {
+      console.log('🤔 开始后台生成反思问题...')
+      
+      const response = await fetch('/api/generate-reflection', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topic: query,
+          category: category || 'science',
+          userLevel: config?.level || 'intermediate'
+        })
+      })
+
+      if (response.ok) {
+        const reflectionData = await response.json()
+        localStorage.setItem('xknow-pregenerated-reflection', JSON.stringify(reflectionData))
+        console.log('✅ 反思问题预生成完成:', reflectionData.question)
+      } else {
+        console.error('❌ 反思问题生成失败:', response.status)
+      }
+    } catch (error) {
+      console.error('❌ 反思问题生成出错:', error)
+    }
+  }
+
   const handleContinue = () => {
     if (currentResponse.trim() && currentStageData) {
       const newResponse = currentResponse.trim()
@@ -233,6 +262,9 @@ export default function LearnPage() {
         // 完成所有阶段，保存回答并跳转到反馈页面
         localStorage.setItem('xknow-responses', JSON.stringify(updatedResponses))
         console.log('All stages completed. Responses:', updatedResponses)
+        
+        // 后台预生成反思问题（作为后备方案）
+        generateReflectionInBackground()
         
         // 跳转到反馈页面
         console.log('跳转到反馈页面')

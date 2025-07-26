@@ -145,6 +145,14 @@ export default function ConfigurePage() {
       };
       localStorage.setItem('xknow-config', JSON.stringify(config));
       
+      // ✅ 清除旧的预生成内容，确保新学习流程的纯净性
+      localStorage.removeItem('xknow-pregenerated-game');
+      localStorage.removeItem('xknow-pregenerated-questions');
+      localStorage.removeItem('xknow-reflection');
+      localStorage.removeItem('xknow-pregenerated-reflection');
+      localStorage.removeItem('xknow-analyses'); // 清除旧的AI分析数据
+      localStorage.removeItem('xknow-responses'); // 清除旧的用户回答
+      
       // 立即跳转到classify页面，提供流畅体验
       router.push('/classify');
       
@@ -250,6 +258,13 @@ export default function ConfigurePage() {
         // 保存生成的游戏
         localStorage.setItem('xknow-pregenerated-game', JSON.stringify(game));
         console.log('🎉 两阶段游戏生成完成:', game.title)
+        console.log('📊 游戏数据:', {
+          title: game.title,
+          hasHtml: !!game.html,
+          htmlLength: game.html?.length || 0,
+          topic: game.topic,
+          gameType: game.gameType
+        })
         
         return game;
       }

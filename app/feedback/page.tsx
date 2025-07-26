@@ -50,11 +50,11 @@ export default function FeedbackPage() {
     }
     
     // 首先检查是否有预生成的题目
-    const savedQuiz = localStorage.getItem('xknow-quiz')
+    const savedQuiz = localStorage.getItem(`xknow-quiz-${currentIndex}`)
     if (savedQuiz) {
       try {
         const quiz = JSON.parse(savedQuiz)
-        console.log('使用预生成的quiz题目:', quiz)
+        console.log(`使用预生成的quiz题目[${currentIndex}]:`, quiz)
         setCurrentQuiz(quiz)
         return
       } catch (error) {
@@ -137,6 +137,10 @@ export default function FeedbackPage() {
                     setCurrentQuiz(data.quiz)
                     setQuizGenerationMessage("题目生成完成！")
                     console.log('Quiz generated successfully:', data.quiz)
+                    
+                    // 保存quiz到localStorage，使用问题索引区分
+                    localStorage.setItem(`xknow-quiz-${currentIndex}`, JSON.stringify(data.quiz))
+                    console.log(`✅ Quiz已保存到localStorage[${currentIndex}]`)
                   }
                   break
                   
@@ -265,6 +269,17 @@ export default function FeedbackPage() {
     }
   }, [query, category, analysisData.length, currentIndex, currentStage]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // 检查是否有预生成的分析，自动显示
+  useEffect(() => {
+    if (analysisData.length > 0 && currentIndex < analysisData.length) {
+      const currentData = analysisData[currentIndex]
+      if (currentData?.aiAnalysis && currentData.aiAnalysis.trim()) {
+        console.log('🎯 发现预生成分析，自动显示')
+        setShowAnalysis(true)
+      }
+    }
+  }, [analysisData, currentIndex])
+
   // 如果用户未登录，重定向到登录页
   if (isLoaded && !isSignedIn) {
     return <RedirectToSignIn />
@@ -302,7 +317,7 @@ export default function FeedbackPage() {
           userAnswer: analysisData[index].userAnswer,
           topic: query,
           category: category,
-          stream: true // 启用流式输出
+          stream: false // 改为非流式，与前两个问题保持一致
         })
       })
 
@@ -310,85 +325,32 @@ export default function FeedbackPage() {
         throw new Error('Failed to analyze feedback')
       }
 
-      if (!response.body) {
-        throw new Error('No response body')
-      }
-
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let accumulatedContent = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        
-        if (done) break
-
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
-
-        for (const line of lines) {
-          if (line.trim() === '') continue
-          
-          if (line.startsWith('data: ')) {
-            try {
-              const jsonStr = line.slice(6).trim()
-              if (!jsonStr) continue
-              
-              const data = JSON.parse(jsonStr)
-              
-              switch (data.type) {
-                case 'start':
-                  console.log('Stream started:', data.message)
-                  break
-                  
-                case 'progress':
-                  console.log('Progress:', data.message)
-                  break
-                  
-                case 'content':
-                  // 实时更新显示内容
-                  if (data.accumulated) {
-                    accumulatedContent = data.accumulated
-                    setAnalysisData(prev => {
-                      const updated = [...prev]
-                      updated[index] = {
-                        ...updated[index],
-                        aiAnalysis: accumulatedContent + '...',
-                        insights: []
-                      }
-                      return updated
-                    })
-                  }
-                  break
-                  
-                case 'complete':
-                  // 完成时设置最终结果
-                  if (data.analysis && data.insights) {
-                    setAnalysisData(prev => {
-                      const updated = [...prev]
-                      updated[index] = {
-                        ...updated[index],
-                        aiAnalysis: data.analysis,
-                        insights: data.insights
-                      }
-                      return updated
-                    })
-                    console.log('Stream completed:', data.message)
-                  }
-                  break
-                  
-                case 'error':
-                  console.error('Stream error:', data.error)
-                  throw new Error(data.error)
-              }
-            } catch (parseError) {
-              console.error('Error parsing stream data:', parseError, 'Raw line:', line)
-              // 继续处理，不中断整个流
-              continue
-            }
-          }
+      const analysis = await response.json()
+      
+      // 直接设置分析结果，与learn页面逻辑一致
+      setAnalysisData(prev => {
+        const updated = [...prev]
+        updated[index] = {
+          ...updated[index],
+          aiAnalysis: analysis.analysis,
+          insights: analysis.insights
         }
-      }
+        
+        // 同步保存到localStorage，确保数据一致性
+        const existingAnalyses = JSON.parse(localStorage.getItem('xknow-analyses') || '[]')
+        existingAnalyses[index] = {
+          question: updated[index].question,
+          userAnswer: updated[index].userAnswer,
+          aiAnalysis: analysis.analysis,
+          insights: analysis.insights
+        }
+        localStorage.setItem('xknow-analyses', JSON.stringify(existingAnalyses))
+        console.log(`✅ AI分析已保存到localStorage[${index}]`)
+        
+        return updated
+      })
+      
+      console.log('分析完成:', analysis)
     } catch (error) {
       console.error('Error generating analysis:', error)
       // 设置错误状态
@@ -423,7 +385,7 @@ export default function FeedbackPage() {
         setHasAnsweredQuiz(false)
         
         // 清除之前的预生成题目，为新一轮生成题目
-        localStorage.removeItem('xknow-quiz')
+        localStorage.removeItem(`xknow-quiz-${currentIndex}`)
         setCurrentQuiz(null)
         
         // 为新的当前主题重新生成题目
@@ -431,28 +393,53 @@ export default function FeedbackPage() {
           generateQuizForTopic()
         }, 500)
       } else {
-        // 完成所有反馈，跳转到深度学习页面
-        // 清理quiz相关数据
-        localStorage.removeItem('xknow-quiz')
-        
-        const category = localStorage.getItem('xknow-category')
-        let targetRoute = '/simulate'
-        
-        switch (category) {
-          case 'science':
-            targetRoute = '/simulate'
-            break
-          case 'history':
-            targetRoute = '/history'
-            break
-          case 'others':
-            targetRoute = '/geography'
-            break
-          default:
-            targetRoute = '/simulate'
+        // 完成所有反馈，检查游戏状态决定下一步
+        // 清理所有quiz相关数据
+        for (let i = 0; i < analysisData.length; i++) {
+          localStorage.removeItem(`xknow-quiz-${i}`)
         }
         
-        router.push(targetRoute)
+        // 检查游戏是否已生成完成
+        const existingGame = localStorage.getItem('xknow-pregenerated-game')
+        let hasValidGame = false
+        
+        if (existingGame) {
+          try {
+            const game = JSON.parse(existingGame)
+            if (game.html && game.title) {
+              hasValidGame = true
+            }
+          } catch (error) {
+            console.error('游戏数据解析失败:', error)
+          }
+        }
+        
+        if (hasValidGame) {
+          // 游戏已生成，直接跳转到对应的学习页面
+          const category = localStorage.getItem('xknow-category')
+          let targetRoute = '/simulate'
+          
+          switch (category) {
+            case 'science':
+              targetRoute = '/simulate'
+              break
+            case 'history':
+              targetRoute = '/history'
+              break
+            case 'others':
+              targetRoute = '/geography'
+              break
+            default:
+              targetRoute = '/simulate'
+          }
+          
+          console.log('游戏已准备好，跳转到:', targetRoute)
+          router.push(targetRoute)
+        } else {
+          // 游戏未生成，跳转到深度思考页面
+          console.log('游戏还未生成，跳转到反思页面')
+          router.push('/reflect')
+        }
       }
     }
   }
@@ -574,10 +561,20 @@ export default function FeedbackPage() {
                     <div className="border border-gray-200 rounded-2xl p-6 bg-white flex items-center justify-center min-h-[120px]">
                       <motion.button
                         onClick={() => {
+                          console.log('🔍 AI分析调试信息:', {
+                            currentIndex,
+                            currentQuestion: currentData?.question,
+                            currentUserAnswer: currentData?.userAnswer,
+                            hasExistingAnalysis: !!currentData?.aiAnalysis,
+                            analysisDataLength: analysisData.length
+                          })
                           setShowAnalysis(true)
-                          // 只有在没有分析内容时才生成
+                          // 只有在没有分析内容时才重新生成
                           if (!currentData?.aiAnalysis || currentData.aiAnalysis.trim() === '') {
+                            console.log('🔄 没有预生成分析，开始生成新分析')
                             generateAnalysis(currentIndex)
+                          } else {
+                            console.log('✅ 显示预生成的分析内容')
                           }
                         }}
                         whileHover={{ y: -1 }}
@@ -585,7 +582,7 @@ export default function FeedbackPage() {
                         className="text-gray-400 hover:text-gray-700 transition-colors duration-300 text-sm"
                         disabled={isGeneratingAnalysis}
                       >
-                        {isGeneratingAnalysis ? 'AI正在分析中...' : (currentData?.aiAnalysis ? '查看解析' : '生成解析')}
+                        {isGeneratingAnalysis ? 'AI正在分析中...' : (currentData?.aiAnalysis && currentData.aiAnalysis.trim() ? '查看解析' : '生成解析')}
                       </motion.button>
                     </div>
                   ) : (
@@ -601,24 +598,8 @@ export default function FeedbackPage() {
                             <div className="w-4 h-4 border border-gray-300 border-t-gray-900 rounded-full animate-spin"></div>
                             <span className="text-sm text-gray-500">AI正在为你生成个性化分析...</span>
                           </div>
-                          
-                          {/* 流式显示内容 */}
-                          {currentData?.aiAnalysis && (
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                              <p className="text-gray-600 leading-relaxed font-light whitespace-pre-wrap">
-                                {currentData.aiAnalysis}
-                              </p>
-                              {currentData.aiAnalysis.endsWith('...') && (
-                                <motion.div
-                                  animate={{ opacity: [1, 0.3, 1] }}
-                                  transition={{ duration: 1, repeat: Infinity }}
-                                  className="inline-block w-2 h-4 bg-gray-400 ml-1"
-                                />
-                              )}
-                            </div>
-                          )}
                         </div>
-                      ) : (
+                      ) : currentData?.aiAnalysis && currentData.aiAnalysis.trim() ? (
                         <>
                           <p className="text-gray-600 leading-relaxed font-light">
                             {currentData?.aiAnalysis || '正在生成分析...'}
@@ -644,6 +625,10 @@ export default function FeedbackPage() {
                             </div>
                           )}
                         </>
+                      ) : (
+                        <div className="border border-gray-200 rounded-2xl p-6 bg-white flex items-center justify-center min-h-[120px]">
+                          <p className="text-gray-500">暂无分析内容，请稍后再试。</p>
+                        </div>
                       )}
                     </motion.div>
                   )}
