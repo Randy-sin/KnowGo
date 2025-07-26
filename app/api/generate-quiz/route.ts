@@ -45,34 +45,28 @@ export async function POST(request: NextRequest) {
   }
 }
 
-import { APIRetryService } from '@/lib/api-retry-service'
-
 // 生成题目的核心函数
 async function generateQuiz(topic: string, guidedQuestion: string, userAnswer: string | null, category: string, userLevel: string): Promise<QuizQuestion> {
   const prompt = buildQuizPrompt(topic, guidedQuestion, userAnswer, category, userLevel)
 
-  const response = await APIRetryService.fetchWithRetry(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-goog-api-key': process.env.GEMINI_API_KEY!
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt
-              }
-            ]
-          }
-        ]
-      })
+  const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-goog-api-key': process.env.GEMINI_API_KEY!
     },
-    APIRetryService.geminiRetryOptions
-  )
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt
+            }
+          ]
+        }
+      ]
+    })
+  })
 
   if (!response.ok) {
     throw new Error(`Gemini API error: ${response.status}`)
