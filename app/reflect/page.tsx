@@ -161,7 +161,7 @@ export default function ReflectPage() {
 
   if (isLoading || !reflectionData) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-page flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -174,7 +174,7 @@ export default function ReflectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-page flex flex-col">
       
       {/* 极简导航 */}
       <div className="absolute top-8 left-8">

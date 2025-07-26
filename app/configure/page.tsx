@@ -86,7 +86,7 @@ export default function ConfigurePage() {
   // 加载状态
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[rgb(var(--background))] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -304,7 +304,7 @@ export default function ConfigurePage() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3 }}
         onClick={handleBack}
-        className="absolute top-8 left-8 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+        className="absolute top-8 left-8 p-2 text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))] transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
       </motion.button>
@@ -318,11 +318,11 @@ export default function ConfigurePage() {
       >
         <div className="flex items-center space-x-4">
           <LanguageToggle />
-          <div className="flex items-center space-x-2 text-xs text-gray-400">
+          <div className="flex items-center space-x-2 text-xs text-[rgb(var(--muted-foreground))]">
             <span>{t('common.topic')}:</span>
-            <span className="text-gray-600 font-medium">{query}</span>
+            <span className="text-[rgb(var(--foreground))] font-medium">{query}</span>
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-[rgb(var(--muted-foreground))]">
             {t('common.welcome')}, {user?.firstName || user?.emailAddresses[0]?.emailAddress}
           </div>
         </div>
@@ -393,13 +393,13 @@ export default function ConfigurePage() {
                 <div className="flex items-center space-x-3 mb-3">
                   <motion.div 
                     className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
-                      selectedLevel === level.id ? 'bg-black' : 'bg-gray-100'
+                      selectedLevel === level.id ? 'bg-[rgb(var(--foreground))]' : 'bg-[rgb(var(--muted))]'
                     }`}
                     whileHover={{ rotate: 5 }}
                     transition={{ duration: 0.2 }}
                   >
                     <level.icon className={`w-5 h-5 transition-colors duration-300 ${
-                      selectedLevel === level.id ? 'text-white' : 'text-gray-600'
+                      selectedLevel === level.id ? 'text-[rgb(var(--background))]' : 'text-[rgb(var(--muted-foreground))]'
                     }`} />
                   </motion.div>
                   <div>
@@ -487,7 +487,7 @@ export default function ConfigurePage() {
               >
                 <h3 className="font-medium mb-1">{style.title}</h3>
                 <p className={`text-xs transition-colors duration-300 ${
-                  selectedStyle === style.id ? 'text-gray-300' : 'text-gray-500'
+                  selectedStyle === style.id ? 'text-[rgb(var(--muted-foreground))]' : 'text-[rgb(var(--muted-foreground))]/70'
                 }`}>
                   {style.description}
                 </p>

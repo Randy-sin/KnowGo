@@ -371,13 +371,13 @@ export default function FeedbackPage() {
   // 加载状态
   if (!isLoaded || !query || analysisData.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-page flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
+          <div className="w-1 h-1 bg-secondary rounded-full animate-pulse"></div>
         </motion.div>
       </div>
     )
@@ -551,7 +551,7 @@ export default function FeedbackPage() {
   const isCorrectAnswer = selectedAnswer === currentQuiz?.correctAnswer
 
   return (
-    <div className="min-h-screen bg-white relative">
+    <div className="min-h-screen bg-page relative">
       {/* 极简导航 */}
       <div className="absolute top-8 left-8 z-10">
         <motion.button
@@ -559,7 +559,7 @@ export default function FeedbackPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           onClick={handleBack}
-          className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors duration-300"
+          className="w-6 h-6 flex items-center justify-center text-secondary hover:text-primary transition-colors duration-300"
         >
           <ArrowLeft className="w-4 h-4" />
         </motion.button>
@@ -574,10 +574,10 @@ export default function FeedbackPage() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-8"
         >
-          <h1 className="text-2xl font-light text-gray-900 mb-3 tracking-tight">
+          <h1 className="text-2xl font-light text-primary mb-3 tracking-tight">
             {currentStage === 'reflection' ? '学习反馈' : '知识检测'}
           </h1>
-          <p className="text-gray-500 text-sm font-light">
+          <p className="text-secondary text-sm font-light">
             {currentStage === 'reflection' 
               ? `回顾你对 "${query}" 的思考过程`
               : '测试对核心概念的理解'
@@ -633,11 +633,11 @@ export default function FeedbackPage() {
                     )}
                   </div>
                   
-                  <div className="border border-gray-200 rounded-2xl bg-white overflow-hidden">
+                  <div className="border border-default rounded-2xl bg-card overflow-hidden">
                     {/* 原始回答显示 */}
-                    <div className="p-4 bg-gray-50 border-b border-gray-100">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">你的原始回答</p>
-                      <p className="text-sm text-gray-600 leading-relaxed font-light">
+                    <div className="p-4 bg-subtle border-b border-default">
+                      <p className="text-xs font-medium text-secondary uppercase tracking-wide mb-2">你的原始回答</p>
+                      <p className="text-sm text-secondary leading-relaxed font-light">
                         {currentData.userAnswer || "你选择了跳过这个问题"}
                       </p>
                     </div>
@@ -653,7 +653,7 @@ export default function FeedbackPage() {
                           }
                         }}
                         placeholder="在这里写下你对这个问题的进一步思考和反思..."
-                        className="w-full h-24 text-sm text-gray-700 placeholder:text-gray-400 bg-transparent border-none resize-none focus:outline-none leading-relaxed"
+                        className="w-full h-24 text-sm text-primary placeholder:text-secondary bg-transparent border-none resize-none focus:outline-none leading-relaxed"
                       />
                     </div>
                   </div>
@@ -662,12 +662,12 @@ export default function FeedbackPage() {
                 {/* AI 解析 */}
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-gray-900 rounded-full"></div>
-                    <h3 className="text-sm font-medium text-gray-900 uppercase tracking-wide">AI 解析</h3>
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <h3 className="text-sm font-medium text-primary uppercase tracking-wide">AI 解析</h3>
                   </div>
                   
                   {!showAnalysis ? (
-                    <div className="border border-gray-200 rounded-2xl p-6 bg-white flex items-center justify-center min-h-[120px]">
+                    <div className="border border-default rounded-2xl p-6 bg-card flex items-center justify-center min-h-[120px]">
                       <motion.button
                         onClick={() => {
                           console.log('🔍 显示AI分析:', currentIndex)
@@ -675,7 +675,7 @@ export default function FeedbackPage() {
                         }}
                         whileHover={{ y: -1 }}
                         whileTap={{ y: 0 }}
-                        className="text-gray-400 hover:text-gray-700 transition-colors duration-300 text-sm"
+                        className="text-secondary hover:text-primary transition-colors duration-300 text-sm"
                         disabled={isGeneratingAnalysis}
                       >
                         {isGeneratingAnalysis ? 'AI正在分析中...' : '查看解析'}
@@ -686,26 +686,26 @@ export default function FeedbackPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5 }}
-                      className="border border-gray-200 rounded-2xl p-6 bg-white space-y-4"
+                      className="border border-default rounded-2xl p-6 bg-card space-y-4"
                     >
                       {isGeneratingAnalysis ? (
                         <div className="space-y-4">
                           <div className="flex items-center space-x-3 mb-4">
-                            <div className="w-4 h-4 border border-gray-300 border-t-gray-900 rounded-full animate-spin"></div>
-                            <span className="text-sm text-gray-500">AI正在为你生成个性化分析...</span>
+                            <div className="w-4 h-4 border border-default border-t-primary rounded-full animate-spin"></div>
+                            <span className="text-sm text-secondary">AI正在为你生成个性化分析...</span>
                           </div>
                         </div>
                       ) : currentData?.aiAnalysis && currentData.aiAnalysis.trim() ? (
                         <>
-                          <div className="text-gray-600 leading-relaxed font-light">
+                          <div className="text-primary leading-relaxed font-light">
                             <Markdown>
                               {currentData?.aiAnalysis || '正在生成分析...'}
                             </Markdown>
                           </div>
                           
                           {currentData?.insights && currentData.insights.length > 0 && (
-                            <div className="pt-4 border-t border-gray-100">
-                              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">关键要点</h4>
+                            <div className="pt-4 border-t border-default">
+                              <h4 className="text-xs font-medium text-secondary uppercase tracking-wide mb-3">关键要点</h4>
                               <div className="space-y-2">
                                 {currentData.insights.map((insight, index) => (
                                   <motion.div
@@ -715,8 +715,8 @@ export default function FeedbackPage() {
                                     transition={{ duration: 0.3, delay: index * 0.1 }}
                                     className="flex items-start space-x-3"
                                   >
-                                    <div className="w-px h-4 bg-gray-300 mt-1 flex-shrink-0"></div>
-                                    <span className="text-sm text-gray-600 font-light leading-relaxed">{insight}</span>
+                                    <div className="w-px h-4 bg-default mt-1 flex-shrink-0"></div>
+                                    <span className="text-sm text-secondary font-light leading-relaxed">{insight}</span>
                                   </motion.div>
                                 ))}
                               </div>
@@ -724,8 +724,8 @@ export default function FeedbackPage() {
                           )}
                         </>
                       ) : (
-                        <div className="border border-gray-200 rounded-2xl p-6 bg-white flex items-center justify-center min-h-[120px]">
-                          <p className="text-gray-500">暂无分析内容，请稍后再试。</p>
+                        <div className="border border-default rounded-2xl p-6 bg-card flex items-center justify-center min-h-[120px]">
+                          <p className="text-secondary">暂无分析内容，请稍后再试。</p>
                         </div>
                       )}
                     </motion.div>
@@ -752,11 +752,11 @@ export default function FeedbackPage() {
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      className="w-5 h-5 border border-gray-300 border-t-gray-900 rounded-full"
+                      className="w-5 h-5 border border-default border-t-primary rounded-full"
                     />
-                    <span className="text-gray-500 font-light">正在生成专属题目...</span>
+                    <span className="text-secondary font-light">正在生成专属题目...</span>
                   </div>
-                  <p className="text-sm text-gray-400 max-w-md mx-auto">
+                  <p className="text-sm text-secondary max-w-md mx-auto">
                     {quizGenerationMessage}
                   </p>
                 </motion.div>
@@ -796,26 +796,26 @@ export default function FeedbackPage() {
                         className={`w-full p-4 text-left rounded-xl border transition-all duration-300 ${
                           showQuizResult
                             ? index === currentQuiz.correctAnswer
-                              ? 'border-gray-900 bg-gray-50'
+                              ? 'border-primary bg-subtle'
                               : index === selectedAnswer && index !== currentQuiz.correctAnswer
-                              ? 'border-gray-400 bg-gray-50'
-                              : 'border-gray-200 bg-white'
+                              ? 'border-secondary bg-subtle'
+                              : 'border-default bg-card'
                             : selectedAnswer === index
-                            ? 'border-gray-400 bg-gray-50'
-                            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                            ? 'border-secondary bg-subtle'
+                            : 'border-default bg-card hover:border-secondary hover:bg-subtle'
                         }`}
                       >
                         <div className="flex items-center space-x-3">
                           <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                             showQuizResult
                               ? index === currentQuiz.correctAnswer
-                                ? 'border-gray-900 bg-gray-900'
+                                ? 'border-primary bg-primary'
                                 : index === selectedAnswer && index !== currentQuiz.correctAnswer
-                                ? 'border-gray-400 bg-gray-400'
-                                : 'border-gray-300'
+                                ? 'border-secondary bg-secondary'
+                                : 'border-default'
                               : selectedAnswer === index
-                              ? 'border-gray-400 bg-gray-400'
-                              : 'border-gray-300'
+                              ? 'border-secondary bg-secondary'
+                              : 'border-default'
                           }`}>
                             {showQuizResult && index === currentQuiz.correctAnswer && (
                               <Check className="w-3 h-3 text-white" />
@@ -827,7 +827,7 @@ export default function FeedbackPage() {
                               <div className="w-2 h-2 bg-white rounded-full" />
                             )}
                           </div>
-                          <span className="text-sm text-gray-700 leading-relaxed">
+                          <span className="text-sm text-primary leading-relaxed">
                             {option}
                           </span>
                         </div>

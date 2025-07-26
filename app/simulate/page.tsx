@@ -315,7 +315,7 @@ export default function SimulatePage() {
   if (!isLoaded || !query) {
     console.log('⏳ 显示加载状态:', { isLoaded, hasQuery: !!query })
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-page flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -333,7 +333,7 @@ export default function SimulatePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-page">
       
       {/* 极简导航 - 只有返回按钮 */}
       <div className="absolute top-8 left-8 z-20">
@@ -342,7 +342,7 @@ export default function SimulatePage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           onClick={handleBack}
-          className="w-10 h-10 flex items-center justify-center bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full text-gray-600 hover:text-gray-900 hover:bg-white hover:border-gray-300 transition-all duration-300 shadow-sm hover:shadow-md"
+          className="w-10 h-10 flex items-center justify-center bg-card/80 backdrop-blur-sm border border-default rounded-full text-secondary hover:text-primary hover:bg-card hover:border-default transition-all duration-300 shadow-sm hover:shadow-md"
         >
           <ArrowLeft className="w-4 h-4" />
         </motion.button>
@@ -356,7 +356,7 @@ export default function SimulatePage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
             onClick={handleRefreshGame}
-            className="w-10 h-10 flex items-center justify-center bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full text-gray-600 hover:text-gray-900 hover:bg-white hover:border-gray-300 transition-all duration-300 shadow-sm hover:shadow-md"
+            className="w-10 h-10 flex items-center justify-center bg-card/80 backdrop-blur-sm border border-default rounded-full text-secondary hover:text-primary hover:bg-card hover:border-default transition-all duration-300 shadow-sm hover:shadow-md"
             title="刷新游戏"
           >
             <RefreshCw className="w-4 h-4" />
@@ -429,7 +429,7 @@ export default function SimulatePage() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-                        className="w-[95vw] h-[95vh] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-auto"
+                        className="w-[95vw] h-[95vh] bg-card rounded-2xl shadow-sm border border-default overflow-auto"
                       >
                       <iframe
                         key={gameKey} // 添加key以强制刷新iframe
@@ -586,7 +586,7 @@ export default function SimulatePage() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                        className="mt-12 p-6 bg-white border border-gray-200 rounded-2xl text-left"
+                        className="mt-12 p-6 bg-card border border-default rounded-2xl text-left"
                       >
                         <h3 className="text-caption uppercase tracking-wide text-gray-500 mb-3">Scene Description</h3>
                         <p className="text-body leading-relaxed font-light">

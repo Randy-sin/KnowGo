@@ -174,7 +174,7 @@ export default function LearnPage() {
   // 加载状态
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[rgb(var(--background))] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -351,20 +351,20 @@ export default function LearnPage() {
 
   if (!config || !showContent || isLoadingQuestions || stages.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[rgb(var(--background))] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
+          <div className="w-1 h-1 bg-[rgb(var(--muted-foreground))] rounded-full animate-pulse"></div>
         </motion.div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[rgb(var(--background))] flex flex-col">
       
       {/* 极简导航 */}
       <div className="absolute top-8 left-8">
@@ -373,7 +373,7 @@ export default function LearnPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
           onClick={handleNewQuery}
-          className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors duration-300"
+          className="w-6 h-6 flex items-center justify-center text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))] transition-colors duration-300"
         >
           <ArrowLeft className="w-4 h-4" />
         </motion.button>
@@ -390,7 +390,7 @@ export default function LearnPage() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="space-y-4"
           >
-            <h1 className="text-4xl font-light text-gray-900 tracking-tight">
+            <h1 className="text-4xl font-light text-[rgb(var(--foreground))] tracking-tight">
               {query}
             </h1>
             <div className="w-8 h-px bg-gray-200 mx-auto"></div>
@@ -415,10 +415,10 @@ export default function LearnPage() {
                   transition={{ duration: 1.5, delay: 0.3 }}
                   className="space-y-4"
                 >
-                  <p className="text-xl font-light text-gray-700 leading-relaxed">
+                  <p className="text-xl font-light text-[rgb(var(--foreground))] leading-relaxed">
                     {currentStageData.question}
                   </p>
-                  <p className="text-sm font-light text-gray-500 italic">
+                  <p className="text-sm font-light text-[rgb(var(--muted-foreground))] italic">
                     {currentStageData.followUp}
                   </p>
                 </motion.div>
@@ -441,7 +441,7 @@ export default function LearnPage() {
                     value={currentResponse}
                     onChange={(e) => setCurrentResponse(e.target.value)}
                     placeholder={t('learn.shareThoughts')}
-                    className="w-full h-32 px-0 py-4 text-lg font-light text-gray-800 placeholder:text-gray-400 bg-transparent border-none resize-none focus:outline-none"
+                    className="w-full h-32 px-0 py-4 text-lg font-light text-[rgb(var(--foreground))] placeholder:text-[rgb(var(--muted-foreground))] bg-transparent border-none resize-none focus:outline-none"
                     style={{
                       fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif'
                     }}
@@ -470,8 +470,8 @@ export default function LearnPage() {
                     whileTap={currentResponse.trim() ? { scale: 0.98 } : {}}
                     className={`inline-flex items-center space-x-3 px-8 py-3 text-sm font-medium tracking-wide transition-all duration-300 ${
                       currentResponse.trim()
-                        ? 'text-gray-900 hover:text-black cursor-pointer'
-                        : 'text-gray-300 cursor-not-allowed'
+                        ? 'text-[rgb(var(--foreground))] hover:text-[rgb(var(--foreground))]/80 cursor-pointer'
+                        : 'text-[rgb(var(--muted-foreground))] cursor-not-allowed'
                     }`}
                   >
                     <span>

@@ -135,7 +135,7 @@ export default function ClassifyPage() {
   // 加载状态
   if (!isLoaded || !query) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[rgb(var(--background))] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -172,7 +172,7 @@ export default function ClassifyPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[rgb(var(--background))]">
       {/* 导航 */}
       <div className="absolute top-8 left-8 z-10">
         <motion.button
@@ -180,7 +180,7 @@ export default function ClassifyPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           onClick={handleBack}
-          className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors duration-200"
+          className="w-8 h-8 flex items-center justify-center text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))] transition-colors duration-200"
         >
           <ArrowLeft className="w-5 h-5" />
         </motion.button>
@@ -194,11 +194,11 @@ export default function ClassifyPage() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl font-extralight text-gray-900 mb-4 tracking-tight">
+          <h1 className="text-4xl font-extralight text-[rgb(var(--foreground))] mb-4 tracking-tight">
             智能分类
           </h1>
-          <p className="text-lg text-gray-500 mb-8 font-light">
-            正在分析 &ldquo;<span className="text-gray-900 font-normal">{query}</span>&rdquo;
+          <p className="text-lg text-[rgb(var(--muted-foreground))] mb-8 font-light">
+            正在分析 &ldquo;<span className="text-[rgb(var(--foreground))] font-normal">{query}</span>&rdquo;
           </p>
 
           {/* AI 分析状态 */}
@@ -214,22 +214,22 @@ export default function ClassifyPage() {
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="w-4 h-4 border border-gray-300 border-t-gray-900 rounded-full"
+                  className="w-4 h-4 border border-[rgb(var(--border))] border-t-[rgb(var(--foreground))] rounded-full"
                 />
-                <span className="text-sm text-gray-500 font-light">AI 正在分析...</span>
+                <span className="text-sm text-[rgb(var(--muted-foreground))] font-light">AI 正在分析...</span>
               </motion.div>
             ) : classification ? (
               <motion.div
                 key="classified"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center space-x-2 px-4 py-2 bg-gray-50 rounded-full border border-gray-100"
+                className="inline-flex items-center space-x-2 px-4 py-2 bg-[rgb(var(--muted))]/50 rounded-full border border-[rgb(var(--border))]"
               >
-                <div className="w-1.5 h-1.5 bg-gray-900 rounded-full" />
-                <span className="text-sm text-gray-700 font-medium">
+                <div className="w-1.5 h-1.5 bg-[rgb(var(--foreground))] rounded-full" />
+                <span className="text-sm text-[rgb(var(--foreground))] font-medium">
                   AI 建议：{categories.find(c => c.id === classification.category)?.title}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-[rgb(var(--muted-foreground))]">
                   {Math.round(classification.confidence * 100)}%
                 </span>
               </motion.div>
@@ -257,8 +257,8 @@ export default function ClassifyPage() {
                 whileTap={{ y: 0 }}
                 className={`w-full p-5 rounded-2xl border transition-all duration-200 text-left relative group ${
                   selectedCategory === category.id
-                    ? 'border-gray-900 bg-gray-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
+                    ? 'border-[rgb(var(--foreground))] bg-[rgb(var(--muted))]/50'
+                    : 'border-[rgb(var(--border))] bg-[rgb(var(--background))] hover:border-[rgb(var(--border))]/80'
                 }`}
               >
                 {/* AI 推荐指示器 */}
@@ -276,14 +276,14 @@ export default function ClassifyPage() {
                 <div className="absolute left-5 top-1/2 -translate-y-1/2">
                   <div className={`w-4 h-4 rounded-full border-2 transition-all duration-200 ${
                     selectedCategory === category.id
-                      ? 'border-gray-900 bg-gray-900'
-                      : 'border-gray-300 group-hover:border-gray-400'
+                      ? 'border-[rgb(var(--foreground))] bg-[rgb(var(--foreground))]'
+                      : 'border-[rgb(var(--border))] group-hover:border-[rgb(var(--border))]/80'
                   }`}>
                     {selectedCategory === category.id && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="w-2 h-2 bg-white rounded-full m-0.5"
+                        className="w-2 h-2 bg-[rgb(var(--background))] rounded-full m-0.5"
                       />
                     )}
                   </div>
@@ -291,15 +291,15 @@ export default function ClassifyPage() {
 
                 <div className="ml-9">
                   <div className="flex items-center space-x-3 mb-2">
-                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <category.icon className="w-4 h-4 text-gray-600" />
+                    <div className="w-8 h-8 bg-[rgb(var(--muted))] rounded-lg flex items-center justify-center">
+                      <category.icon className="w-4 h-4 text-[rgb(var(--muted-foreground))]" />
                     </div>
                                           <div>
-                        <h3 className="text-lg font-medium text-gray-900">{category.title}</h3>
-                        <p className="text-sm text-gray-400 font-light">{category.subtitle}</p>
+                        <h3 className="text-lg font-medium text-[rgb(var(--foreground))]">{category.title}</h3>
+                        <p className="text-sm text-[rgb(var(--muted-foreground))] font-light">{category.subtitle}</p>
                       </div>
                   </div>
-                  <p className="text-sm text-gray-600 font-light leading-relaxed">
+                  <p className="text-sm text-[rgb(var(--muted-foreground))] font-light leading-relaxed">
                     {category.description}
                   </p>
                 </div>
@@ -316,7 +316,7 @@ export default function ClassifyPage() {
             transition={{ duration: 0.4, delay: 0.4 }}
             className="mb-6 text-center"
           >
-            <p className="text-sm text-gray-400 font-light max-w-2xl mx-auto">
+            <p className="text-sm text-[rgb(var(--muted-foreground))] font-light max-w-2xl mx-auto">
               AI 分析：{classification.reasoning}
             </p>
           </motion.div>
@@ -336,8 +336,8 @@ export default function ClassifyPage() {
             whileTap={selectedCategory ? { y: 0 } : {}}
             className={`inline-flex items-center space-x-3 px-8 py-4 rounded-2xl font-medium transition-all duration-200 ${
               selectedCategory
-                ? 'bg-gray-900 text-white hover:bg-gray-800'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-[rgb(var(--foreground))] text-[rgb(var(--background))] hover:bg-[rgb(var(--foreground))]/90'
+                : 'bg-[rgb(var(--muted))] text-[rgb(var(--muted-foreground))] cursor-not-allowed'
             }`}
           >
             <span>确认选择</span>

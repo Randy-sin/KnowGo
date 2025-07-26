@@ -31,40 +31,36 @@ function CompactHistoryCard({ historyItem, index, t }: { historyItem: HistoryIte
       whileHover={{ 
         y: -4,
         scale: 1.01,
-        backgroundColor: "rgba(255, 255, 255, 1)",
         transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }
       }}
-      style={{
-        backgroundColor: "rgba(255, 255, 255, 0.8)"
-      }}
-      className="backdrop-blur-sm border border-gray-200/60 rounded-2xl p-5 hover:border-gray-300/80 transition-all duration-300 hover:shadow-xl group cursor-pointer h-full"
+      className="backdrop-blur-sm border border-[rgb(var(--border))]/60 rounded-2xl p-5 hover:border-[rgb(var(--border))] transition-all duration-300 hover:shadow-xl group cursor-pointer h-full bg-[rgb(var(--background))]/80 hover:bg-[rgb(var(--background))]"
     >
       {/* 分类标签和时间 */}
       <div className="flex items-center justify-between mb-4">
-        <span className="inline-flex items-center px-3 py-1.5 bg-gray-100/70 text-gray-600 text-xs font-medium rounded-lg tracking-wide">
+        <span className="inline-flex items-center px-3 py-1.5 bg-[rgb(var(--muted))]/70 text-[rgb(var(--muted-foreground))] text-xs font-medium rounded-lg tracking-wide">
           {historyItem.category}
         </span>
-        <div className="flex items-center space-x-1.5 text-xs text-gray-400">
+        <div className="flex items-center space-x-1.5 text-xs text-[rgb(var(--muted-foreground))]">
           <Clock className="w-3.5 h-3.5" />
           <span className="font-medium">{historyItem.readTime}</span>
         </div>
       </div>
 
       {/* 标题 */}
-      <h3 className="text-sm font-semibold text-gray-900 mb-2 leading-snug group-hover:text-gray-700 transition-colors line-clamp-2 tracking-tight">
+      <h3 className="text-sm font-semibold text-[rgb(var(--foreground))] mb-2 leading-snug group-hover:text-[rgb(var(--foreground))]/80 transition-colors line-clamp-2 tracking-tight">
         {historyItem.title}
       </h3>
 
       {/* 摘要 */}
-      <p className="text-gray-600 text-xs leading-relaxed line-clamp-2 mb-3 font-light">
+      <p className="text-[rgb(var(--muted-foreground))] text-xs leading-relaxed line-clamp-2 mb-3 font-light">
         {historyItem.excerpt}
       </p>
 
       {/* 时间戳和学习指标 */}
       <div className="flex items-center justify-between pt-1">
-        <span className="text-xs text-gray-400 font-medium">{historyItem.timestamp}</span>
+        <span className="text-xs text-[rgb(var(--muted-foreground))] font-medium">{historyItem.timestamp}</span>
         {/* 显示学习深度指标 */}
-        <div className="flex items-center space-x-1 text-xs text-gray-400">
+        <div className="flex items-center space-x-1 text-xs text-[rgb(var(--muted-foreground))]">
           {historyItem.status === 'completed' && (
             <div className="flex items-center space-x-1">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -442,15 +438,15 @@ export default function HomePage() {
           transition={{ duration: 0.6, delay: 1.2 }}
           className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-40 text-center pointer-events-none"
         >
-          <div className="bg-white/90 backdrop-blur-xl rounded-full px-4 py-2 border border-gray-200/50 shadow-lg">
-            <p className="text-xs text-gray-500 font-light">{t('home.scrollHint')}</p>
+          <div className="bg-[rgb(var(--background))]/90 backdrop-blur-xl rounded-full px-4 py-2 border border-[rgb(var(--border))]/50 shadow-lg">
+            <p className="text-xs text-[rgb(var(--muted-foreground))] font-light">{t('home.scrollHint')}</p>
           </div>
         </motion.div>
         
         {/* 主页区域 - 带视差效果 */}
-      <section className="relative h-screen overflow-hidden">
-        {/* 背景渐变 */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50/20 to-gray-50/40" />
+      <section className="relative h-screen overflow-hidden bg-[rgb(var(--background))]">
+        {/* 背景渐变 - 深色模式适配 */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[rgb(var(--background))] via-[rgb(var(--muted))]/10 to-[rgb(var(--muted))]/20" />
         
         {/* 左上角Logo */}
         <motion.div
@@ -462,7 +458,12 @@ export default function HomePage() {
           <img 
             src="/logo.png" 
             alt="Xknow"
-            className="h-20 w-auto opacity-90 filter grayscale-[0.1]"
+            className="h-20 w-auto opacity-90 filter grayscale-[0.1] dark:hidden"
+          />
+          <img 
+            src="/logoblack.jpg" 
+            alt="Xknow"
+            className="h-20 w-auto opacity-90 filter grayscale-[0.1] hidden dark:block"
           />
         </motion.div>
 
@@ -485,7 +486,7 @@ export default function HomePage() {
             <UserButton 
               appearance={{
                 elements: {
-                  avatarBox: "w-8 h-8 rounded-full border border-gray-200 hover:border-gray-300 transition-colors"
+                  avatarBox: "w-8 h-8 rounded-full border border-[rgb(var(--border))] hover:border-[rgb(var(--muted-foreground))] transition-colors"
                 }
               }}
             />
@@ -540,7 +541,7 @@ export default function HomePage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-3 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-3 text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   <ArrowRight className="w-5 h-5" />
                 </motion.button>
@@ -596,14 +597,14 @@ export default function HomePage() {
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
-                className="inline-flex flex-col items-center space-y-3 text-gray-600/80 hover:text-gray-800 transition-colors duration-500 cursor-pointer"
+                className="inline-flex flex-col items-center space-y-3 text-[rgb(var(--muted-foreground))]/80 hover:text-[rgb(var(--foreground))] transition-colors duration-500 cursor-pointer"
                 onClick={() => {
                   // 检查是否在锁定状态
                   if (scrollLockRef.current) {
                     return // 在锁定状态下阻止点击滚动
                   }
                   
-                  const newsSection = document.querySelector('section[class*="bg-gray-50"]')
+                  const newsSection = document.querySelector('section[class*="bg-\\[rgb"]')
                   newsSection?.scrollIntoView({ behavior: 'smooth' })
                 }}
               >
@@ -618,7 +619,7 @@ export default function HomePage() {
                       ease: "easeInOut",
                       delay: 0.5
                     }}
-                    className="w-1 h-1 bg-gray-400 rounded-full"
+                    className="w-1 h-1 bg-[rgb(var(--muted-foreground))] rounded-full"
                   />
                 </div>
               </motion.div>
@@ -651,13 +652,13 @@ export default function HomePage() {
         </motion.div>
 
         {/* 底部渐变过渡 */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50/40 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[rgb(var(--muted))]/20 to-transparent pointer-events-none" />
       </section>
 
       {/* 新闻区域 - 简洁背景 */}
       <motion.section 
         ref={newsRef}
-        className="relative py-12 pb-20 bg-gray-50/40"
+        className="relative py-12 pb-20 bg-[rgb(var(--muted))]/20"
         initial={{ opacity: 0 }}
         animate={{ 
           opacity: scrollStage > 0 ? 1 : 0,
@@ -685,13 +686,13 @@ export default function HomePage() {
               }}
               className="text-center py-20"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-6">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-[rgb(var(--muted))] rounded-full mb-6">
+                <svg className="w-8 h-8 text-[rgb(var(--muted-foreground))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">{t('home.exploreLearningHistory')}</h3>
-              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              <h3 className="text-xl font-semibold text-[rgb(var(--foreground))] mb-3">{t('home.exploreLearningHistory')}</h3>
+              <p className="text-[rgb(var(--muted-foreground))] mb-8 max-w-md mx-auto">
                 {t('home.viewHistory')}
               </p>
               <Link href="/sign-in">
@@ -713,23 +714,23 @@ export default function HomePage() {
               {isLoadingHistory ? (
                 // 加载状态
                 Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded mb-4"></div>
-                    <div className="h-6 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded mb-3"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </div>
+                                  <div key={index} className="bg-[rgb(var(--background))] rounded-2xl border border-[rgb(var(--border))] p-6 animate-pulse">
+                  <div className="h-4 bg-[rgb(var(--muted))] rounded mb-4"></div>
+                  <div className="h-6 bg-[rgb(var(--muted))] rounded mb-2"></div>
+                  <div className="h-4 bg-[rgb(var(--muted))] rounded mb-3"></div>
+                  <div className="h-3 bg-[rgb(var(--muted))] rounded w-1/2"></div>
+                </div>
                 ))
               ) : historyData.length === 0 ? (
                 // 空状态 - 已登录但没有学习历史
                 <div className="col-span-full text-center py-16">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-6">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-[rgb(var(--muted))] rounded-full mb-6">
+                    <svg className="w-8 h-8 text-[rgb(var(--muted-foreground))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{t('home.startJourney')}</h3>
-                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                  <h3 className="text-xl font-semibold text-[rgb(var(--foreground))] mb-3">{t('home.startJourney')}</h3>
+                  <p className="text-[rgb(var(--muted-foreground))] mb-8 max-w-md mx-auto">
                     {t('home.emptyStateDesc')}
                   </p>
                 </div>
