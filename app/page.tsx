@@ -583,7 +583,47 @@ export default function HomePage() {
               </motion.div>
             </motion.div>
 
-
+            {/* 探索提示 */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+              className="flex flex-col items-center space-y-4"
+            >
+              <motion.div
+                animate={{ y: [0, 4, 0] }}
+                transition={{ 
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="inline-flex flex-col items-center space-y-3 text-[rgb(var(--muted-foreground))]/80 hover:text-[rgb(var(--foreground))] transition-colors duration-500 cursor-pointer"
+                onClick={() => {
+                  // 检查是否在锁定状态
+                  if (scrollLockRef.current) {
+                    return // 在锁定状态下阻止点击滚动
+                  }
+                  
+                  const newsSection = document.querySelector('section[class*="bg-\\[rgb"]')
+                  newsSection?.scrollIntoView({ behavior: 'smooth' })
+                }}
+              >
+                <span className="text-sm font-medium tracking-wide">{t('home.exploreLearningHistory')}</span>
+                <div className="flex flex-col items-center space-y-1">
+                  <ArrowDown className="w-4 h-4" />
+                  <motion.div 
+                    animate={{ opacity: [0, 1, 0] }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 0.5
+                    }}
+                    className="w-1 h-1 bg-[rgb(var(--muted-foreground))] rounded-full"
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
           </SignedIn>
 
           {/* 未登录用户显示登录提示 */}

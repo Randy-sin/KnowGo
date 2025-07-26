@@ -259,13 +259,13 @@ export default function SummaryPage() {
           </div>
 
           {/* 实践阶段 */}
-          <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden">
+          <div className="bg-card border border-default rounded-3xl overflow-hidden">
             <div className="p-8">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">3</span>
+                <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
+                  <span className="text-[rgb(var(--background))] text-sm font-medium">3</span>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900">{t('summary.activeLearning')}</h3>
+                <h3 className="text-lg font-medium text-primary">{t('summary.activeLearning')}</h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className={`rounded-2xl p-4 ${learningData.gameCompleted ? 'bg-gray-50' : 'bg-gray-25 border border-gray-200'}`}>
