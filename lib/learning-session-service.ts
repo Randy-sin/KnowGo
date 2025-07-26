@@ -1,48 +1,32 @@
-import { 
-  supabase, 
-  TABLES, 
-  LearningSession, 
-  LearningInteraction, 
-  QuizRecord, 
-  ReflectionRecord,
-  GameSession,
-  VideoSession,
-  UserStats
-} from './supabase'
+import { supabase, TABLES, LearningSession, LearningInteraction, QuizRecord, ReflectionRecord, GameSession, VideoSession, UserStats } from './supabase'
 
 /**
- * 学习会话服务 - 处理所有与学习会话相关的数据库操作
+ * 学习会话数据服务
+ * 处理用户学习过程中的所有数据操作
  */
 export class LearningSessionService {
-
+  
   /**
    * 创建新的学习会话
    */
   static async createSession(
     userId: string,
-    originalQuery: string,
-    aiClassification: object,
-    userConfirmedCategory: 'science' | 'history' | 'others',
-    learningConfig: {
-      level: 'beginner' | 'intermediate' | 'expert'
-      style: string
-    }
+    query: string,
+    classification: object,
+    config: { level: string; style: string }
   ): Promise<string> {
     try {
-      const sessionData: Partial<LearningSession> = {
-        user_id: userId,
-        original_query: originalQuery,
-        ai_classification: aiClassification,
-        user_confirmed_category: userConfirmedCategory,
-        learning_config: learningConfig,
-        status: 'in_progress',
-        current_stage: 'classify',
-        started_learning_at: new Date().toISOString()
-      }
-
       const { data, error } = await supabase
         .from(TABLES.LEARNING_SESSIONS)
-        .insert(sessionData)
+        .insert({
+          user_id: userId,
+          original_query: query,
+          ai_classification: classification,
+          learning_config: config,
+          status: 'in_progress',
+          current_stage: 'learning',
+          started_learning_at: new Date().toISOString()
+        })
         .select('id')
         .single()
 
@@ -55,24 +39,21 @@ export class LearningSessionService {
   }
 
   /**
-   * 确认用户选择的类别
+   * 更新学习会话状态
    */
-  static async confirmCategory(
+  static async updateSessionStatus(
     sessionId: string,
-    userConfirmedCategory: 'science' | 'history' | 'others'
+    updates: Partial<LearningSession>
   ): Promise<void> {
     try {
       const { error } = await supabase
         .from(TABLES.LEARNING_SESSIONS)
-        .update({
-          user_confirmed_category: userConfirmedCategory,
-          current_stage: 'configure'
-        })
+        .update(updates)
         .eq('id', sessionId)
 
       if (error) throw error
     } catch (error) {
-      console.error('确认用户类别失败:', error)
+      console.error('更新学习会话失败:', error)
       throw error
     }
   }
@@ -105,31 +86,24 @@ export class LearningSessionService {
   }
 
   /**
-   * 更新学习会话状态
+   * 确认用户选择的分类
    */
-  static async updateSessionStatus(
+  static async confirmCategory(
     sessionId: string,
-    status: 'in_progress' | 'completed' | 'abandoned',
-    currentStage?: string
+    category: 'science' | 'history' | 'others'
   ): Promise<void> {
     try {
-      const updateData: Partial<LearningSession> = {
-        status,
-        current_stage: currentStage
-      }
-
-      if (status === 'completed') {
-        updateData.completed_at = new Date().toISOString()
-      }
-
       const { error } = await supabase
         .from(TABLES.LEARNING_SESSIONS)
-        .update(updateData)
+        .update({ 
+          user_confirmed_category: category,
+          current_stage: 'learning'
+        })
         .eq('id', sessionId)
 
       if (error) throw error
     } catch (error) {
-      console.error('更新学习会话状态失败:', error)
+      console.error('确认分类失败:', error)
       throw error
     }
   }
@@ -146,19 +120,17 @@ export class LearningSessionService {
     userAnswer: string
   ): Promise<string> {
     try {
-      const interactionData: Partial<LearningInteraction> = {
-        session_id: sessionId,
-        stage_index: stageIndex,
-        stage_type: stageType,
-        ai_question: aiQuestion,
-        follow_up_hint: followUpHint,
-        user_answer: userAnswer,
-        answer_timestamp: new Date().toISOString()
-      }
-
       const { data, error } = await supabase
         .from(TABLES.LEARNING_INTERACTIONS)
-        .insert(interactionData)
+        .insert({
+          session_id: sessionId,
+          stage_index: stageIndex,
+          stage_type: stageType,
+          ai_question: aiQuestion,
+          follow_up_hint: followUpHint,
+          user_answer: userAnswer,
+          answer_timestamp: new Date().toISOString()
+        })
         .select('id')
         .single()
 
@@ -166,6 +138,44 @@ export class LearningSessionService {
       return data.id
     } catch (error) {
       console.error('保存学习交互失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 为交互记录添加用户反思
+   */
+  static async updateInteractionReflection(
+    interactionId: string,
+    reflection: string
+  ): Promise<void> {
+    try {
+      // 获取现有的ai_analysis，如果存在的话
+      const { data: existing, error: fetchError } = await supabase
+        .from(TABLES.LEARNING_INTERACTIONS)
+        .select('ai_analysis')
+        .eq('id', interactionId)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      // 更新ai_analysis，添加用户反思
+      const updatedAnalysis = {
+        ...existing.ai_analysis,
+        user_reflection: reflection,
+        reflection_added_at: new Date().toISOString()
+      }
+
+      const { error } = await supabase
+        .from(TABLES.LEARNING_INTERACTIONS)
+        .update({
+          ai_analysis: updatedAnalysis
+        })
+        .eq('id', interactionId)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('更新交互反思失败:', error)
       throw error
     }
   }
@@ -203,24 +213,30 @@ export class LearningSessionService {
   static async saveQuizRecord(
     sessionId: string,
     interactionId: string,
-    quizQuestion: string,
-    quizOptions?: string[],
-    correctAnswer?: number,
-    explanation?: string
+    quizData: {
+      question: string
+      options: string[]
+      correctAnswer: number
+      explanation: string
+    },
+    userAnswer?: number,
+    timeSpent?: number
   ): Promise<string> {
     try {
-      const quizData: Partial<QuizRecord> = {
-        session_id: sessionId,
-        interaction_id: interactionId,
-        quiz_question: quizQuestion,
-        quiz_options: quizOptions || [],
-        correct_answer: correctAnswer || 0,
-        explanation: explanation || ''
-      }
-
       const { data, error } = await supabase
         .from(TABLES.QUIZ_RECORDS)
-        .insert(quizData)
+        .insert({
+          session_id: sessionId,
+          interaction_id: interactionId,
+          quiz_question: quizData.question,
+          quiz_options: quizData.options,
+          correct_answer: quizData.correctAnswer,
+          explanation: quizData.explanation,
+          user_answer: userAnswer,
+          is_correct: userAnswer !== undefined ? userAnswer === quizData.correctAnswer : null,
+          answered_at: userAnswer !== undefined ? new Date().toISOString() : null,
+          time_spent: timeSpent
+        })
         .select('id')
         .single()
 
@@ -233,56 +249,27 @@ export class LearningSessionService {
   }
 
   /**
-   * 更新测验答案
-   */
-  static async updateQuizAnswer(
-    quizId: string,
-    userAnswer: number,
-    isCorrect?: boolean,
-    timeSpent?: number
-  ): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from(TABLES.QUIZ_RECORDS)
-        .update({
-          user_answer: userAnswer,
-          is_correct: isCorrect,
-          answered_at: new Date().toISOString(),
-          time_spent: timeSpent
-        })
-        .eq('id', quizId)
-
-      if (error) throw error
-    } catch (error) {
-      console.error('更新测验答案失败:', error)
-      throw error
-    }
-  }
-
-  /**
    * 保存反思记录
    */
   static async saveReflection(
     sessionId: string,
-    aiReflectionQuestion: string,
-    placeholderHint: string,
-    userReflectionText: string,
+    question: string,
+    placeholder: string,
+    reflectionText: string,
     timeSpent?: number
   ): Promise<string> {
     try {
-      const reflectionData: Partial<ReflectionRecord> = {
-        session_id: sessionId,
-        ai_reflection_question: aiReflectionQuestion,
-        placeholder_hint: placeholderHint,
-        user_reflection_text: userReflectionText,
-        word_count: userReflectionText.length,
-        reflection_timestamp: new Date().toISOString(),
-        time_spent: timeSpent
-      }
-
       const { data, error } = await supabase
         .from(TABLES.REFLECTION_RECORDS)
-        .insert(reflectionData)
+        .insert({
+          session_id: sessionId,
+          ai_reflection_question: question,
+          placeholder_hint: placeholder,
+          user_reflection_text: reflectionText,
+          word_count: reflectionText.length,
+          reflection_timestamp: new Date().toISOString(),
+          time_spent: timeSpent
+        })
         .select('id')
         .single()
 
@@ -299,27 +286,26 @@ export class LearningSessionService {
    */
   static async saveGameSession(
     sessionId: string,
-    gameTitle: string,
-    gameType?: string,
-    gameInstructions?: string,
-    gameHtmlCode?: string,
-    gameDesignConcept?: object
+    gameData: {
+      title: string
+      type: string
+      instructions: string
+      htmlCode: string
+      designConcept?: object
+    }
   ): Promise<string> {
     try {
-      const gameData: Partial<GameSession> = {
-        session_id: sessionId,
-        game_title: gameTitle,
-        game_type: gameType || 'unknown',
-        game_instructions: gameInstructions || '',
-        game_html_code: gameHtmlCode || '',
-        game_design_concept: gameDesignConcept,
-        times_played: 0,
-        first_played_at: new Date().toISOString()
-      }
-
       const { data, error } = await supabase
         .from(TABLES.GAME_SESSIONS)
-        .insert(gameData)
+        .insert({
+          session_id: sessionId,
+          game_title: gameData.title,
+          game_type: gameData.type,
+          game_instructions: gameData.instructions,
+          game_html_code: gameData.htmlCode,
+          game_design_concept: gameData.designConcept,
+          times_played: 0
+        })
         .select('id')
         .single()
 
@@ -335,27 +321,42 @@ export class LearningSessionService {
    * 更新游戏播放统计
    */
   static async updateGamePlayStats(
-    gameSessionId: string,
-    playDuration: number
+    sessionId: string,
+    playDuration?: number
   ): Promise<void> {
     try {
-      // 先获取当前数据
-      const { data: currentData, error: fetchError } = await supabase
+      // 首先获取当前统计
+      const { data: gameSession, error: fetchError } = await supabase
         .from(TABLES.GAME_SESSIONS)
-        .select('times_played, total_play_duration')
-        .eq('id', gameSessionId)
+        .select('times_played, total_play_duration, first_played_at')
+        .eq('session_id', sessionId)
         .single()
 
       if (fetchError) throw fetchError
 
+      const now = new Date().toISOString()
+      const updates: {
+        times_played: number
+        last_played_at: string
+        first_played_at?: string
+        total_play_duration?: number
+      } = {
+        times_played: gameSession.times_played + 1,
+        last_played_at: now
+      }
+
+      if (!gameSession.first_played_at) {
+        updates.first_played_at = now
+      }
+
+      if (playDuration) {
+        updates.total_play_duration = (gameSession.total_play_duration || 0) + playDuration
+      }
+
       const { error } = await supabase
         .from(TABLES.GAME_SESSIONS)
-        .update({
-          times_played: (currentData.times_played || 0) + 1,
-          total_play_duration: (currentData.total_play_duration || 0) + playDuration,
-          last_played_at: new Date().toISOString()
-        })
-        .eq('id', gameSessionId)
+        .update(updates)
+        .eq('session_id', sessionId)
 
       if (error) throw error
     } catch (error) {
@@ -365,25 +366,22 @@ export class LearningSessionService {
   }
 
   /**
-   * 保存视频会话
+   * 保存视频会话 (历史专用)
    */
   static async saveVideoSession(
     sessionId: string,
     videoPrompt: string,
-    minimaxTaskId?: string
+    taskId?: string
   ): Promise<string> {
     try {
-      const videoData: Partial<VideoSession> = {
-        session_id: sessionId,
-        video_prompt: videoPrompt,
-        minimax_task_id: minimaxTaskId,
-        video_status: 'pending',
-        view_count: 0
-      }
-
       const { data, error } = await supabase
         .from(TABLES.VIDEO_SESSIONS)
-        .insert(videoData)
+        .insert({
+          session_id: sessionId,
+          video_prompt: videoPrompt,
+          minimax_task_id: taskId,
+          video_status: 'generating'
+        })
         .select('id')
         .single()
 
@@ -399,23 +397,25 @@ export class LearningSessionService {
    * 更新视频状态
    */
   static async updateVideoStatus(
-    videoSessionId: string,
+    sessionId: string,
     status: string,
     downloadUrl?: string,
     filename?: string
   ): Promise<void> {
     try {
-      const updateData: Partial<VideoSession> = {
-        video_status: status
-      }
-
-      if (downloadUrl) updateData.video_download_url = downloadUrl
-      if (filename) updateData.video_filename = filename
+      const updates: {
+        video_status: string
+        video_download_url?: string
+        video_filename?: string
+      } = { video_status: status }
+      
+      if (downloadUrl) updates.video_download_url = downloadUrl
+      if (filename) updates.video_filename = filename
 
       const { error } = await supabase
         .from(TABLES.VIDEO_SESSIONS)
-        .update(updateData)
-        .eq('id', videoSessionId)
+        .update(updates)
+        .eq('session_id', sessionId)
 
       if (error) throw error
     } catch (error) {
@@ -425,88 +425,141 @@ export class LearningSessionService {
   }
 
   /**
-   * 更新视频观看统计
+   * 完成学习会话
    */
-  static async updateVideoViewStats(
-    videoSessionId: string,
-    watchDuration: number
+  static async completeSession(
+    sessionId: string,
+    totalDuration: number
   ): Promise<void> {
     try {
-      // 先获取当前数据
-      const { data: currentData, error: fetchError } = await supabase
-        .from(TABLES.VIDEO_SESSIONS)
-        .select('view_count, total_watch_duration, first_viewed_at')
-        .eq('id', videoSessionId)
-        .single()
-
-      if (fetchError) throw fetchError
-
-      const updateData: Partial<VideoSession> = {
-        view_count: (currentData.view_count || 0) + 1,
-        total_watch_duration: (currentData.total_watch_duration || 0) + watchDuration,
-        last_viewed_at: new Date().toISOString()
-      }
-
-      if (!currentData.first_viewed_at) {
-        updateData.first_viewed_at = new Date().toISOString()
-      }
-
       const { error } = await supabase
-        .from(TABLES.VIDEO_SESSIONS)
-        .update(updateData)
-        .eq('id', videoSessionId)
+        .from(TABLES.LEARNING_SESSIONS)
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          total_duration: totalDuration,
+          current_stage: 'completed'
+        })
+        .eq('id', sessionId)
 
       if (error) throw error
     } catch (error) {
-      console.error('更新视频观看统计失败:', error)
+      console.error('完成学习会话失败:', error)
       throw error
     }
   }
 
   /**
-   * 获取用户学习历史
+   * 为学习会话生成智能摘要
    */
-  static async getUserLearningHistory(userId: string, limit?: number): Promise<LearningSession[]> {
+  static generateSessionSummary(session: LearningSession, interactions?: any[], quizRecords?: any[]): string {
+    const { original_query, user_confirmed_category, status, total_duration, learning_config } = session
+    
+    // 基础信息
+    const categoryMap = {
+      'science': '理科',
+      'history': '历史',
+      'others': '其他学科'
+    }
+    
+    const category = categoryMap[user_confirmed_category] || '未知学科'
+    const level = learning_config?.level === 'beginner' ? '初级' : 
+                 learning_config?.level === 'expert' ? '高级' : '中级'
+    
+    // 根据学习阶段和状态生成不同的摘要
+    if (status === 'completed' && interactions && interactions.length > 0) {
+      // 已完成的会话 - 基于交互内容生成摘要
+      const stageCount = interactions.length
+      const hasQuiz = quizRecords && quizRecords.length > 0
+      const accuracy = hasQuiz ? 
+        Math.round((quizRecords.filter(q => q.is_correct).length / quizRecords.length) * 100) : null
+      
+      if (accuracy !== null) {
+        return `通过${stageCount}个阶段深度探索了"${original_query}"，完成${level}难度的${category}学习，测验正确率${accuracy}%`
+      } else {
+        return `完成了关于"${original_query}"的${level}难度${category}学习，经历了${stageCount}个深度思考阶段`
+      }
+    } 
+    
+    else if (status === 'in_progress') {
+      // 进行中的会话
+      if (interactions && interactions.length > 0) {
+        const completedStages = interactions.length
+        return `正在学习"${original_query}"(${category})，已完成${completedStages}/3个引导阶段，${level}难度设定`
+      } else {
+        return `开始探索"${original_query}"的${category}知识，${level}难度，准备进入引导学习阶段`
+      }
+    }
+    
+    else if (status === 'abandoned') {
+      return `曾经开始学习"${original_query}"(${category})，${level}难度，学习已暂停`
+    }
+    
+    // 默认描述
+    return `${category}主题："${original_query}"，${level}难度学习`
+  }
+
+  /**
+   * 获取用户的学习历史
+   */
+  static async getUserLearningHistory(
+    userId: string,
+    limit: number = 20,
+    offset: number = 0
+  ): Promise<LearningSession[]> {
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from(TABLES.LEARNING_SESSIONS)
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-      
-      if (limit) {
-        query = query.limit(limit)
-      }
-      
-      const { data, error } = await query
+        .range(offset, offset + limit - 1)
 
       if (error) throw error
       return data || []
     } catch (error) {
-      console.error('获取用户学习历史失败:', error)
+      console.error('获取学习历史失败:', error)
       throw error
     }
   }
 
   /**
-   * 获取用户统计数据
+   * 获取用户学习历史（增强版，包含智能摘要）
    */
-  static async getUserStats(userId: string): Promise<UserStats | null> {
+  static async getUserLearningHistoryWithSummaries(userId: string, limit: number = 10): Promise<any[]> {
     try {
-      const { data, error } = await supabase
-        .from(TABLES.USER_STATS)
-        .select('*')
-        .eq('user_id', userId)
-        .single()
-
-      if (error && error.code === 'PGRST116') {
-        // 记录不存在，返回null
-        return null
-      }
-      if (error) throw error
-      return data
+      const sessions = await this.getUserLearningHistory(userId, limit)
+      
+      // 为每个会话生成智能摘要
+      const enhancedSessions = await Promise.all(
+        sessions.map(async (session: LearningSession) => {
+          try {
+            // 获取会话的详细信息以生成更准确的摘要
+            const details = await this.getSessionDetails(session.id)
+            const summary = this.generateSessionSummary(
+              session, 
+              details.interactions, 
+              details.quizRecords
+            )
+            
+            return {
+              ...session,
+              intelligentSummary: summary
+            }
+          } catch (error) {
+            // 如果获取详情失败，使用基础摘要
+            console.warn(`无法获取会话${session.id}的详情，使用基础摘要`)
+            return {
+              ...session,
+              intelligentSummary: this.generateSessionSummary(session)
+            }
+          }
+        })
+      )
+      
+      return enhancedSessions
     } catch (error) {
-      console.error('获取用户统计数据失败:', error)
+      console.error('获取学习历史失败:', error)
       throw error
     }
   }
@@ -582,32 +635,57 @@ export class LearningSessionService {
   }
 
   /**
-   * 计算会话总时长并更新
+   * 更新测验答题记录
    */
-  static async updateSessionDuration(sessionId: string): Promise<void> {
+  static async updateQuizAnswer(
+    quizRecordId: string,
+    userAnswer: number,
+    timeSpent?: number
+  ): Promise<void> {
     try {
-      const { data: session, error: sessionError } = await supabase
-        .from(TABLES.LEARNING_SESSIONS)
-        .select('started_learning_at, completed_at')
-        .eq('id', sessionId)
+      // 首先获取quiz记录以计算是否正确
+      const { data: quizRecord, error: fetchError } = await supabase
+        .from(TABLES.QUIZ_RECORDS)
+        .select('correct_answer')
+        .eq('id', quizRecordId)
         .single()
 
-      if (sessionError) throw sessionError
+      if (fetchError) throw fetchError
 
-      if (session.started_learning_at && session.completed_at) {
-        const startTime = new Date(session.started_learning_at)
-        const endTime = new Date(session.completed_at)
-        const duration = Math.round((endTime.getTime() - startTime.getTime()) / 1000) // 秒
+      const isCorrect = userAnswer === quizRecord.correct_answer
 
-        const { error } = await supabase
-          .from(TABLES.LEARNING_SESSIONS)
-          .update({ total_duration: duration })
-          .eq('id', sessionId)
+      const { error } = await supabase
+        .from(TABLES.QUIZ_RECORDS)
+        .update({
+          user_answer: userAnswer,
+          is_correct: isCorrect,
+          answered_at: new Date().toISOString(),
+          time_spent: timeSpent
+        })
+        .eq('id', quizRecordId)
 
-        if (error) throw error
-      }
+      if (error) throw error
     } catch (error) {
-      console.error('更新会话时长失败:', error)
+      console.error('更新测验答题记录失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 获取用户统计
+   */
+  static async getUserStats(userId: string): Promise<UserStats | null> {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.USER_STATS)
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+
+      if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows found
+      return data || null
+    } catch (error) {
+      console.error('获取用户统计失败:', error)
       throw error
     }
   }

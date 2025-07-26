@@ -38,6 +38,45 @@ export default function FeedbackPage() {
   const [currentStage, setCurrentStage] = useState<'reflection' | 'quiz'>('reflection')
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false)
   const [quizGenerationMessage, setQuizGenerationMessage] = useState("")
+  
+  // 新增：用户反思相关状态
+  const [userReflections, setUserReflections] = useState<string[]>([])
+  const [currentReflection, setCurrentReflection] = useState("")
+  const [isSavingReflection, setIsSavingReflection] = useState(false)
+
+  // 保存用户反思到数据库
+  const saveReflectionToDatabase = async (reflection: string) => {
+    if (!reflection.trim() || !user?.id) return
+    
+    setIsSavingReflection(true)
+    try {
+      const sessionId = localStorage.getItem('xknow-session-id')
+      const interactionIds = JSON.parse(localStorage.getItem('xknow-interaction-ids') || '[]')
+      const interactionId = interactionIds[currentIndex]
+      
+      if (!sessionId || !interactionId) {
+        console.warn('缺少sessionId或interactionId，跳过反思保存')
+        return
+      }
+      
+      // 保存反思到学习交互记录中
+      await LearningSessionService.updateInteractionReflection(interactionId, reflection.trim())
+      
+      // 更新本地状态
+      const updatedReflections = [...userReflections]
+      updatedReflections[currentIndex] = reflection.trim()
+      setUserReflections(updatedReflections)
+      
+      // 保存到localStorage
+      localStorage.setItem('xknow-reflections', JSON.stringify(updatedReflections))
+      
+      console.log(`✅ 第${currentIndex + 1}题反思已保存到数据库`)
+    } catch (error) {
+      console.error(`❌ 保存第${currentIndex + 1}题反思失败:`, error)
+    } finally {
+      setIsSavingReflection(false)
+    }
+  }
 
   // 更新数据库中的答题记录
   const updateQuizAnswerInDatabase = async (userAnswer: number) => {
@@ -74,10 +113,12 @@ export default function FeedbackPage() {
       const quizId = await LearningSessionService.saveQuizRecord(
         sessionId,
         interactionId,
-        quiz.question,
-        quiz.options,
-        quiz.correctAnswer,
-        quiz.explanation
+        {
+          question: quiz.question,
+          options: quiz.options,
+          correctAnswer: quiz.correctAnswer,
+          explanation: quiz.explanation
+        }
       )
       
       // 保存quiz记录ID到localStorage，供答题时使用
@@ -263,6 +304,18 @@ export default function FeedbackPage() {
         console.log('解析用户回答:', responses)
         setUserResponses(responses)
         
+        // 加载已保存的用户反思
+        const savedReflections = localStorage.getItem('xknow-reflections')
+        if (savedReflections) {
+          try {
+            const reflections = JSON.parse(savedReflections)
+            setUserReflections(reflections)
+            console.log('加载了用户反思:', reflections.length, '项')
+          } catch (error) {
+            console.error('Failed to parse saved reflections:', error)
+          }
+        }
+        
         // 尝试获取预生成的问题
         const savedQuestions = localStorage.getItem('xknow-pregenerated-questions')
         if (savedQuestions) {
@@ -330,6 +383,15 @@ export default function FeedbackPage() {
       }, 1000)
     }
   }, [query, category, analysisData.length, currentIndex, currentStage]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 监听当前问题索引变化，更新反思内容
+  useEffect(() => {
+    if (userReflections[currentIndex]) {
+      setCurrentReflection(userReflections[currentIndex])
+    } else {
+      setCurrentReflection("")
+    }
+  }, [currentIndex, userReflections])
 
   // 检查是否有预生成的分析，自动显示
   useEffect(() => {
@@ -597,16 +659,44 @@ export default function FeedbackPage() {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="grid md:grid-cols-2 gap-8 mb-8"
               >
-                {/* 你的思考 */}
+                {/* 用户反思 */}
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                    <h3 className="text-sm font-medium text-gray-900 uppercase tracking-wide">你的思考</h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                      <h3 className="text-sm font-medium text-gray-900 uppercase tracking-wide">你的反思</h3>
+                    </div>
+                    {isSavingReflection && (
+                      <div className="flex items-center space-x-2 text-xs text-gray-500">
+                        <div className="w-3 h-3 border border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                        <span>保存中...</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="border border-gray-200 rounded-2xl p-6 bg-white">
-                    <p className="text-gray-600 leading-relaxed font-light">
-                      {currentData.userAnswer || "你选择了跳过这个问题"}
-                    </p>
+                  
+                  <div className="border border-gray-200 rounded-2xl bg-white overflow-hidden">
+                    {/* 原始回答显示 */}
+                    <div className="p-4 bg-gray-50 border-b border-gray-100">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">你的原始回答</p>
+                      <p className="text-sm text-gray-600 leading-relaxed font-light">
+                        {currentData.userAnswer || "你选择了跳过这个问题"}
+                      </p>
+                    </div>
+                    
+                    {/* 反思输入区域 */}
+                    <div className="p-4">
+                      <textarea
+                        value={currentReflection}
+                        onChange={(e) => setCurrentReflection(e.target.value)}
+                        onBlur={() => {
+                          if (currentReflection !== (userReflections[currentIndex] || "")) {
+                            saveReflectionToDatabase(currentReflection)
+                          }
+                        }}
+                        placeholder="在这里写下你对这个问题的进一步思考和反思..."
+                        className="w-full h-24 text-sm text-gray-700 placeholder:text-gray-400 bg-transparent border-none resize-none focus:outline-none leading-relaxed"
+                      />
+                    </div>
                   </div>
                 </div>
 

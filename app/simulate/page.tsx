@@ -63,14 +63,13 @@ export default function SimulatePage() {
         return
       }
       
-      await LearningSessionService.saveGameSession(
-        sessionId,
-        game.title,
-        game.gameType,
-        game.instructions,
-        game.html,
-        undefined // 游戏设计概念数据可以从其他地方获取
-      )
+      await LearningSessionService.saveGameSession(sessionId, {
+        title: game.title,
+        type: game.gameType,
+        instructions: game.instructions,
+        htmlCode: game.html,
+        designConcept: undefined // 游戏设计概念数据可以从其他地方获取
+      })
       
       console.log('✅ 游戏已保存到数据库:', game.title)
     } catch (error) {
@@ -423,22 +422,24 @@ export default function SimulatePage() {
                     htmlPreview: currentGame.html?.substring(0, 100) + '...'
                   })
                   return (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                      className="w-full h-full"
-                    >
-                      <iframe
-                        key={gameKey} // 添加key以强制刷新iframe
-                        srcDoc={currentGame.html}
-                        className="w-full h-full border-0"
-                        title={currentGame.title}
-                        sandbox="allow-scripts allow-same-origin allow-forms"
-                        onLoad={() => console.log('🎮 iframe加载完成')}
-                        onError={(e) => console.error('🎮 iframe加载错误:', e)}
-                      />
-                    </motion.div>
+                    <div className="w-full h-full flex items-center justify-center p-8">
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                        className="w-full max-w-4xl h-full max-h-[80vh] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+                      >
+                        <iframe
+                          key={gameKey} // 添加key以强制刷新iframe
+                          srcDoc={currentGame.html}
+                          className="w-full h-full border-0"
+                          title={currentGame.title}
+                          sandbox="allow-scripts allow-same-origin allow-forms"
+                          onLoad={() => console.log('🎮 iframe加载完成')}
+                          onError={(e) => console.error('🎮 iframe加载错误:', e)}
+                        />
+                      </motion.div>
+                    </div>
                   )
                 })()
               ) : (

@@ -11,118 +11,21 @@ import { useTranslations } from "@/lib/use-translations"
 import { LearningSessionService } from "@/lib/learning-session-service"
 import Parallax from "@/components/ui/parallax"
 
-// 新闻数据类型
-interface NewsItem {
+// 历史记录数据类型
+interface HistoryItem {
   id: string
   title: string
   excerpt: string
   category: string
   readTime: string
   timestamp: string
+  status: string
 }
 
-// 硬编码新闻数据 - 符合学习平台主题
-const newsData: NewsItem[] = [
-  {
-    id: "1",
-    title: "AI驱动的个性化学习正在重塑教育行业",
-    excerpt: "最新研究显示，基于机器学习的个性化教育系统能够提高学习效率67%。",
-    category: "教育科技",
-    readTime: "3分钟",
-    timestamp: "2小时前"
-  },
-  {
-    id: "2", 
-    title: "互动式学习体验的未来趋势",
-    excerpt: "游戏化学习和沉浸式体验正成为教育技术的主流。",
-    category: "学习方法",
-    readTime: "4分钟", 
-    timestamp: "5小时前"
-  },
-  {
-    id: "3",
-    title: "知识图谱技术在学习平台中的应用",
-    excerpt: "通过构建知识图谱，AI可以更好地理解学科之间的关联性。",
-    category: "技术创新",
-    readTime: "5分钟",
-    timestamp: "1天前"
-  },
-  {
-    id: "4",
-    title: "深度学习在教育评估中的突破",
-    excerpt: "新一代AI评估系统不仅能评判答案正确性，更能理解学习者的思维过程。",
-    category: "AI技术",
-    readTime: "6分钟",
-    timestamp: "2天前"
-  },
-  {
-    id: "5",
-    title: "微学习模式的兴起与实践",
-    excerpt: "碎片化学习时代，如何通过微学习提升知识吸收效率。",
-    category: "学习方法",
-    readTime: "3分钟",
-    timestamp: "3天前"
-  },
-  {
-    id: "6",
-    title: "虚拟现实在STEM教育中的应用",
-    excerpt: "VR技术让抽象的科学概念变得生动具体，提升学习体验。",
-    category: "教育科技",
-    readTime: "4分钟",
-    timestamp: "4天前"
-  },
-  {
-    id: "7",
-    title: "自适应学习算法的新进展",
-    excerpt: "通过分析学习行为数据，AI能够实时调整教学策略和内容难度。",
-    category: "AI技术",
-    readTime: "5分钟",
-    timestamp: "5天前"
-  },
-  {
-    id: "8",
-    title: "多模态学习内容的创新应用",
-    excerpt: "结合文字、图像、音频和视频的综合学习体验正在改变传统教育。",
-    category: "技术创新",
-    readTime: "4分钟",
-    timestamp: "6天前"
-  },
-  {
-    id: "9",
-    title: "认知科学在数字化学习中的应用",
-    excerpt: "基于认知负荷理论的学习界面设计能够显著提升学习效果。",
-    category: "学习方法",
-    readTime: "6分钟",
-    timestamp: "1周前"
-  },
-  {
-    id: "10",
-    title: "区块链技术在教育认证中的创新",
-    excerpt: "去中心化的学历认证系统为终身学习提供了可信的记录方式。",
-    category: "技术创新",
-    readTime: "5分钟",
-    timestamp: "1周前"
-  },
-  {
-    id: "11",
-    title: "情感AI在学习动机激发中的作用",
-    excerpt: "通过识别学习者的情感状态，AI助手能够提供更有针对性的鼓励和支持。",
-    category: "AI技术",
-    readTime: "4分钟",
-    timestamp: "1周前"
-  },
-  {
-    id: "12",
-    title: "协作学习平台的社交化发展趋势",
-    excerpt: "将社交网络元素融入学习平台，创造更具吸引力的学习社区。",
-    category: "学习方法",
-    readTime: "3分钟",
-    timestamp: "2周前"
-  }
-]
 
-// 简化的新闻卡片组件
-function CompactNewsCard({ news, index }: { news: NewsItem; index: number }) {
+
+// 简化的历史记录卡片组件
+function CompactHistoryCard({ historyItem, index }: { historyItem: HistoryItem; index: number }) {
   return (
     <motion.article
       whileHover={{ 
@@ -139,29 +42,43 @@ function CompactNewsCard({ news, index }: { news: NewsItem; index: number }) {
       {/* 分类标签和时间 */}
       <div className="flex items-center justify-between mb-4">
         <span className="inline-flex items-center px-3 py-1.5 bg-gray-100/70 text-gray-600 text-xs font-medium rounded-lg tracking-wide">
-          {news.category}
+          {historyItem.category}
         </span>
         <div className="flex items-center space-x-1.5 text-xs text-gray-400">
           <Clock className="w-3.5 h-3.5" />
-          <span className="font-medium">{news.readTime}</span>
+          <span className="font-medium">{historyItem.readTime}</span>
         </div>
       </div>
 
       {/* 标题 */}
       <h3 className="text-sm font-semibold text-gray-900 mb-2 leading-snug group-hover:text-gray-700 transition-colors line-clamp-2 tracking-tight">
-        {news.title}
+        {historyItem.title}
       </h3>
 
       {/* 摘要 */}
       <p className="text-gray-600 text-xs leading-relaxed line-clamp-2 mb-3 font-light">
-        {news.excerpt}
+        {historyItem.excerpt}
       </p>
 
-      {/* 时间戳和阅读指示 */}
+      {/* 时间戳和学习指标 */}
       <div className="flex items-center justify-between pt-1">
-        <span className="text-xs text-gray-400 font-medium">{news.timestamp}</span>
-        <div className="flex items-center text-gray-400 group-hover:text-gray-600 transition-colors">
-          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-200" />
+        <span className="text-xs text-gray-400 font-medium">{historyItem.timestamp}</span>
+        {/* 显示学习深度指标 */}
+        <div className="flex items-center space-x-1 text-xs text-gray-400">
+          {historyItem.status === 'completed' && (
+            <div className="flex items-center space-x-1">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span className="font-medium text-green-600">完成</span>
+            </div>
+          )}
+          {historyItem.status === 'in_progress' && (
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+              <span className="font-medium text-blue-600">进行中</span>
+            </div>
+          )}
         </div>
       </div>
     </motion.article>
@@ -182,6 +99,10 @@ export default function HomePage() {
   const scrollLockRef = useRef(false)
   const firstScrollTriggered = useRef(false) // 即时标记，防止重复触发
   
+  // 历史记录状态管理
+  const [historyData, setHistoryData] = useState<HistoryItem[]>([])
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  
   const { t } = useTranslations()
 
   // 主页的滚动视差效果
@@ -200,7 +121,7 @@ export default function HomePage() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
   const heroScale = useTransform(scrollYProgress, [0, 0.6], [1, 0.95])
   
-  // 页面加载时重置状态
+  // 页面加载时重置状态和获取历史记录
   useEffect(() => {
     // 重置所有滚动相关状态
     firstScrollTriggered.current = false
@@ -208,7 +129,60 @@ export default function HomePage() {
     setScrollStage(0)
     setShowGradient(false)
     setLockedScrollPosition(0)
-  }, [])
+    
+    // 获取用户历史记录
+    loadUserHistory()
+  }, [isLoaded, isSignedIn, user])
+  
+  // 获取用户学习历史
+  const loadUserHistory = async () => {
+    if (!isLoaded || !isSignedIn || !user?.id) {
+      // 未登录用户不显示任何历史数据
+      setHistoryData([])
+      return
+    }
+    
+    setIsLoadingHistory(true)
+    try {
+      const sessions = await LearningSessionService.getUserLearningHistoryWithSummaries(user.id, 12)
+      
+      // 转换数据库数据为UI需要的格式
+      const historyItems: HistoryItem[] = sessions.map(session => ({
+        id: session.id,
+        title: session.original_query,
+        excerpt: session.intelligentSummary || `探索${session.user_confirmed_category || '未知'}领域的学习内容`,
+        category: session.user_confirmed_category === 'science' ? '理科' :
+                 session.user_confirmed_category === 'history' ? '文科' : '其他',
+        readTime: session.total_duration && session.total_duration > 0 ? 
+          `${Math.round(session.total_duration / 60)}分钟` : 
+          session.status === 'completed' ? '已完成' : '进行中',
+        timestamp: formatRelativeTime(session.created_at || ''),
+        status: session.status || 'in_progress'
+      }))
+      
+      setHistoryData(historyItems)
+    } catch (error) {
+      console.error('获取学习历史失败:', error)
+      setHistoryData([])
+    } finally {
+      setIsLoadingHistory(false)
+    }
+  }
+  
+  // 格式化相对时间
+  const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInMs = now.getTime() - date.getTime()
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
+    const diffInDays = Math.floor(diffInHours / 24)
+    
+    if (diffInHours < 1) return '刚刚'
+    if (diffInHours < 24) return `${diffInHours}小时前`
+    if (diffInDays < 7) return `${diffInDays}天前`
+    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}周前`
+    return `${Math.floor(diffInDays / 30)}个月前`
+  }
   
   // 渐进式两段滚动处理
   useEffect(() => {
@@ -444,7 +418,6 @@ export default function HomePage() {
         userId,
         query,
         classification,
-        'others', // 默认类别，将在classify页面确认
         tempConfig
       )
       
@@ -630,7 +603,7 @@ export default function HomePage() {
                   newsSection?.scrollIntoView({ behavior: 'smooth' })
                 }}
               >
-                <span className="text-sm font-medium tracking-wide">探索学习新闻</span>
+                <span className="text-sm font-medium tracking-wide">探索学习历史</span>
                 <div className="flex flex-col items-center space-y-1">
                   <ArrowDown className="w-4 h-4" />
                   <motion.div 
@@ -693,37 +666,101 @@ export default function HomePage() {
         }}
       >
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          {/* 新闻网格 - 渐进式展示 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
-            {newsData.map((news, index) => {
-              // 第一阶段只显示前6个卡片（约第一行和第二行一半）
-              const shouldShowInStage1 = index < 6
-              const shouldShow = scrollStage === 0 ? false : 
-                               scrollStage === 1 ? shouldShowInStage1 : true
-              
-              return (
-                <motion.div
-                  key={news.id}
-                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                  animate={{ 
-                    opacity: shouldShow ? 1 : 0,
-                    y: shouldShow ? 0 : 20,
-                    scale: shouldShow ? 1 : 0.95
-                  }}
-                  transition={{ 
-                    duration: 0.6, 
-                    ease: [0.25, 0.1, 0.25, 1],
-                    delay: shouldShow ? 0.3 + (index * 0.1) : 0
-                  }}
-                  style={{
-                    display: scrollStage === 1 && !shouldShowInStage1 ? 'none' : 'block'
-                  }}
+          <SignedOut>
+            {/* 未登录用户显示登录提示 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ 
+                opacity: scrollStage > 0 ? 1 : 0,
+                y: scrollStage > 0 ? 0 : 20
+              }}
+              transition={{ 
+                duration: 1, 
+                ease: [0.25, 0.1, 0.25, 1],
+                delay: 0.4
+              }}
+              className="text-center py-20"
+            >
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-6">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">探索您的学习历程</h3>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                登录后即可查看您的个性化学习历史记录，包括学习进度、测验成绩和深度思考总结
+              </p>
+              <Link href="/sign-in">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="button-primary btn-text px-8 py-3"
                 >
-                  <CompactNewsCard news={news} index={index} />
-                </motion.div>
-              )
-            })}
-          </div>
+                  立即登录查看
+                </motion.button>
+              </Link>
+            </motion.div>
+          </SignedOut>
+
+          <SignedIn>
+            {/* 历史记录网格 - 渐进式展示 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
+              {isLoadingHistory ? (
+                // 加载状态
+                Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                    <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-3"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                ))
+              ) : historyData.length === 0 ? (
+                // 空状态 - 已登录但没有学习历史
+                <div className="col-span-full text-center py-16">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-6">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">开始您的学习之旅</h3>
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    在上方搜索框中输入您感兴趣的任何主题，开始个性化的AI引导学习体验
+                  </p>
+                </div>
+              ) : (
+                historyData.map((historyItem, index) => {
+                  // 第一阶段只显示前6个卡片（约第一行和第二行一半）
+                  const shouldShowInStage1 = index < 6
+                  const shouldShow = scrollStage === 0 ? false : 
+                                   scrollStage === 1 ? shouldShowInStage1 : true
+                  
+                  return (
+                    <motion.div
+                      key={historyItem.id}
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      animate={{ 
+                        opacity: shouldShow ? 1 : 0,
+                        y: shouldShow ? 0 : 20,
+                        scale: shouldShow ? 1 : 0.95
+                      }}
+                      transition={{ 
+                        duration: 0.6, 
+                        ease: [0.25, 0.1, 0.25, 1],
+                        delay: shouldShow ? 0.3 + (index * 0.1) : 0
+                      }}
+                      style={{
+                        display: scrollStage === 1 && !shouldShowInStage1 ? 'none' : 'block'
+                      }}
+                    >
+                      <CompactHistoryCard historyItem={historyItem} index={index} />
+                    </motion.div>
+                  )
+                })
+              )}
+            </div>
+          </SignedIn>
         </div>
       </motion.section>
 
