@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { GameResponse } from "@/lib/game-generation-service"
 import { LearningSessionService } from "@/lib/learning-session-service"
+import { useTranslations } from "@/lib/use-translations"
 
 interface GameStreamEvent {
   type: 'start' | 'progress' | 'complete' | 'error'
@@ -37,6 +38,7 @@ interface VideoStreamEvent {
 export default function SimulatePage() {
   const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
+  const { t } = useTranslations()
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState("")
   const [userLevel, setUserLevel] = useState("intermediate")

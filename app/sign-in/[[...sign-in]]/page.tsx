@@ -4,8 +4,11 @@ import { SignIn } from '@clerk/nextjs'
 import { motion } from "framer-motion"
 import { ArrowLeft, Sparkles } from "lucide-react"
 import Link from "next/link"
+import { useTranslations } from "@/lib/use-translations"
 
 export default function Page() {
+  const { t } = useTranslations()
+  
   return (
     <div className="min-h-screen bg-white flex items-center justify-center relative">
       {/* 返回主页按钮 */}
@@ -30,10 +33,10 @@ export default function Page() {
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-3xl font-light text-gray-900 mb-2">
-            Welcome to Xknow
+            {t('signin.title')}
           </h1>
           <p className="text-gray-500 text-sm">
-            Sign in to continue or create a new account
+            {t('signin.subtitle')}
           </p>
         </motion.div>
 
@@ -78,7 +81,7 @@ export default function Page() {
           className="text-center mt-8"
         >
           <p className="text-xs text-gray-400">
-            By continuing, you agree to our terms and privacy policy
+            {t('signin.termsNotice')}
           </p>
         </motion.div>
       </div>

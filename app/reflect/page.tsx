@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { LearningSessionService } from "@/lib/learning-session-service"
+import { useTranslations } from "@/lib/use-translations"
 
 interface ReflectionData {
   question: string
@@ -15,6 +16,7 @@ interface ReflectionData {
 export default function ReflectPage() {
   const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
+  const { t } = useTranslations()
   
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState("")

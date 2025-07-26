@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { LearningSessionService } from "@/lib/learning-session-service"
 import { LearningSession, UserStats, LearningInteraction, QuizRecord, ReflectionRecord, GameSession, VideoSession } from "@/lib/supabase"
+import { useTranslations } from "@/lib/use-translations"
 
 interface SessionDetails {
   session: LearningSession
@@ -20,6 +21,7 @@ interface SessionDetails {
 export default function ProfilePage() {
   const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
+  const { t } = useTranslations()
   
   const [learningHistory, setLearningHistory] = useState<LearningSession[]>([])
   const [userStats, setUserStats] = useState<UserStats | null>(null)

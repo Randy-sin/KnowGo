@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { ArrowLeft, CheckCircle, Clock, Brain, Gamepad2, Video, RotateCcw, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
+import { useTranslations } from "@/lib/use-translations"
 
 interface AnalysisData {
   analysis: string
@@ -28,6 +29,7 @@ interface LearningData {
 export default function SummaryPage() {
   const { isLoaded, isSignedIn } = useUser()
   const router = useRouter()
+  const { t } = useTranslations()
   const [learningData, setLearningData] = useState<LearningData | null>(null)
   const [showContent, setShowContent] = useState(false)
 
@@ -149,7 +151,7 @@ export default function SummaryPage() {
           className="text-center mb-16"
         >
           <h1 className="text-4xl font-light text-gray-900 tracking-tight mb-4">
-            Learning Journey Complete
+            {t('summary.title')}
           </h1>
           <p className="text-lg font-light text-gray-500">
             {learningData.topic}
@@ -169,7 +171,7 @@ export default function SummaryPage() {
               <CheckCircle className="w-6 h-6 text-gray-600" />
             </div>
             <div className="text-2xl font-light text-gray-900 mb-1">{stats.completedSections}/4</div>
-            <div className="text-sm text-gray-500">Sections Completed</div>
+            <div className="text-sm text-gray-500">{t('summary.completedSections')}</div>
           </div>
 
           <div className="bg-white border border-gray-100 rounded-3xl p-6 text-center">
@@ -177,7 +179,7 @@ export default function SummaryPage() {
               <Clock className="w-6 h-6 text-gray-600" />
             </div>
             <div className="text-2xl font-light text-gray-900 mb-1">{stats.totalTime}</div>
-            <div className="text-sm text-gray-500">Time Invested</div>
+            <div className="text-sm text-gray-500">{t('summary.timeInvested')}</div>
           </div>
 
           <div className="bg-white border border-gray-100 rounded-3xl p-6 text-center">
@@ -185,7 +187,7 @@ export default function SummaryPage() {
               <Brain className="w-6 h-6 text-gray-600" />
             </div>
             <div className="text-2xl font-light text-gray-900 mb-1">{stats.engagement}%</div>
-            <div className="text-sm text-gray-500">Engagement</div>
+            <div className="text-sm text-gray-500">{t('summary.engagement')}</div>
           </div>
         </motion.div>
 
@@ -196,7 +198,7 @@ export default function SummaryPage() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="space-y-8 mb-16"
         >
-          <h2 className="text-2xl font-light text-gray-900 text-center mb-12">Your Learning Path</h2>
+          <h2 className="text-2xl font-light text-gray-900 text-center mb-12">{t('summary.yourLearningPath')}</h2>
           
           {/* 思考阶段 */}
           <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden">
@@ -205,16 +207,16 @@ export default function SummaryPage() {
                 <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center">
                   <span className="text-white text-sm font-medium">1</span>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900">Deep Thinking</h3>
+                <h3 className="text-lg font-medium text-gray-900">{t('summary.deepThinking')}</h3>
               </div>
               <div className="space-y-4">
                 {learningData.responses.slice(0, 3).map((response, index) => (
                   <div key={index} className="bg-gray-50 rounded-2xl p-4">
                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-                      Question {index + 1}
+                      {t('summary.question')} {index + 1}
                     </div>
                     <p className="text-sm text-gray-700 leading-relaxed">
-                      {response || 'No response provided'}
+                      {response || t('summary.noResponse')}
                     </p>
                   </div>
                 ))}
@@ -229,27 +231,27 @@ export default function SummaryPage() {
                 <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center">
                   <span className="text-white text-sm font-medium">2</span>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900">AI Insights</h3>
+                <h3 className="text-lg font-medium text-gray-900">{t('summary.aiInsights')}</h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-gray-50 rounded-2xl p-4">
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-                    Key Insights
+                    {t('summary.keyInsights')}
                   </div>
                   <div className="space-y-2">
                     {learningData.analyses.slice(0, 3).map((analysis, index) => (
                       <div key={index} className="text-sm text-gray-600">
-                        • {analysis.insights?.[0] || 'Analysis pending'}
+                        • {analysis.insights?.[0] || t('summary.analysisPending')}
                       </div>
                     ))}
                   </div>
                 </div>
                 <div className="bg-gray-50 rounded-2xl p-4">
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-                    Your Reflections
+                    {t('summary.yourReflections')}
                   </div>
                   <div className="text-sm text-gray-600">
-                    {learningData.reflections.filter(r => r).length} personal reflections recorded
+                    {learningData.reflections.filter(r => r).length} {t('summary.reflectionsRecorded')}
                   </div>
                 </div>
               </div>
@@ -263,16 +265,16 @@ export default function SummaryPage() {
                 <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center">
                   <span className="text-white text-sm font-medium">3</span>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900">Active Learning</h3>
+                <h3 className="text-lg font-medium text-gray-900">{t('summary.activeLearning')}</h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className={`rounded-2xl p-4 ${learningData.gameCompleted ? 'bg-gray-50' : 'bg-gray-25 border border-gray-200'}`}>
                   <div className="flex items-center space-x-3 mb-3">
                     <Gamepad2 className={`w-5 h-5 ${learningData.gameCompleted ? 'text-gray-600' : 'text-gray-400'}`} />
-                    <span className="text-sm font-medium text-gray-900">Interactive Game</span>
+                    <span className="text-sm font-medium text-gray-900">{t('summary.interactiveGame')}</span>
                   </div>
                   <div className="text-xs text-gray-500">
-                    {learningData.gameCompleted ? 'Completed' : 'Not attempted'}
+                    {learningData.gameCompleted ? t('summary.completed') : t('summary.notAttempted')}
                   </div>
                 </div>
                 
@@ -280,10 +282,10 @@ export default function SummaryPage() {
                   <div className={`rounded-2xl p-4 ${learningData.videoCompleted ? 'bg-gray-50' : 'bg-gray-25 border border-gray-200'}`}>
                     <div className="flex items-center space-x-3 mb-3">
                       <Video className={`w-5 h-5 ${learningData.videoCompleted ? 'text-gray-600' : 'text-gray-400'}`} />
-                      <span className="text-sm font-medium text-gray-900">History Video</span>
+                      <span className="text-sm font-medium text-gray-900">{t('summary.historyVideo')}</span>
                     </div>
                     <div className="text-xs text-gray-500">
-                      {learningData.videoCompleted ? 'Generated' : 'Pending'}
+                      {learningData.videoCompleted ? t('summary.generated') : t('summary.pending')}
                     </div>
                   </div>
                 )}
@@ -306,7 +308,7 @@ export default function SummaryPage() {
             className="inline-flex items-center justify-center space-x-3 px-8 py-4 bg-gray-900 text-white rounded-2xl font-medium transition-all duration-300 hover:bg-black"
           >
             <RotateCcw className="w-4 h-4" />
-            <span>Start New Journey</span>
+            <span>{t('summary.startNewJourney')}</span>
           </motion.button>
           
           <motion.button
@@ -315,7 +317,7 @@ export default function SummaryPage() {
             whileTap={{ y: 0 }}
             className="inline-flex items-center justify-center space-x-3 px-8 py-4 bg-white border border-gray-200 text-gray-900 rounded-2xl font-medium transition-all duration-300 hover:border-gray-300 hover:bg-gray-50"
           >
-            <span>View All Learning</span>
+            <span>{t('summary.viewAllLearning')}</span>
             <ArrowRight className="w-4 h-4" />
           </motion.button>
         </motion.div>
@@ -328,7 +330,7 @@ export default function SummaryPage() {
           className="text-center mt-16 pt-8 border-t border-gray-100"
         >
           <p className="text-sm text-gray-400 font-light">
-            Thank you for learning with us
+            {t('summary.thankYou')}
           </p>
         </motion.div>
 

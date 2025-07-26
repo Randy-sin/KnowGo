@@ -208,5 +208,32 @@
     "title": "History Learning", 
     "subtitle": "Journey through time",
     "backToClassify": "Back to Classification"
+  },
+  "summary": {
+    "title": "Learning Journey Complete",
+    "subtitle": "Congratulations on completing this learning session!",
+    "completedSections": "Sections Completed",
+    "timeInvested": "Time Invested",
+    "engagement": "Engagement",
+    "yourLearningPath": "Your Learning Path",
+    "deepThinking": "Deep Thinking",
+    "aiInsights": "AI Insights",
+    "activeLearning": "Active Learning",
+    "keyInsights": "Key Insights",
+    "yourReflections": "Your Reflections",
+    "reflectionsRecorded": "personal reflections recorded",
+    "interactiveGame": "Interactive Game",
+    "historyVideo": "History Video",
+    "completed": "Completed",
+    "notAttempted": "Not attempted",
+    "generated": "Generated",
+    "pending": "Pending",
+    "startNewJourney": "Start New Journey",
+    "viewAllLearning": "View All Learning",
+    "thankYou": "Thank you for learning with us",
+    "question": "Question",
+    "noResponse": "No response provided",
+    "analysisPending": "Analysis pending",
+    "sectionsOf": "sections of"
   }
 } 

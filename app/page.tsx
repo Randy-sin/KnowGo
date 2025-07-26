@@ -25,7 +25,7 @@ interface HistoryItem {
 
 
 // 简化的历史记录卡片组件
-function CompactHistoryCard({ historyItem, index }: { historyItem: HistoryItem; index: number }) {
+function CompactHistoryCard({ historyItem, index, t }: { historyItem: HistoryItem; index: number; t: (key: string) => string }) {
   return (
     <motion.article
       whileHover={{ 
@@ -70,13 +70,13 @@ function CompactHistoryCard({ historyItem, index }: { historyItem: HistoryItem; 
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
-              <span className="font-medium text-green-600">完成</span>
+              <span className="font-medium text-green-600">{t('common.completed')}</span>
             </div>
           )}
           {historyItem.status === 'in_progress' && (
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-              <span className="font-medium text-blue-600">进行中</span>
+              <span className="font-medium text-blue-600">{t('common.inProgress')}</span>
             </div>
           )}
         </div>
@@ -151,11 +151,11 @@ export default function HomePage() {
         id: session.id,
         title: session.original_query,
         excerpt: session.intelligentSummary || `探索${session.user_confirmed_category || '未知'}领域的学习内容`,
-        category: session.user_confirmed_category === 'science' ? '理科' :
-                 session.user_confirmed_category === 'history' ? '文科' : '其他',
+        category: session.user_confirmed_category === 'science' ? t('profile.science') :
+                 session.user_confirmed_category === 'history' ? t('profile.history') : t('profile.others'),
         readTime: session.total_duration && session.total_duration > 0 ? 
-          `${Math.round(session.total_duration / 60)}分钟` : 
-          session.status === 'completed' ? '已完成' : '进行中',
+          `${Math.round(session.total_duration / 60)}${t('profile.minutes')}` : 
+          session.status === 'completed' ? t('common.completed') : t('common.inProgress'),
         timestamp: formatRelativeTime(session.created_at || ''),
         status: session.status || 'in_progress'
       }))
@@ -728,9 +728,9 @@ export default function HomePage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">开始您的学习之旅</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{t('home.startJourney')}</h3>
                   <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                    在上方搜索框中输入您感兴趣的任何主题，开始个性化的AI引导学习体验
+                    {t('home.emptyStateDesc')}
                   </p>
                 </div>
               ) : (
@@ -758,7 +758,7 @@ export default function HomePage() {
                         display: scrollStage === 1 && !shouldShowInStage1 ? 'none' : 'block'
                       }}
                     >
-                      <CompactHistoryCard historyItem={historyItem} index={index} />
+                      <CompactHistoryCard historyItem={historyItem} index={index} t={t} />
                     </motion.div>
                   )
                 })

@@ -21,6 +21,7 @@ interface UserResponse {
 export default function FeedbackPage() {
   const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
+  const { t } = useTranslations()
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState("")
   const [userLevel, setUserLevel] = useState("intermediate")
@@ -347,13 +348,17 @@ export default function FeedbackPage() {
     }
   }, [currentIndex, userReflections])
 
-  // 检查是否有预生成的分析，自动显示
+  // 检查是否有预生成的分析，自动显示；如果没有则自动生成
   useEffect(() => {
     if (analysisData.length > 0 && currentIndex < analysisData.length) {
       const currentData = analysisData[currentIndex]
       if (currentData?.aiAnalysis && currentData.aiAnalysis.trim()) {
         console.log('🎯 发现预生成分析，自动显示')
         setShowAnalysis(true)
+      } else {
+        console.log('🔄 没有预生成分析，自动开始生成')
+        setShowAnalysis(true)
+        generateAnalysis(currentIndex)
       }
     }
   }, [analysisData, currentIndex])
@@ -665,28 +670,15 @@ export default function FeedbackPage() {
                     <div className="border border-gray-200 rounded-2xl p-6 bg-white flex items-center justify-center min-h-[120px]">
                       <motion.button
                         onClick={() => {
-                          console.log('🔍 AI分析调试信息:', {
-                            currentIndex,
-                            currentQuestion: currentData?.question,
-                            currentUserAnswer: currentData?.userAnswer,
-                            hasExistingAnalysis: !!currentData?.aiAnalysis,
-                            analysisDataLength: analysisData.length
-                          })
+                          console.log('🔍 显示AI分析:', currentIndex)
                           setShowAnalysis(true)
-                          // 只有在没有分析内容时才重新生成
-                          if (!currentData?.aiAnalysis || currentData.aiAnalysis.trim() === '') {
-                            console.log('🔄 没有预生成分析，开始生成新分析')
-                            generateAnalysis(currentIndex)
-                          } else {
-                            console.log('✅ 显示预生成的分析内容')
-                          }
                         }}
                         whileHover={{ y: -1 }}
                         whileTap={{ y: 0 }}
                         className="text-gray-400 hover:text-gray-700 transition-colors duration-300 text-sm"
                         disabled={isGeneratingAnalysis}
                       >
-                        {isGeneratingAnalysis ? 'AI正在分析中...' : (currentData?.aiAnalysis && currentData.aiAnalysis.trim() ? '查看解析' : '生成解析')}
+                        {isGeneratingAnalysis ? 'AI正在分析中...' : '查看解析'}
                       </motion.button>
                     </div>
                   ) : (

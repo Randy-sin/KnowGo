@@ -204,9 +204,36 @@
     "subtitle": "探索世界",
     "backToClassify": "返回分类"
   },
-  "history": {
-    "title": "历史学习",
-    "subtitle": "穿越时光之旅", 
+    "history": {
+    "title": "历史学习", 
+    "subtitle": "穿越时光之旅",
     "backToClassify": "返回分类"
+  },
+  "summary": {
+    "title": "学习旅程完成",
+    "subtitle": "恭喜您完成了本次学习！",
+    "completedSections": "完成章节",
+    "timeInvested": "投入时间",
+    "engagement": "参与度",
+    "yourLearningPath": "您的学习路径",
+    "deepThinking": "深度思考",
+    "aiInsights": "AI洞察",
+    "activeLearning": "主动学习",
+    "keyInsights": "关键洞察",
+    "yourReflections": "您的反思",
+    "reflectionsRecorded": "个人反思记录",
+    "interactiveGame": "互动游戏",
+    "historyVideo": "历史视频",
+    "completed": "已完成",
+    "notAttempted": "未尝试",
+    "generated": "已生成",
+    "pending": "等待中",
+    "startNewJourney": "开始新的旅程",
+    "viewAllLearning": "查看所有学习",
+    "thankYou": "感谢您与我们一起学习",
+    "question": "问题",
+    "noResponse": "未提供回答",
+    "analysisPending": "分析待定",
+    "sectionsOf": "个章节，共"
   }
 } 
