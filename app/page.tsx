@@ -10,6 +10,7 @@ import { LanguageToggle } from "@/components/ui/language-toggle"
 import { useTranslations } from "@/lib/use-translations"
 import { LearningSessionService } from "@/lib/learning-session-service"
 import Parallax from "@/components/ui/parallax"
+import { LearningSessionModal } from "@/components/ui/learning-session-modal"
 
 // 历史记录数据类型
 interface HistoryItem {
@@ -25,7 +26,7 @@ interface HistoryItem {
 
 
 // 简化的历史记录卡片组件
-function CompactHistoryCard({ historyItem, index, t }: { historyItem: HistoryItem; index: number; t: (key: string) => string }) {
+function CompactHistoryCard({ historyItem, index, t, onViewDetails }: { historyItem: HistoryItem; index: number; t: (key: string) => string; onViewDetails: (sessionId: string) => void }) {
   return (
     <motion.article
       whileHover={{ 
@@ -33,6 +34,7 @@ function CompactHistoryCard({ historyItem, index, t }: { historyItem: HistoryIte
         scale: 1.01,
         transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }
       }}
+      onClick={() => onViewDetails(historyItem.id)}
       className="backdrop-blur-sm border border-[rgb(var(--border))]/60 rounded-2xl p-5 hover:border-[rgb(var(--border))] transition-all duration-300 hover:shadow-xl group cursor-pointer h-full bg-[rgb(var(--background))]/80 hover:bg-[rgb(var(--background))]"
     >
       {/* 分类标签和学习时长 */}
@@ -83,6 +85,10 @@ export default function HomePage() {
   // 历史记录状态管理
   const [historyData, setHistoryData] = useState<HistoryItem[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  
+  // 详情模态框状态管理
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
   
   const { t } = useTranslations()
 
@@ -163,6 +169,18 @@ export default function HomePage() {
     if (diffInDays < 7) return `${diffInDays}天前`
     if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}周前`
     return `${Math.floor(diffInDays / 30)}个月前`
+  }
+
+  // 处理查看详情
+  const handleViewDetails = (sessionId: string) => {
+    setSelectedSessionId(sessionId)
+    setShowDetailModal(true)
+  }
+
+  // 关闭模态框
+  const closeDetailModal = () => {
+    setShowDetailModal(false)
+    setSelectedSessionId(null)
   }
   
   // 渐进式两段滚动处理
@@ -744,7 +762,7 @@ export default function HomePage() {
                         display: scrollStage === 1 && !shouldShowInStage1 ? 'none' : 'block'
                       }}
                     >
-                      <CompactHistoryCard historyItem={historyItem} index={index} t={t} />
+                      <CompactHistoryCard historyItem={historyItem} index={index} t={t} onViewDetails={handleViewDetails} />
                     </motion.div>
                   )
                 })
@@ -755,6 +773,12 @@ export default function HomePage() {
       </motion.section>
 
 
+      {/* 学习详情模态框 */}
+      <LearningSessionModal
+        isOpen={showDetailModal}
+        onClose={closeDetailModal}
+        sessionId={selectedSessionId}
+      />
     </div>
   )
 }

@@ -9,6 +9,7 @@ import { GameResponse } from "@/lib/game-generation-service"
 import { LearningSessionService } from "@/lib/learning-session-service"
 import { useTranslations } from "@/lib/use-translations"
 
+
 interface GameStreamEvent {
   type: 'start' | 'progress' | 'complete' | 'error'
   message?: string
@@ -56,6 +57,10 @@ export default function SimulatePage() {
   const [videoCompleted, setVideoCompleted] = useState(false)
   const [videoTaskId, setVideoTaskId] = useState('')
   
+  // 摘要生成相关状态
+  const [isSummaryGenerating, setIsSummaryGenerating] = useState(false)
+  const [summaryGenerated, setSummaryGenerated] = useState(false)
+  
   // 保存游戏到数据库的函数
   const saveGameToDatabase = async (game: GameResponse) => {
     try {
@@ -79,6 +84,73 @@ export default function SimulatePage() {
       throw error
     }
   }
+
+  // 🤖 在游戏加载时并行生成摘要
+  const generateSummaryInBackground = useCallback(async () => {
+    if (summaryGenerated || isSummaryGenerating) {
+      console.log('📋 摘要已生成或正在生成中，跳过')
+      return
+    }
+
+    const sessionId = localStorage.getItem('xknow-session-id')
+    if (!sessionId || !user?.id) {
+      console.log('⚠️ 缺少sessionId或用户信息，跳过摘要生成')
+      return
+    }
+
+    try {
+      setIsSummaryGenerating(true)
+      console.log('🤖 开始并行生成学习摘要...')
+      
+      // 获取学习数据
+      const sessionDetails = await LearningSessionService.getSessionDetails(sessionId)
+      
+      if (!sessionDetails.interactions || sessionDetails.interactions.length === 0) {
+        console.log('⚠️ 没有学习交互数据，跳过摘要生成')
+        setIsSummaryGenerating(false)
+        return
+      }
+
+      const response = await fetch('/api/generate-summary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionData: sessionDetails
+        }),
+        signal: AbortSignal.timeout(25000) // 25秒超时
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const summaryData = await response.json() as {
+        summary: string
+        source: 'gemini' | 'fallback'
+        tone: 'encouraging' | 'neutral' | 'inspiring'
+        fallback: boolean
+      }
+
+      // 保存摘要到localStorage，供Summary页面使用
+      localStorage.setItem('xknow-generated-summary', JSON.stringify({
+        summary: summaryData.summary,
+        source: summaryData.source,
+        tone: summaryData.tone,
+        generatedAt: Date.now()
+      }))
+
+      setSummaryGenerated(true)
+      console.log('✅ 学习摘要生成完成并保存:', summaryData.summary)
+
+    } catch (error) {
+      console.warn('⚠️ 后台摘要生成失败:', error)
+      // 生成失败不影响游戏体验，Summary页面会使用回退方案
+    } finally {
+      setIsSummaryGenerating(false)
+    }
+  }, [summaryGenerated, isSummaryGenerating, user?.id])
   
   // 智能等待游戏生成的机制
   const waitForGameOrShowExisting = useCallback(async (currentTopic: string, currentCategory: string, currentUserLevel: string) => {
@@ -108,6 +180,9 @@ export default function SimulatePage() {
               // 数据库操作失败不影响用户体验
             })
           }
+          
+          // 🤖 游戏加载成功后，开始并行生成摘要
+          generateSummaryInBackground()
           
           return
         } else {
@@ -142,6 +217,9 @@ export default function SimulatePage() {
                 // 数据库操作失败不影响用户体验
               })
             }
+            
+            // 🤖 游戏生成完成后，开始并行生成摘要
+            generateSummaryInBackground()
           }
         } catch (error) {
           console.error('❌ 游戏解析失败:', error)
@@ -202,6 +280,67 @@ export default function SimulatePage() {
     }
   }, [router]) // eslint-disable-line react-hooks/exhaustive-deps
   // 注意：故意不包含waitForGameOrShowExisting作为依赖，因为它会导致无限循环
+
+  // 处理游戏完成
+  const handleGameCompletion = useCallback(() => {
+    setGameCompleted(true)
+    
+    // 如果是历史类别，启动视频生成
+    if (category === 'history') {
+      // 检查是否有视频任务，如果有则加载
+      const videoTask = localStorage.getItem('xknow-video-task')
+      if (videoTask) {
+        setIsLoadingVideo(true)
+        setVideoMessage('正在生成历史学习视频...')
+      } else {
+        setVideoMessage('历史学习内容正在准备中...')
+      }
+    } else {
+      // 非历史类别，显示完成状态
+      setVideoMessage('恭喜完成游戏学习！您已掌握相关知识。')
+      setTimeout(() => {
+        router.push('/summary')
+      }, 2000)
+    }
+  }, [category, router])
+
+  // 处理游戏跳过
+  const handleGameSkip = useCallback(() => {
+    console.log('用户选择跳过游戏')
+    setGameCompleted(true)
+    setVideoMessage('您选择跳过了游戏环节，直接进入下一步学习。')
+    
+    setTimeout(() => {
+      router.push('/summary')
+    }, 1500)
+  }, [router])
+
+  // 监听来自游戏iframe的消息
+  useEffect(() => {
+    const handleGameMessage = (event: MessageEvent) => {
+      // 安全检查：确保消息来源可信
+      if (event.origin !== window.location.origin && event.source !== window) {
+        return
+      }
+
+      const { type } = event.data
+
+      if (type === 'GAME_COMPLETED') {
+        console.log('🎉 游戏完成消息接收')
+        handleGameCompletion()
+      } else if (type === 'GAME_SKIPPED') {
+        console.log('⏭️ 游戏跳过消息接收')
+        handleGameSkip()
+      }
+    }
+
+    window.addEventListener('message', handleGameMessage)
+
+    // 清理监听器
+    return () => {
+      window.removeEventListener('message', handleGameMessage)
+    }
+  }, [handleGameCompletion, handleGameSkip])
 
   const handleBack = () => {
     router.back()

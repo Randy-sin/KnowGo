@@ -117,6 +117,7 @@ function buildCodeImplementationPrompt(topic: string, category: string, userLeve
   --accent: #374151;
   --success: #10b981;
   --danger: #ef4444;
+  --warning: #f59e0b;
   --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
@@ -140,6 +141,24 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.header-bar {
+  background: var(--bg-secondary);
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--fg-secondary);
 }
 
 .control-panel {
@@ -210,6 +229,22 @@ body {
   box-shadow: var(--shadow);
 }
 
+.btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--fg-primary);
+  border: 1px solid var(--border);
+}
+
+.btn-success {
+  background: var(--success);
+  color: white;
+}
+
+.btn-warning {
+  background: var(--warning);
+  color: white;
+}
+
 .equation-display {
   font-family: 'SF Mono', Monaco, monospace;
   background: var(--bg-secondary);
@@ -218,6 +253,37 @@ body {
   margin: 16px 0;
   font-size: 16px;
   text-align: center;
+}
+
+.exit-controls {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 12px;
+  z-index: 1000;
+}
+
+.completion-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.completion-card {
+  background: var(--bg-primary);
+  padding: 32px;
+  border-radius: 16px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 `
 
@@ -235,21 +301,108 @@ body {
 3. **全屏设计**：游戏占满整个屏幕，使用提供的CSS样式
 4. **无外部依赖**：所有代码都在一个HTML文件中
 
+**🚨 核心要求 - 必须实现游戏完成机制：**
+
+**1. 明确的完成退出机制（必须实现）：**
+- 成功完成若干轮后（建议3-5轮），自动弹出完成提示
+- 显示"学习完成"或"游戏完成"的明确消息
+- 提供"结束游戏"按钮，点击后触发 \`window.parent?.postMessage({type: 'GAME_COMPLETED'}, '*')\`
+- 避免无限循环，确保用户有明确的退出路径
+
+**2. 用户逃生通道（必须实现）：**
+- 右上角固定显示"跳过游戏"按钮，随时可点击
+- 点击跳过按钮触发 \`window.parent?.postMessage({type: 'GAME_SKIPPED'}, '*')\`
+- 进度指示器显示当前轮次/总轮次（如："第2轮/共5轮"）
+
+**3. 渐进式难度和明确终点：**
+- 设计3-5个渐进式关卡或轮次
+- 每轮成功后询问用户："继续下一轮" 或 "完成学习"
+- 完成所有轮次后强制结束，不允许继续
+
 **🎯 必须实现的反馈机制：**
 1. **成功判定**：严格按照胜利条件实现判定逻辑（如误差检查、正确率计算等）
 2. **成功反馈**：成功时显示庆祝效果（绿色提示、"恭喜"消息等）
 3. **失败提示**：失败时显示明确的错误信息（红色提示、具体错误原因等）
 4. **操作按钮**：
-   - 成功后：显示"下一轮"或"重新开始"按钮
+   - 成功后：显示"下一轮"或"完成学习"按钮
    - 失败后：显示"重试"按钮
    - 游戏中：显示"提交答案"或"检查结果"按钮
+   - 完成后：显示"结束游戏"按钮
 
-**必须实现的功能：**
-- 按照核心玩法设计交互界面
-- 实现胜利条件的精确判定逻辑
-- 失败时显示具体错误原因和重试按钮
-- 成功时显示庆祝效果和继续按钮
-- 提供清晰的操作指导和即时反馈
+**必须实现的界面元素：**
+
+**头部栏（必须包含）：**
+\`\`\`html
+<div class="header-bar">
+  <div class="progress-indicator">
+    <span>第 <span id="currentRound">1</span> 轮 / 共 <span id="totalRounds">5</span> 轮</span>
+  </div>
+  <div class="exit-controls">
+    <button class="btn btn-warning" onclick="skipGame()">跳过游戏</button>
+  </div>
+</div>
+\`\`\`
+
+**完成覆盖层（必须包含）：**
+\`\`\`html
+<div id="completionOverlay" class="completion-overlay" style="display: none;">
+  <div class="completion-card">
+    <h2>🎉 学习完成！</h2>
+    <p>恭喜您完成了《${gameDesign.gameTitle}》的学习！</p>
+    <p>您已经掌握了相关知识点。</p>
+    <button class="btn btn-success" onclick="completeGame()">结束游戏</button>
+  </div>
+</div>
+\`\`\`
+
+**必须实现的JavaScript函数：**
+\`\`\`javascript
+let currentRound = 1;
+const totalRounds = 5; // 或其他合理数字
+let roundsCompleted = 0;
+
+function nextRound() {
+  currentRound++;
+  roundsCompleted++;
+  
+  // 更新进度显示
+  document.getElementById('currentRound').textContent = currentRound;
+  
+  // 检查是否完成所有轮次
+  if (roundsCompleted >= totalRounds) {
+    showCompletionOverlay();
+    return;
+  }
+  
+  // 继续下一轮或询问用户
+  if (confirm('恭喜完成这一轮！是否继续下一轮？（点击取消结束游戏）')) {
+    // 重置游戏状态开始新轮次
+    resetRound();
+  } else {
+    showCompletionOverlay();
+  }
+}
+
+function showCompletionOverlay() {
+  document.getElementById('completionOverlay').style.display = 'flex';
+}
+
+function completeGame() {
+  // 通知父页面游戏完成
+  window.parent?.postMessage({type: 'GAME_COMPLETED'}, '*');
+}
+
+function skipGame() {
+  if (confirm('确定要跳过这个游戏吗？')) {
+    window.parent?.postMessage({type: 'GAME_SKIPPED'}, '*');
+  }
+}
+
+function resetRound() {
+  // 重置当前轮次的游戏状态
+  // 根据具体游戏实现
+}
+\`\`\`
 
 **CSS样式系统（必须使用）：**
 ${designSystemCSS}
@@ -289,12 +442,19 @@ ${designSystemCSS}
 **输出格式：**
 \`\`\`json
 {
-  "html": "<!DOCTYPE html><html><head><title>${gameDesign.gameTitle}</title><style>/* CSS */</style></head><body><!-- HTML --><script>/* JavaScript */</script></body></html>",
+  "html": "<!DOCTYPE html><html><head><title>${gameDesign.gameTitle}</title><style>/* CSS */</style></head><body><!-- HTML包含头部栏、游戏区域、完成覆盖层 --><script>/* JavaScript包含必需的函数 */</script></body></html>",
   "title": "${gameDesign.gameTitle}"
 }
 \`\`\`
 
-请实现"${gameDesign.gameTitle}"游戏，确保包含完整的成功/失败反馈和操作引导！`
+**关键要求总结：**
+1. 🚨 **必须有明确的游戏结束条件**（3-5轮后强制结束）
+2. 🚨 **必须有跳过按钮**（右上角固定位置）
+3. 🚨 **必须有进度指示**（显示当前轮次）
+4. 🚨 **必须有完成覆盖层**（防止无限循环）
+5. 🚨 **必须实现postMessage通信**（通知父页面）
+
+请实现"${gameDesign.gameTitle}"游戏，确保用户永远不会被困在游戏中！`
 }
 
 

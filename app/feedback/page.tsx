@@ -8,6 +8,7 @@ import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { useTranslations } from "@/lib/use-translations"
 import { QuizQuestion } from "@/lib/quiz-service"
 import { LearningSessionService } from "@/lib/learning-session-service"
+import { APIClient } from "@/lib/api-client"
 import Markdown from "@/components/ui/markdown"
 
 interface UserResponse {
@@ -169,31 +170,17 @@ export default function FeedbackPage() {
       category,
       userLevel
     })
-    
-    setIsGeneratingQuiz(true)
+        setIsGeneratingQuiz(true)
     setQuizGenerationMessage("AI正在基于你的学习内容生成检测题目...")
     
     try {
-      const response = await fetch('/api/generate-quiz', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          topic: query,
-          guidedQuestion: currentQuestion,  // 必须传入引导式问题
-          userAnswer: currentUserAnswer,    // 传入用户回答
-          category: category,
-          userLevel: userLevel,
-          stream: false // 改为非流式输出
-        })
+      const result = await APIClient.generateQuiz({
+        topic: query,
+        guidedQuestion: currentQuestion,
+        userAnswer: currentUserAnswer,
+        category: category,
+        userLevel: userLevel
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to generate quiz')
-      }
-
-      const result = await response.json()
       
       if (result.quiz) {
         setCurrentQuiz(result.quiz)
@@ -214,11 +201,15 @@ export default function FeedbackPage() {
       } else {
         throw new Error('No quiz in response')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating quiz:', error)
-      setQuizGenerationMessage("题目生成失败")
       
-      // 不再使用备用题目，直接设置为null
+      // 显示更友好的错误信息
+      const errorMessage = error.retryable 
+        ? "网络不稳定，题目生成失败。请稍后重试。"
+        : "题目生成失败，请重试"
+      
+      setQuizGenerationMessage(errorMessage)
       setCurrentQuiz(null)
     } finally {
       setIsGeneratingQuiz(false)
@@ -933,10 +924,10 @@ export default function FeedbackPage() {
             }`}
           >
             {currentStage === 'reflection' 
-              ? '进入知识检测 →'
+              ? '看看你对其的理解 →'
               : currentIndex === analysisData.length - 1 
-              ? '完成学习，开始深度探索 →' 
-              : '继续下一轮学习 →'
+              ? '完成基础思考开始深度探索 →' 
+              : '继续探究你的下一个思考 →'
             }
           </motion.button>
         </motion.div>
