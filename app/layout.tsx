@@ -8,6 +8,16 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+  preload: true,
+  fallback: [
+    "-apple-system",
+    "BlinkMacSystemFont", 
+    "Segoe UI",
+    "Roboto",
+    "Helvetica Neue",
+    "Arial",
+    "sans-serif"
+  ],
 });
 
 export const metadata: Metadata = {

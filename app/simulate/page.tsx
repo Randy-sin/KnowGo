@@ -367,7 +367,7 @@ export default function SimulatePage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
             onClick={handleGameComplete}
-            className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-all duration-300 shadow-sm hover:shadow-md"
+            className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black text-sm font-medium rounded-full hover:bg-black/90 dark:hover:bg-white/90 transition-all duration-300 shadow-sm hover:shadow-md"
             title={category === 'history' ? "完成游戏，观看历史视频" : "完成游戏，进入反馈"}
           >
             完成
@@ -450,12 +450,12 @@ export default function SimulatePage() {
                 /* 无游戏状态 */
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-lg font-light text-gray-900 mb-6">
+                    <div className="text-lg font-light text-primary mb-6">
                       无可用游戏
                     </div>
                     <motion.button
                       onClick={() => router.push('/configure')}
-                      className="px-6 py-3 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-all duration-300 shadow-sm hover:shadow-md"
+                      className="px-6 py-3 bg-black text-white dark:bg-white dark:text-black text-sm font-medium rounded-full hover:bg-black/90 dark:hover:bg-white/90 transition-all duration-300 shadow-sm hover:shadow-md"
                       whileHover={{ y: -2 }}
                       whileTap={{ y: 0 }}
                     >

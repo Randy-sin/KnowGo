@@ -2,7 +2,14 @@
 
 ## 📋 概述
 
-Xknow 是一个基于 Next.js 15 构建的个性化 AI 学习平台，采用硅谷风格的极简设计。应用引导用户完成完整的学习旅程：**搜索 → 认证 → 配置 → 分类 → 引导学习 → 反馈分析 → 深度学习**，通过 Clerk 提供安全的用户认证和个性化学习体验。
+Xknow 是一个基于 Next.js 15 构建的**个性化 AI 学习平台**，采用硅谷风格的极简设计。应用引导用户完成完整的学习旅程：**搜索 → 认证 → 配置 → 分类 → 引导学习 → 反馈分析 → 深度学习**，通过 Clerk 提供安全的用户认证和个性化学习体验。
+
+### **核心特色**
+- 🌐 **完整国际化支持**：中英文无缝切换，200+ 翻译键值
+- 🎮 **AI双阶段游戏生成**：设计师+工程师协作，简洁高效
+- 📊 **智能学习跟踪**：Supabase数据库，AI生成摘要
+- 🎨 **极简品牌设计**：Logo中心化布局，渐进式交互
+- ⚡ **性能优化架构**：并行预生成，混合存储策略
 
 ---
 
@@ -21,7 +28,10 @@ Xknow 是一个基于 Next.js 15 构建的个性化 AI 学习平台，采用硅�
 | **理科模拟器** | `app/simulate/page.tsx` | `/simulate` | 游戏化学习体验（需认证） |
 | **历史学习** | `app/history/page.tsx` | `/history` | 历史主题视频学习（需认证） |
 | **地理学习** | `app/geography/page.tsx` | `/geography` | 地理文科学习（需认证） |
-| **根布局** | `app/layout.tsx` | - | Clerk Provider + 全局样式 |
+| **深度反思页** | `app/reflect/page.tsx` | `/reflect` | 等待期间深度反思（需认证） |
+| **个人资料页** | `app/profile/page.tsx` | `/profile` | 学习统计和历史查看（需认证） |
+| **学习总结页** | `app/summary/page.tsx` | `/summary` | 学习旅程完成总结（需认证） |
+| **根布局** | `app/layout.tsx` | - | Clerk Provider + 国际化 + 全局样式 |
 | **中间件** | `middleware.ts` | - | 路由保护和认证控制 |
 | **全局样式** | `app/globals.css` | - | 设计系统与样式 |
 
@@ -36,6 +46,8 @@ Xknow 是一个基于 Next.js 15 构建的个性化 AI 学习平台，采用硅�
 | **设计游戏** | `app/api/design-game/route.ts` | 游戏概念设计（第一阶段） |
 | **生成游戏** | `app/api/generate-game/route.ts` | 游戏代码实现（第二阶段） |
 | **深度反思** | `app/api/generate-reflection/route.ts` | 等待期间反思问题生成 |
+| **视频生成** | `app/api/generate-video/route.ts` | 历史主题视频内容生成 |
+| **视频提示** | `app/api/generate-video-prompt/route.ts` | 视频生成提示词优化 |
 
 ### **支持文件**
 
@@ -47,6 +59,8 @@ Xknow 是一个基于 Next.js 15 构建的个性化 AI 学习平台，采用硅�
 | **UI组件** | `components/ui/` | 可复用的UI组件 |
 | **业务逻辑** | `lib/` | AI服务和工具函数 |
 | **类型定义** | `types/index.ts` | TypeScript 类型定义 |
+| **国际化翻译** | `messages/` | 中英文翻译文件 (200+ 键值) |
+| **数据库架构** | `database-schema.sql` | Supabase PostgreSQL 数据表设计 |
 
 ---
 
@@ -94,6 +108,12 @@ Xknow 是一个基于 Next.js 15 构建的个性化 AI 学习平台，采用硅�
     ↓ 个性化反思问题生成
     ↓ 用户深度写作 2-3分钟
     ↓ 游戏生成完成后自动跳转到对应学习页面
+
+8. 学习旅程完成 (/summary) - 需要认证
+   ↓ 展示完整学习统计和数据
+   ↓ AI生成的学习总结报告
+   ↓ 个性化学习建议
+   ↓ 历史记录自动保存到个人中心 (/profile)
 ```
 
 ---
@@ -318,6 +338,147 @@ POST /api/generate-reflection
 
 ---
 
+## 🌍 国际化架构
+
+### **完整的中英文支持系统**
+
+#### **翻译系统实现**
+- **框架集成**：基于 `next-intl` 的国际化解决方案
+- **翻译文件**：`messages/zh.json` 和 `messages/en.json`
+- **键值覆盖**：200+ 翻译键值，涵盖所有功能模块
+- **动态切换**：实时语言切换，无需页面刷新
+
+#### **支持的页面**
+```typescript
+✅ 主页 (app/page.tsx) - 25+ 键值
+✅ 配置页 (app/configure/page.tsx) - 30+ 键值  
+✅ 分类页 (app/classify/page.tsx) - 15+ 键值
+✅ 学习页 (app/learn/page.tsx) - 20+ 键值
+✅ 反馈页 (app/feedback/page.tsx) - 25+ 键值
+✅ 模拟器页 (app/simulate/page.tsx) - 20+ 键值
+✅ 反思页 (app/reflect/page.tsx) - 15+ 键值
+✅ 个人资料页 (app/profile/page.tsx) - 35+ 键值
+✅ 登录页 (app/sign-in/[[...sign-in]]/page.tsx) - 10+ 键值
+✅ 总结页 (app/summary/page.tsx) - 22+ 键值
+```
+
+#### **翻译键值结构**
+```typescript
+{
+  "common": "通用组件文本",
+  "home": "主页内容", 
+  "configure": "配置页面",
+  "learn": "学习流程",
+  "classify": "分类确认",
+  "feedback": "反馈分析",
+  "simulate": "模拟器游戏",
+  "reflect": "深度反思",
+  "profile": "个人中心",
+  "signin": "登录认证",
+  "summary": "学习总结"
+}
+```
+
+#### **语言切换机制**
+```typescript
+// 语言状态管理
+const { language, setLanguage, toggleLanguage } = useLanguage()
+
+// 持久化存储
+localStorage.setItem('xknow-language', lang)
+
+// 实时切换
+document.documentElement.lang = lang
+```
+
+---
+
+## 🏠 主页设计架构
+
+### **品牌Logo布局系统**
+
+#### **Logo展示策略**
+- **位置**：页面中心，绝对定位背景层
+- **尺寸**：192px高度，完全不透明
+- **替代关系**：完全替代原"Xknow"文字标题
+- **响应式**：支持明暗主题切换
+
+#### **渐进式滚动交互**
+```typescript
+// 两阶段滚动机制
+Stage 0: 初始状态 - 主要内容展示
+Stage 1: 第一次滚动 - 锁定并显示前6个历史记录
+Stage 2: 第二次滚动 - 解锁并显示所有内容
+```
+
+#### **智能历史记录系统**
+- **数据来源**：Supabase数据库实时查询
+- **智能摘要**：AI生成的个性化学习概述
+- **状态管理**：三种显示状态（未登录/空状态/有数据）
+- **布局优化**：响应式网格，错开动画效果
+
+### **历史记录卡片设计**
+```typescript
+interface HistoryItem {
+  id: string           // 唯一标识
+  title: string        // 学习主题
+  excerpt: string      // AI智能摘要
+  category: string     // 学科分类（国际化）
+  readTime: string     // 学习时长或"--"
+  timestamp: string    // 相对时间
+  status: string       // 完成状态
+}
+```
+
+---
+
+## 📊 数据架构
+
+### **Supabase数据库设计**
+
+#### **核心数据表**
+```sql
+learning_sessions       -- 学习会话主表
+learning_interactions   -- 学习交互记录
+quiz_records           -- 知识检测记录
+reflection_records     -- 深度反思记录
+game_sessions          -- 游戏学习记录
+video_sessions         -- 视频学习记录
+user_stats            -- 用户统计数据
+```
+
+#### **智能摘要生成**
+```typescript
+// 基于学习数据的AI摘要算法
+static generateSessionSummary(session, interactions, quizRecords) {
+  if (status === 'completed' && interactions.length > 0) {
+    const accuracy = Math.round((correctAnswers / totalQuestions) * 100)
+    return `通过${stageCount}个阶段深度探索了"${topic}"，完成${level}难度的${category}学习，测验正确率${accuracy}%`
+  }
+  // 其他状态的智能描述逻辑...
+}
+```
+
+### **混合存储策略**
+```typescript
+// 客户端状态管理
+localStorage 键值:
+'xknow-query'                    // 用户查询主题
+'xknow-classification'           // AI分类结果
+'xknow-category'                 // 用户确认的分类
+'xknow-config'                   // 学习配置
+'xknow-session-id'               // 当前会话ID
+'xknow-language'                 // 用户语言偏好
+
+// 数据库持久化
+- 完整的学习会话记录
+- 用户交互详情
+- 测验和反思数据
+- 学习统计和进度跟踪
+```
+
+---
+
 ## 🤖 AI集成架构
 
 ### **多模型协作设计**
@@ -463,26 +624,39 @@ generateGameWithTwoStages()      // 游戏预生成
 ## 📈 技术架构总结
 
 ### **前端架构**
-- **Next.js 15 App Router**：现代化路由和渲染
-- **TypeScript 全覆盖**：100%类型安全
-- **Framer Motion**：流畅的页面和状态过渡
-- **极简设计系统**：硅谷风格的一致性体验
+- **Next.js 15 App Router**：现代化路由和渲染系统
+- **TypeScript 全覆盖**：100%类型安全，完整的类型定义
+- **Framer Motion 12**：流畅的页面过渡和微交互动画
+- **国际化系统**：完整的中英文支持，200+ 翻译键值
+- **极简设计系统**：硅谷风格的CSS变量系统和组件库
+- **响应式布局**：渐进式滚动交互和自适应网格
 
 ### **AI集成架构**  
-- **Gemini 2.0-flash**：7个专业化API端点
+- **Gemini 2.0-flash**：9个专业化API端点
 - **流式响应**：Server-Sent Events实时体验
 - **智能提示词**：分学科、分水平的精准工程
+- **两阶段游戏生成**：设计师+工程师AI协作模式
+- **智能摘要生成**：基于学习数据的个性化描述
 - **错误恢复**：多层降级和重试机制
 
 ### **数据架构**
-- **localStorage**：客户端状态持久化
-- **Clerk认证**：用户会话和权限管理
+- **Supabase PostgreSQL**：7张核心数据表，完整的学习记录
+- **混合存储策略**：localStorage + 数据库的智能组合
+- **行级安全**：基于Clerk的用户数据隔离
+- **智能统计**：学习时长、准确率、连续学习等指标
+- **Clerk认证**：完整的用户会话和权限管理
 - **预生成策略**：并行处理优化用户体验
-- **数据清理**：智能清理确保内容匹配
+- **数据清理**：智能清理确保学习流程纯净性
+
+### **用户体验架构**
+- **品牌一致性**：Logo中心化布局，替代文字标题
+- **历史记录系统**：智能摘要+实时查询的学习追踪
+- **渐进式交互**：两阶段滚动，错开动画时序
+- **状态管理优化**：简化显示，去除冗余状态信息
 
 ---
 
 **Xknow 代表了AI教育产品的新标准：技术先进、体验优雅、教育有效。**
 
 *最后更新：2024年12月*  
-*版本：3.0.0 - 新增深度反思等待机制、完整反馈分析流程* 
+*版本：4.0.0 - 完整国际化支持、品牌Logo中心化、智能历史记录系统、数据库架构优化* 

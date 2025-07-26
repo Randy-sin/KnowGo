@@ -14,22 +14,22 @@ export default function Markdown({ children, className = "" }: MarkdownProps) {
         components={{
         // 自定义组件样式
         h1: ({ children }) => (
-          <h1 className="text-lg font-medium text-gray-900 mb-3 mt-6 first:mt-0">
+          <h1 className="text-lg font-medium text-primary mb-3 mt-6 first:mt-0">
             {children}
           </h1>
         ),
         h2: ({ children }) => (
-          <h2 className="text-base font-medium text-gray-900 mb-2 mt-5 first:mt-0">
+          <h2 className="text-base font-medium text-primary mb-2 mt-5 first:mt-0">
             {children}
           </h2>
         ),
         h3: ({ children }) => (
-          <h3 className="text-sm font-medium text-gray-900 mb-2 mt-4 first:mt-0">
+          <h3 className="text-sm font-medium text-primary mb-2 mt-4 first:mt-0">
             {children}
           </h3>
         ),
         p: ({ children }) => (
-          <p className="text-gray-600 leading-relaxed font-light mb-3 last:mb-0">
+          <p className="text-secondary leading-relaxed font-light mb-3 last:mb-0">
             {children}
           </p>
         ),
@@ -44,24 +44,24 @@ export default function Markdown({ children, className = "" }: MarkdownProps) {
           </ol>
         ),
         li: ({ children }) => (
-          <li className="text-gray-600 font-light text-sm leading-relaxed flex items-start">
-            <span className="inline-block w-1 h-1 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+          <li className="text-secondary font-light text-sm leading-relaxed flex items-start">
+            <span className="inline-block w-1 h-1 bg-secondary rounded-full mt-2 mr-3 flex-shrink-0"></span>
             <span>{children}</span>
           </li>
         ),
         strong: ({ children }) => (
-          <strong className="font-medium text-gray-900">
+          <strong className="font-medium text-primary">
             {children}
           </strong>
         ),
         em: ({ children }) => (
-          <em className="italic text-gray-700">
+          <em className="italic text-secondary">
             {children}
           </em>
         ),
         blockquote: ({ children }) => (
-          <blockquote className="border-l-2 border-gray-200 pl-4 py-2 my-3 bg-gray-50 rounded-r-lg">
-            <div className="text-gray-600 font-light italic">
+          <blockquote className="border-l-2 border-default pl-4 py-2 my-3 bg-subtle rounded-r-lg">
+            <div className="text-secondary font-light italic">
               {children}
             </div>
           </blockquote>
@@ -72,7 +72,7 @@ export default function Markdown({ children, className = "" }: MarkdownProps) {
           if (isInline) {
             return (
               <code 
-                className="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-xs font-mono"
+                className="bg-subtle text-primary px-1.5 py-0.5 rounded text-xs font-mono"
                 {...props}
               >
                 {children}
@@ -82,7 +82,7 @@ export default function Markdown({ children, className = "" }: MarkdownProps) {
           
           return (
             <code 
-              className="block bg-gray-100 text-gray-800 p-3 rounded-lg text-xs font-mono leading-relaxed overflow-x-auto"
+              className="block bg-subtle text-primary p-3 rounded-lg text-xs font-mono leading-relaxed overflow-x-auto"
               {...props}
             >
               {children}
@@ -90,7 +90,7 @@ export default function Markdown({ children, className = "" }: MarkdownProps) {
           )
         },
         pre: ({ children }) => (
-          <pre className="bg-gray-100 rounded-lg p-3 my-3 overflow-x-auto">
+          <pre className="bg-subtle rounded-lg p-3 my-3 overflow-x-auto">
             {children}
           </pre>
         ),
@@ -99,30 +99,30 @@ export default function Markdown({ children, className = "" }: MarkdownProps) {
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-900 underline hover:text-black transition-colors duration-200"
+            className="text-primary underline hover:text-primary/80 transition-colors duration-200"
           >
             {children}
           </a>
         ),
         table: ({ children }) => (
           <div className="overflow-x-auto my-3">
-            <table className="w-full border-collapse border border-gray-200">
+            <table className="w-full border-collapse border border-default">
               {children}
             </table>
           </div>
         ),
         th: ({ children }) => (
-          <th className="border border-gray-200 bg-gray-50 px-3 py-2 text-left text-xs font-medium text-gray-900">
+          <th className="border border-default bg-subtle px-3 py-2 text-left text-xs font-medium text-primary">
             {children}
           </th>
         ),
         td: ({ children }) => (
-          <td className="border border-gray-200 px-3 py-2 text-sm text-gray-600">
+          <td className="border border-default px-3 py-2 text-sm text-secondary">
             {children}
           </td>
         ),
         hr: () => (
-          <hr className="border-0 border-t border-gray-200 my-4" />
+          <hr className="border-0 border-t border-default my-4" />
         )
       }}
       >

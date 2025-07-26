@@ -18,6 +18,8 @@ interface SessionDetails {
   videoSession: VideoSession | null
 }
 
+
+
 export default function ProfilePage() {
   const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
@@ -31,6 +33,8 @@ export default function ProfilePage() {
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [currentSessionDetails, setCurrentSessionDetails] = useState<SessionDetails | null>(null)
   const [isLoadingDetails, setIsLoadingDetails] = useState(false)
+  
+
 
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
@@ -61,7 +65,16 @@ export default function ProfilePage() {
       console.log('📊 学习历史数据:', history)
       console.log('📈 用户统计数据:', stats)
       
-      setLearningHistory(history)
+      // 显示所有学习记录，但优先显示已完成的
+      const sortedHistory = history.sort((a, b) => {
+        // 优先显示已完成的记录
+        if (a.status === 'completed' && b.status !== 'completed') return -1
+        if (b.status === 'completed' && a.status !== 'completed') return 1
+        // 然后按创建时间排序
+        return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
+      })
+      
+      setLearningHistory(sortedHistory)
       setUserStats(stats)
     } catch (error) {
       console.error('❌ 加载用户数据失败:', error)
@@ -90,6 +103,8 @@ export default function ProfilePage() {
       setIsLoadingDetails(false)
     }
   }
+
+
 
   // 关闭模态框
   const closeModal = () => {
@@ -158,7 +173,7 @@ export default function ProfilePage() {
       case 'abandoned':
         return 'text-gray-600 bg-gray-50'
       default:
-        return 'text-gray-600 bg-gray-50'
+        return 'text-gray-500 bg-gray-50'
     }
   }
 
@@ -167,13 +182,15 @@ export default function ProfilePage() {
       case 'completed':
         return '已完成'
       case 'in_progress':
-        return '学习中'
+        return '进行中'
       case 'abandoned':
         return '已中断'
       default:
         return '未知'
     }
   }
+
+
 
   // 如果用户未登录，重定向到登录页
   if (isLoaded && !isSignedIn) {
@@ -182,7 +199,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-page flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -195,7 +212,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-page">
       {/* 极简导航 */}
       <div className="absolute top-8 left-8 z-10">
         <motion.button
@@ -203,7 +220,7 @@ export default function ProfilePage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           onClick={handleBack}
-          className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors duration-300"
+          className="w-6 h-6 flex items-center justify-center text-secondary hover:text-primary transition-colors duration-300"
         >
           <ArrowLeft className="w-4 h-4" />
         </motion.button>
@@ -218,10 +235,10 @@ export default function ProfilePage() {
           transition={{ duration: 0.8 }}
           className="text-center mb-12"
         >
-          <h1 className="text-3xl font-light text-gray-900 mb-3">
+          <h1 className="text-3xl font-light text-primary mb-3">
             学习档案
           </h1>
-          <p className="text-gray-500">
+          <p className="text-secondary">
             追踪你的学习进度和成长历程
           </p>
         </motion.div>
@@ -648,7 +665,6 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   )}
-
 
                 </div>
               </div>

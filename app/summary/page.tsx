@@ -268,23 +268,23 @@ export default function SummaryPage() {
                 <h3 className="text-lg font-medium text-primary">{t('summary.activeLearning')}</h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <div className={`rounded-2xl p-4 ${learningData.gameCompleted ? 'bg-gray-50' : 'bg-gray-25 border border-gray-200'}`}>
+                <div className={`rounded-2xl p-4 ${learningData.gameCompleted ? 'bg-subtle' : 'bg-subtle/50 border border-default'}`}>
                   <div className="flex items-center space-x-3 mb-3">
-                    <Gamepad2 className={`w-5 h-5 ${learningData.gameCompleted ? 'text-gray-600' : 'text-gray-400'}`} />
-                    <span className="text-sm font-medium text-gray-900">{t('summary.interactiveGame')}</span>
+                    <Gamepad2 className={`w-5 h-5 ${learningData.gameCompleted ? 'text-secondary' : 'text-secondary/60'}`} />
+                    <span className="text-sm font-medium text-primary">{t('summary.interactiveGame')}</span>
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-secondary">
                     {learningData.gameCompleted ? t('summary.completed') : t('summary.notAttempted')}
                   </div>
                 </div>
                 
                 {learningData.category === 'history' && (
-                  <div className={`rounded-2xl p-4 ${learningData.videoCompleted ? 'bg-gray-50' : 'bg-gray-25 border border-gray-200'}`}>
+                  <div className={`rounded-2xl p-4 ${learningData.videoCompleted ? 'bg-subtle' : 'bg-subtle/50 border border-default'}`}>
                     <div className="flex items-center space-x-3 mb-3">
-                      <Video className={`w-5 h-5 ${learningData.videoCompleted ? 'text-gray-600' : 'text-gray-400'}`} />
-                      <span className="text-sm font-medium text-gray-900">{t('summary.historyVideo')}</span>
+                      <Video className={`w-5 h-5 ${learningData.videoCompleted ? 'text-secondary' : 'text-secondary/60'}`} />
+                      <span className="text-sm font-medium text-primary">{t('summary.historyVideo')}</span>
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-secondary">
                       {learningData.videoCompleted ? t('summary.generated') : t('summary.pending')}
                     </div>
                   </div>
@@ -305,7 +305,7 @@ export default function SummaryPage() {
             onClick={handleNewQuery}
             whileHover={{ y: -2 }}
             whileTap={{ y: 0 }}
-            className="inline-flex items-center justify-center space-x-3 px-8 py-4 bg-gray-900 text-white rounded-2xl font-medium transition-all duration-300 hover:bg-black"
+            className="inline-flex items-center justify-center space-x-3 px-8 py-4 bg-primary text-[rgb(var(--background))] rounded-2xl font-medium transition-all duration-300 hover:bg-primary/90"
           >
             <RotateCcw className="w-4 h-4" />
             <span>{t('summary.startNewJourney')}</span>
@@ -315,7 +315,7 @@ export default function SummaryPage() {
             onClick={() => router.push('/profile')}
             whileHover={{ y: -2 }}
             whileTap={{ y: 0 }}
-            className="inline-flex items-center justify-center space-x-3 px-8 py-4 bg-white border border-gray-200 text-gray-900 rounded-2xl font-medium transition-all duration-300 hover:border-gray-300 hover:bg-gray-50"
+            className="inline-flex items-center justify-center space-x-3 px-8 py-4 bg-card border border-default text-primary rounded-2xl font-medium transition-all duration-300 hover:border-secondary hover:bg-subtle"
           >
             <span>{t('summary.viewAllLearning')}</span>
             <ArrowRight className="w-4 h-4" />
@@ -327,9 +327,9 @@ export default function SummaryPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 1.0 }}
-          className="text-center mt-16 pt-8 border-t border-gray-100"
+          className="text-center mt-16 pt-8 border-t border-default"
         >
-          <p className="text-sm text-gray-400 font-light">
+          <p className="text-sm text-secondary font-light">
             {t('summary.thankYou')}
           </p>
         </motion.div>

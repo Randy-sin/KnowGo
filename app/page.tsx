@@ -35,15 +35,17 @@ function CompactHistoryCard({ historyItem, index, t }: { historyItem: HistoryIte
       }}
       className="backdrop-blur-sm border border-[rgb(var(--border))]/60 rounded-2xl p-5 hover:border-[rgb(var(--border))] transition-all duration-300 hover:shadow-xl group cursor-pointer h-full bg-[rgb(var(--background))]/80 hover:bg-[rgb(var(--background))]"
     >
-      {/* 分类标签和时间 */}
+      {/* 分类标签和学习时长 */}
       <div className="flex items-center justify-between mb-4">
         <span className="inline-flex items-center px-3 py-1.5 bg-[rgb(var(--muted))]/70 text-[rgb(var(--muted-foreground))] text-xs font-medium rounded-lg tracking-wide">
           {historyItem.category}
         </span>
-        <div className="flex items-center space-x-1.5 text-xs text-[rgb(var(--muted-foreground))]">
-          <Clock className="w-3.5 h-3.5" />
-          <span className="font-medium">{historyItem.readTime}</span>
-        </div>
+        {historyItem.readTime !== '--' && (
+          <div className="flex items-center space-x-1.5 text-xs text-[rgb(var(--muted-foreground))]">
+            <Clock className="w-3.5 h-3.5" />
+            <span className="font-medium">{historyItem.readTime}</span>
+          </div>
+        )}
       </div>
 
       {/* 标题 */}
@@ -56,26 +58,9 @@ function CompactHistoryCard({ historyItem, index, t }: { historyItem: HistoryIte
         {historyItem.excerpt}
       </p>
 
-      {/* 时间戳和学习指标 */}
-      <div className="flex items-center justify-between pt-1">
+      {/* 时间戳 */}
+      <div className="flex items-center justify-end pt-1">
         <span className="text-xs text-[rgb(var(--muted-foreground))] font-medium">{historyItem.timestamp}</span>
-        {/* 显示学习深度指标 */}
-        <div className="flex items-center space-x-1 text-xs text-[rgb(var(--muted-foreground))]">
-          {historyItem.status === 'completed' && (
-            <div className="flex items-center space-x-1">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              <span className="font-medium text-green-600">{t('common.completed')}</span>
-            </div>
-          )}
-          {historyItem.status === 'in_progress' && (
-            <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-              <span className="font-medium text-blue-600">{t('common.inProgress')}</span>
-            </div>
-          )}
-        </div>
       </div>
     </motion.article>
   )
@@ -151,7 +136,7 @@ export default function HomePage() {
                  session.user_confirmed_category === 'history' ? t('profile.history') : t('profile.others'),
         readTime: session.total_duration && session.total_duration > 0 ? 
           `${Math.round(session.total_duration / 60)}${t('profile.minutes')}` : 
-          session.status === 'completed' ? t('common.completed') : t('common.inProgress'),
+          '--',
         timestamp: formatRelativeTime(session.created_at || ''),
         status: session.status || 'in_progress'
       }))

@@ -774,10 +774,10 @@ export default function FeedbackPage() {
                       transition={{ duration: 0.4 }}
                       className="text-center mb-6"
                     >
-                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                        <span className="text-sm font-medium text-gray-600">Q</span>
-                      </div>
-                      <p className="text-lg text-gray-900 leading-relaxed max-w-3xl mx-auto">
+                                      <div className="w-8 h-8 rounded-full bg-subtle flex items-center justify-center mx-auto mb-4">
+                  <span className="text-sm font-medium text-secondary">Q</span>
+                </div>
+                <p className="text-lg text-primary leading-relaxed max-w-3xl mx-auto">
                         {currentQuiz.question}
                       </p>
                     </motion.div>
@@ -809,22 +809,22 @@ export default function FeedbackPage() {
                           <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                             showQuizResult
                               ? index === currentQuiz.correctAnswer
-                                ? 'border-primary bg-primary'
+                                ? 'border-black bg-black dark:border-white dark:bg-white'
                                 : index === selectedAnswer && index !== currentQuiz.correctAnswer
-                                ? 'border-secondary bg-secondary'
+                                ? 'border-gray-400 bg-gray-400 dark:border-gray-600 dark:bg-gray-600'
                                 : 'border-default'
                               : selectedAnswer === index
-                              ? 'border-secondary bg-secondary'
+                              ? 'border-black bg-black dark:border-white dark:bg-white'
                               : 'border-default'
                           }`}>
                             {showQuizResult && index === currentQuiz.correctAnswer && (
-                              <Check className="w-3 h-3 text-white" />
+                              <Check className="w-3 h-3 text-white dark:text-black" />
                             )}
                             {showQuizResult && index === selectedAnswer && index !== currentQuiz.correctAnswer && (
-                              <X className="w-3 h-3 text-white" />
+                              <X className="w-3 h-3 text-white dark:text-black" />
                             )}
                             {!showQuizResult && selectedAnswer === index && (
-                              <div className="w-2 h-2 bg-white rounded-full" />
+                              <div className="w-2 h-2 bg-white dark:bg-black rounded-full" />
                             )}
                           </div>
                           <span className="text-sm text-primary leading-relaxed">
@@ -846,23 +846,23 @@ export default function FeedbackPage() {
                         className="max-w-2xl mx-auto"
                       >
                         <div className={`p-6 rounded-xl border ${
-                          isCorrectAnswer ? 'border-gray-200 bg-gray-50' : 'border-gray-200 bg-gray-50'
+                          isCorrectAnswer ? 'border-default bg-subtle' : 'border-default bg-subtle'
                         }`}>
                           <div className="flex items-center space-x-3 mb-4">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              isCorrectAnswer ? 'bg-gray-900' : 'bg-gray-400'
+                              isCorrectAnswer ? 'bg-primary' : 'bg-secondary'
                             }`}>
                               {isCorrectAnswer ? (
-                                <Check className="w-4 h-4 text-white" />
+                                <Check className="w-4 h-4 text-black dark:text-white" />
                               ) : (
-                                <X className="w-4 h-4 text-white" />
+                                <X className="w-4 h-4 text-black dark:text-white" />
                               )}
                             </div>
-                            <h4 className="text-sm font-medium text-gray-900">
+                            <h4 className="text-sm font-medium text-primary">
                               {isCorrectAnswer ? '回答正确！' : '答案错误'}
                             </h4>
                           </div>
-                          <p className="text-sm text-gray-600 leading-relaxed">
+                          <p className="text-sm text-secondary leading-relaxed">
                             {currentQuiz.explanation}
                           </p>
                         </div>
@@ -872,7 +872,7 @@ export default function FeedbackPage() {
                 </motion.div>
               ) : (
                 <div className="text-center py-16">
-                  <p className="text-gray-400">暂无题目，请稍后再试</p>
+                                      <p className="text-secondary">暂无题目，请稍后再试</p>
                 </div>
               )}
             </motion.div>
@@ -892,10 +892,10 @@ export default function FeedbackPage() {
                 key={index}
                 className={`h-px transition-all duration-500 ${
                   index < currentIndex || (index === currentIndex && currentStage === 'quiz' && hasAnsweredQuiz)
-                    ? 'w-12 bg-gray-900' 
+                    ? 'w-12 bg-primary' 
                     : index === currentIndex
-                    ? 'w-8 bg-gray-600'
-                    : 'w-4 bg-gray-300'
+                    ? 'w-8 bg-secondary'
+                    : 'w-4 bg-default'
                 }`}
               />
             ))}
@@ -928,8 +928,8 @@ export default function FeedbackPage() {
             className={`transition-all duration-300 text-sm ${
               (currentStage === 'reflection' && showAnalysis) ||
               (currentStage === 'quiz' && hasAnsweredQuiz && !isGeneratingQuiz)
-                ? 'text-gray-900 hover:text-gray-600'
-                : 'text-gray-300 cursor-not-allowed'
+                ? 'text-primary hover:text-secondary'
+                : 'text-secondary/50 cursor-not-allowed'
             }`}
           >
             {currentStage === 'reflection' 

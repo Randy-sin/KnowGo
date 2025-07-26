@@ -12,9 +12,9 @@ const buttonVariants = cva(
         default: "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105",
         primary: "bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:scale-105",
         secondary: "bg-gradient-to-r from-orange-400 to-pink-500 text-white hover:from-orange-500 hover:to-pink-600 shadow-lg hover:shadow-xl transform hover:scale-105",
-        outline: "border-2 border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 text-gray-700",
-        ghost: "hover:bg-gray-100 text-gray-700 hover:text-gray-900",
-        link: "text-blue-600 underline-offset-4 hover:underline hover:text-blue-700",
+        outline: "border-2 border-[rgb(var(--border))] bg-[rgb(var(--background))] hover:bg-[rgb(var(--muted))] hover:border-[rgb(var(--muted-foreground))] text-[rgb(var(--foreground))]",
+        ghost: "hover:bg-[rgb(var(--muted))] text-[rgb(var(--foreground))] hover:text-[rgb(var(--foreground))]",
+        link: "text-[rgb(var(--primary))] underline-offset-4 hover:underline hover:text-[rgb(var(--primary))]/80",
       },
       size: {
         default: "h-12 px-6 py-3",

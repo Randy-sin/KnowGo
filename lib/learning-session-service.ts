@@ -570,7 +570,7 @@ export class LearningSessionService {
   }
 
   /**
-   * 获取会话详细信息
+   * 获取会话详情
    */
   static async getSessionDetails(sessionId: string) {
     try {
@@ -635,6 +635,134 @@ export class LearningSessionService {
       }
     } catch (error) {
       console.error('获取会话详情失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 获取会话基本详情 - 仅包含会话信息，不包含大量数据
+   */
+  static async getSessionBasicDetails(sessionId: string) {
+    try {
+      const { data: session, error: sessionError } = await supabase
+        .from(TABLES.LEARNING_SESSIONS)
+        .select('*')
+        .eq('id', sessionId)
+        .single()
+
+      if (sessionError) throw sessionError
+
+      return {
+        session,
+        interactions: [],
+        quizRecords: [],
+        reflections: [],
+        gameSession: null,
+        videoSession: null
+      }
+    } catch (error) {
+      console.error('获取会话基本详情失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 单独获取会话交互记录
+   */
+  static async getSessionInteractions(sessionId: string) {
+    try {
+      const { data: interactions, error } = await supabase
+        .from(TABLES.LEARNING_INTERACTIONS)
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('stage_index')
+
+      if (error) throw error
+      return interactions || []
+    } catch (error) {
+      console.error('获取交互记录失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 单独获取会话测验记录
+   */
+  static async getSessionQuizRecords(sessionId: string) {
+    try {
+      const { data: quizRecords, error } = await supabase
+        .from(TABLES.QUIZ_RECORDS)
+        .select('*')
+        .eq('session_id', sessionId)
+
+      if (error) throw error
+      return quizRecords || []
+    } catch (error) {
+      console.error('获取测验记录失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 单独获取会话反思记录
+   */
+  static async getSessionReflections(sessionId: string) {
+    try {
+      const { data: reflections, error } = await supabase
+        .from(TABLES.REFLECTION_RECORDS)
+        .select('*')
+        .eq('session_id', sessionId)
+
+      if (error) throw error
+      return reflections || []
+    } catch (error) {
+      console.error('获取反思记录失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 单独获取会话游戏数据
+   */
+  static async getSessionGameData(sessionId: string) {
+    try {
+      const { data: gameSession, error } = await supabase
+        .from(TABLES.GAME_SESSIONS)
+        .select('*')
+        .eq('session_id', sessionId)
+        .single()
+
+      // 游戏记录可能不存在，不抛出错误
+      return gameSession || null
+    } catch (error: unknown) {
+      // 如果是找不到记录的错误，返回null而不是抛出错误
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'PGRST116') {
+        return null
+      }
+      console.error('获取游戏数据失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 单独获取会话视频数据
+   */
+  static async getSessionVideoData(sessionId: string) {
+    try {
+      const { data: videoSession, error } = await supabase
+        .from(TABLES.VIDEO_SESSIONS)
+        .select('*')
+        .eq('session_id', sessionId)
+        .single()
+
+      // 视频记录可能不存在，不抛出错误
+      return videoSession || null
+    } catch (error: unknown) {
+      // 如果是找不到记录的错误，返回null而不是抛出错误
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'PGRST116') {
+        return null
+      }
+      console.error('获取视频数据失败:', error)
       throw error
     }
   }

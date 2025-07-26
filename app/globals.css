@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* 字体优化 - 确保跨平台一致性 */
+* {
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "pnum" 1, "tnum" 0, "onum" 1, "lnum" 0, "dlig" 0;
+}
+
 :root {
   /* Silicon Valley Minimalist Design System */
   --background: 255 255 255;

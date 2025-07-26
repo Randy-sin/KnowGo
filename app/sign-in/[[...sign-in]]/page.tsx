@@ -10,12 +10,12 @@ export default function Page() {
   const { t } = useTranslations()
   
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center relative">
+    <div className="min-h-screen bg-page flex items-center justify-center relative">
       {/* 返回主页按钮 */}
       <div className="absolute top-8 left-8">
         <Link 
           href="/"
-          className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors duration-300"
+          className="w-6 h-6 flex items-center justify-center text-secondary hover:text-primary transition-colors duration-300"
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
@@ -29,13 +29,13 @@ export default function Page() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-8"
         >
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-black rounded-full mb-6">
-            <Sparkles className="w-6 h-6 text-white" />
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-primary rounded-full mb-6">
+            <Sparkles className="w-6 h-6 text-[rgb(var(--background))]" />
           </div>
-          <h1 className="text-3xl font-light text-gray-900 mb-2">
+          <h1 className="text-3xl font-light text-primary mb-2">
             {t('signin.title')}
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-secondary text-sm">
             {t('signin.subtitle')}
           </p>
         </motion.div>
@@ -49,25 +49,25 @@ export default function Page() {
           <SignIn 
             appearance={{
               variables: {
-                colorPrimary: "#000000",
-                colorBackground: "#ffffff",
+                colorPrimary: "rgb(var(--primary))",
+                colorBackground: "rgb(var(--background))",
                 borderRadius: "12px",
                 fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif"
               },
               elements: {
                 // 只自定义最必要的样式，不隐藏任何元素
-                card: "shadow-none border border-gray-200 rounded-2xl bg-white p-8",
+                card: "shadow-none border border-[rgb(var(--border))] rounded-2xl bg-[rgb(var(--background))] p-8",
                 
                 // 只隐藏头部，保留所有其他元素
                 headerTitle: "hidden",
                 headerSubtitle: "hidden",
                 
                 // 保持输入框和按钮的基本样式
-                formFieldInput: "border border-gray-200 rounded-xl px-4 py-3",
-                formButtonPrimary: "bg-black text-white rounded-xl py-3 px-6 hover:bg-gray-800",
+                formFieldInput: "border border-[rgb(var(--border))] rounded-xl px-4 py-3 bg-[rgb(var(--background))] text-[rgb(var(--foreground))]",
+                formButtonPrimary: "bg-[rgb(var(--primary))] text-[rgb(var(--background))] rounded-xl py-3 px-6 hover:bg-[rgb(var(--primary))]/90",
                 
                 // 不干扰底部链接的样式
-                footerActionLink: "text-black hover:underline font-medium"
+                footerActionLink: "text-[rgb(var(--primary))] hover:underline font-medium"
               }
             }}
           />
@@ -80,14 +80,14 @@ export default function Page() {
           transition={{ duration: 0.4, delay: 0.6 }}
           className="text-center mt-8"
         >
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-secondary">
             {t('signin.termsNotice')}
           </p>
         </motion.div>
       </div>
 
       {/* 背景装饰 */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-50/30 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--muted))]/30 to-transparent pointer-events-none" />
     </div>
   )
 } 
