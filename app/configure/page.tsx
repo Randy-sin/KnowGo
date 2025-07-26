@@ -156,9 +156,9 @@ export default function ConfigurePage() {
       // 立即跳转到classify页面，提供流畅体验
       router.push('/classify');
       
-      // 后台异步生成问题和游戏（不阻塞跳转）
+      // 后台异步生成问题和游戏（所有科目）
       generateQuestionsInBackground(config)
-      generateGameWithTwoStages(config)
+      generateGameInBackground(config)
     }
   }
 
@@ -199,14 +199,14 @@ export default function ConfigurePage() {
     }
   }
 
-  // 根据用户配置执行完整的两阶段游戏生成流程
-  const generateGameWithTwoStages = async (config: {level: string, style: string}) => {
+  // 后台生成游戏的函数（适用于所有科目）
+  const generateGameInBackground = async (config: {level: string, style: string}) => {
     try {
       const savedQuery = localStorage.getItem('xknow-query');
       const savedClassification = localStorage.getItem('xknow-classification');
       
       if (savedQuery && savedClassification) {
-        console.log('🎨 开始两阶段游戏生成流程...')
+        console.log('🎨 开始后台两阶段游戏生成流程...')
         
         const classification = JSON.parse(savedClassification);
         
@@ -244,7 +244,7 @@ export default function ConfigurePage() {
             category: classification.category,
             userLevel: config.level,
             learningObjective: `通过互动游戏深度理解${savedQuery}的核心概念`,
-            gameDesign: gameDesign, // 传入设计方案
+            gameDesign: gameDesign,
             stream: false
           })
         });
@@ -257,22 +257,16 @@ export default function ConfigurePage() {
         
         // 保存生成的游戏
         localStorage.setItem('xknow-pregenerated-game', JSON.stringify(game));
-        console.log('🎉 两阶段游戏生成完成:', game.title)
-        console.log('📊 游戏数据:', {
-          title: game.title,
-          hasHtml: !!game.html,
-          htmlLength: game.html?.length || 0,
-          topic: game.topic,
-          gameType: game.gameType
-        })
+        console.log('🎉 后台游戏生成完成:', game.title)
         
         return game;
       }
     } catch (error) {
-      console.error('两阶段游戏生成失败:', error);
-      throw error;
+      console.error('后台游戏生成失败:', error);
     }
   }
+
+
 
   const handleBack = () => {
     // Clear any saved data and go back to home

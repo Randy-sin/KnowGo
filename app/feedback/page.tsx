@@ -419,19 +419,9 @@ export default function FeedbackPage() {
           const category = localStorage.getItem('xknow-category')
           let targetRoute = '/simulate'
           
-          switch (category) {
-            case 'science':
-              targetRoute = '/simulate'
-              break
-            case 'history':
-              targetRoute = '/history'
-              break
-            case 'others':
-              targetRoute = '/geography'
-              break
-            default:
-              targetRoute = '/simulate'
-          }
+          // 统一所有科目都使用 simulate 页面
+          // 历史科目会在 simulate 页面内额外提供视频生成功能
+          targetRoute = '/simulate'
           
           console.log('游戏已准备好，跳转到:', targetRoute)
           router.push(targetRoute)

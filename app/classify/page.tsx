@@ -48,13 +48,61 @@ export default function ClassifyPage() {
     // 立即跳转到学习页面，提供流畅体验
     router.push('/learn');
     
-    // 注意：quiz生成现在移动到feedback阶段，基于引导式问题生成
+    // 🎮 游戏生成已移至configure页面，所有科目都在配置完成后开始生成
+    
+    // 🎬 历史科目额外生成视频（游戏完成后播放）
+    if (selectedCategory === 'history') {
+      generateHistoryVideoInBackground();
+    }
   };
 
   const handleBack = () => {
     localStorage.removeItem('xknow-query')
     localStorage.removeItem('xknow-quiz') // 清理预生成的quiz数据
     router.push('/')
+  }
+
+  // 后台生成历史视频的函数
+  const generateHistoryVideoInBackground = async () => {
+    try {
+      const savedQuery = localStorage.getItem('xknow-query');
+      const savedConfig = localStorage.getItem('xknow-config');
+      
+      if (savedQuery && savedConfig) {
+        console.log('🎬 开始后台历史视频生成...')
+        
+        const config = JSON.parse(savedConfig);
+        
+        const response = await fetch('/api/generate-video', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            topic: savedQuery,
+            userLevel: config.level || 'intermediate',
+            action: 'create-task'  // 只创建任务，不等待完成
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // 保存视频任务信息以供后续查询
+          localStorage.setItem('xknow-video-task', JSON.stringify({
+            taskId: data.taskId,
+            videoPrompt: data.videoPrompt,
+            topic: data.topic,
+            userLevel: data.userLevel,
+            createdAt: Date.now()
+          }));
+          console.log('🎬 历史视频任务已创建:', data.taskId)
+        } else {
+          console.error('历史视频任务创建失败:', response.status)
+        }
+      }
+    } catch (error) {
+      console.error('后台历史视频生成出错:', error);
+    }
   }
 
   // 如果用户未登录，重定向到登录页
@@ -97,7 +145,7 @@ export default function ClassifyPage() {
       title: "其他",
       subtitle: "地理・语言・社会・艺术",
       icon: Globe,
-      description: "系统性学习文科知识要点"
+      description: "深度理解文科概念，配合互动模拟器学习"
     }
   ]
 

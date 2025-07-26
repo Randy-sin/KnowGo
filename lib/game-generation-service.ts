@@ -221,85 +221,80 @@ body {
 }
 `
 
-  return `你是世界顶级的前端游戏开发工程师，专门将创意游戏设计转化为高质量的HTML5互动游戏代码。游戏设计师已经为你提供了完整的设计方案，你的任务是将这个设计方案完美实现为可运行的代码。
+  return `你是一位前端工程师，专门将游戏设计实现为简洁的HTML5游戏。
 
-**📋 游戏设计师提供的完整设计方案：**
+**游戏设计方案：**
+- **游戏名称：** ${gameDesign.gameTitle}
+- **游戏描述：** ${gameDesign.gameDescription}
+- **核心玩法：** ${gameDesign.coreGameplay}
+- **胜利条件：** ${gameDesign.winCondition}
 
-**🎮 游戏设计方案：**
+**实现要求：**
+1. **简洁实现**：按照设计方案实现核心功能，保持代码简单易懂
+2. **完整游戏**：包含游戏逻辑、胜利判定、重试功能
+3. **全屏设计**：游戏占满整个屏幕，使用提供的CSS样式
+4. **无外部依赖**：所有代码都在一个HTML文件中
 
-**游戏标题：** ${gameDesign.gameTitle}
+**🎯 必须实现的反馈机制：**
+1. **成功判定**：严格按照胜利条件实现判定逻辑（如误差检查、正确率计算等）
+2. **成功反馈**：成功时显示庆祝效果（绿色提示、"恭喜"消息等）
+3. **失败提示**：失败时显示明确的错误信息（红色提示、具体错误原因等）
+4. **操作按钮**：
+   - 成功后：显示"下一轮"或"重新开始"按钮
+   - 失败后：显示"重试"按钮
+   - 游戏中：显示"提交答案"或"检查结果"按钮
 
-**游戏描述：** ${gameDesign.gameDescription}
+**必须实现的功能：**
+- 按照核心玩法设计交互界面
+- 实现胜利条件的精确判定逻辑
+- 失败时显示具体错误原因和重试按钮
+- 成功时显示庆祝效果和继续按钮
+- 提供清晰的操作指导和即时反馈
 
-**核心玩法：** ${gameDesign.coreGameplay}
+**CSS样式系统（必须使用）：**
+${designSystemCSS}
 
-**胜利条件：** ${gameDesign.winCondition}
+**反馈样式示例：**
+\`\`\`css
+.success-message {
+  background: #10b981;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  margin: 16px 0;
+}
 
-**设计理念：** ${gameDesign.designRationale}
+.error-message {
+  background: #ef4444;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  margin: 16px 0;
+}
 
-**🚀 代码实现任务说明：**
-
-游戏设计师已经为你提供了完整的设计蓝图，你必须将这个设计**逐一实现**为可运行的HTML5游戏代码。
-
-**⚡ 核心实现要求：**
-
-1. **100%遵循设计方案**：严格按照上述设计方案实现，不得遗漏任何功能点
-2. **完整的HTML5游戏**：生成完整的<!DOCTYPE html>到</html>的单文件游戏
-3. **无外部依赖**：所有CSS和JavaScript必须内联，确保游戏可独立运行
-4. **设计系统统一**：严格使用提供的CSS变量，保持视觉一致性
-5. **全屏游戏体验**：游戏占满整个屏幕，无边框无padding，提供沉浸式体验
-6. **流畅交互**：实现所有设计方案中的反馈机制和动画效果
-7. **完整游戏循环**：包含状态管理、事件处理、胜负判定等完整逻辑
-
-**🏆 核心功能实现清单（必须全部完成）：**
-
-1. **严格按照核心玩法实现**：${gameDesign.coreGameplay}
-2. **实现胜利条件**：${gameDesign.winCondition}
-3. **完整游戏循环**：包含开始、游戏中、成功、失败等状态
-4. **即时反馈系统**：用户操作的实时视觉反馈
-5. **重试机制**：失败后可以重新开始游戏
-6. **成功庆祝动画和失败提示**
-
-**CRITICAL JSON输出格式：**
-
-请严格按照以下格式输出，不要任何其他内容：
-
-\`\`\`json
-{
-  "html": "<!DOCTYPE html><html lang=\\"zh-CN\\"><head><meta charset=\\"UTF-8\\"><meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\"><title>${gameDesign.gameTitle}</title><style>/* 完整CSS实现 */</style></head><body><!-- 完整HTML结构和游戏逻辑 --><script>/* 完整JavaScript实现 */</script></body></html>",
-  "title": "${gameDesign.gameTitle}",
-  "instructions": "${gameDesign.gameDescription}",
-  "gameType": "design-based-implementation"
+.action-button {
+  background: var(--fg-primary);
+  color: var(--bg-primary);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 8px;
 }
 \`\`\`
 
-**⚠️ 最终代码质量要求：**
-- html字段必须是完整可运行的HTML代码（从<!DOCTYPE html>到</html>）
-- 严格按照设计方案实现所有功能，不得遗漏
-- 确保游戏逻辑完整，所有函数都有完整实现
-- 正确转义所有引号，代码在一行中但保持逻辑清晰
-- 游戏使用全屏设计，无边框无边距，提供完全沉浸的学习体验
-- 必须包含设计方案中的所有视觉元素和交互功能
+**输出格式：**
+\`\`\`json
+{
+  "html": "<!DOCTYPE html><html><head><title>${gameDesign.gameTitle}</title><style>/* CSS */</style></head><body><!-- HTML --><script>/* JavaScript */</script></body></html>",
+  "title": "${gameDesign.gameTitle}"
+}
+\`\`\`
 
-**硅谷极简设计系统（强制使用）：**
-${designSystemCSS}
-
-**🎯 最终任务：**
-现在请将游戏设计师的"${gameDesign.gameTitle}"设计方案完美实现为可运行的HTML5游戏代码！
-
-**重要：只输出严格的JSON格式，不要任何解释或对话！**
-
-**JSON格式要求：**
-- 确保所有引号都正确转义（在HTML字符串中使用 \\" 而不是 "）
-- 所有反斜杠必须双重转义（\\\\ 而不是 \\）
-- 不要在JSON中包含换行符，保持所有代码在单行内
-- 严格遵循 {"html": "...", "title": "..."} 格式
-- HTML代码必须正确转义，避免JSON解析错误
-
-**输出格式示例：**
-{"html": "<!DOCTYPE html><html><head><title>Game</title></head><body><h1>Hello</h1></body></html>", "title": "游戏标题"}
-
-**严格按照设计方案实现所有功能！**`
+请实现"${gameDesign.gameTitle}"游戏，确保包含完整的成功/失败反馈和操作引导！`
 }
 
 
