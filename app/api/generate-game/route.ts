@@ -11,7 +11,7 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const body: GameGenerationRequest & { stream?: boolean } = await request.json()
-    const { topic, category, userLevel = 'intermediate', learningObjective, stream } = body
+    const { topic, category, userLevel = 'intermediate', learningObjective, gameDesign, stream } = body
 
     if (!topic || !category) {
       return NextResponse.json(
@@ -27,20 +27,26 @@ export async function POST(request: NextRequest) {
       return handleStreamRequest(topic, category, userLevel, learningObjective || `通过互动游戏深度理解${topic}的核心概念`)
     }
 
-    // 非流式输出 - 使用两阶段流程
+    // 非流式输出 - 智能两阶段流程
     try {
-      // 第一阶段：设计游戏概念
-      console.log('🎨 第一阶段：开始游戏设计...')
+      let finalGameDesign = gameDesign
       
-      const designRequest: GameDesignRequest = {
-        topic,
-        category,
-        userLevel,
-        learningObjective: learningObjective || `通过创新游戏深度理解${topic}的核心概念`
+      // 只有在没有传入设计方案时才调用设计师
+      if (!gameDesign) {
+        console.log('🎨 第一阶段：开始游戏设计...')
+        
+        const designRequest: GameDesignRequest = {
+          topic,
+          category,
+          userLevel,
+          learningObjective: learningObjective || `通过创新游戏深度理解${topic}的核心概念`
+        }
+        
+        finalGameDesign = await designGameConcept(designRequest)
+        console.log('✅ 第一阶段完成，游戏设计:', finalGameDesign.gameTitle)
+      } else {
+        console.log('🎨 使用已有游戏设计:', gameDesign.gameTitle)
       }
-      
-      const gameDesign = await designGameConcept(designRequest)
-              console.log('✅ 第一阶段完成，游戏设计:', gameDesign.gameTitle)
       
       // 第二阶段：基于设计生成代码
       console.log('🛠️ 第二阶段：开始代码实现...')
@@ -49,11 +55,11 @@ export async function POST(request: NextRequest) {
         category,
         userLevel,
         learningObjective: learningObjective || `通过互动游戏深度理解${topic}的核心概念`,
-        gameDesign // 传入设计方案
+        gameDesign: finalGameDesign // 传入设计方案
       }
       
       const game = await generateInteractiveGame(gameRequest)
-              console.log('🎉 第二阶段完成，游戏生成:', game.title)
+      console.log('🎉 第二阶段完成，游戏生成:', game.title)
       
       return NextResponse.json({ game })
     } catch (error) {

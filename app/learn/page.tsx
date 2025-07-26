@@ -6,9 +6,10 @@ import { ArrowLeft, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { useTranslations } from "@/lib/use-translations"
+import { LearningSessionService } from "@/lib/learning-session-service"
 
 export default function LearnPage() {
-  const { isLoaded, isSignedIn } = useUser()
+  const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState("")
@@ -69,6 +70,37 @@ export default function LearnPage() {
   }, [])
 
   // 生成 AI 学习问题
+  // 保存交互到数据库的函数
+  const saveInteractionToDatabase = async (
+    sessionId: string,
+    stageIndex: number,
+    stageType: 'life_connection' | 'observation' | 'concept_building',
+    question: string,
+    followUp: string,
+    userAnswer: string
+  ) => {
+    try {
+      const interactionId = await LearningSessionService.saveInteraction(
+        sessionId,
+        stageIndex,
+        stageType,
+        question,
+        followUp,
+        userAnswer
+      )
+      
+      // 保存交互ID到localStorage，供后续AI分析使用
+      const interactionIds = JSON.parse(localStorage.getItem('xknow-interaction-ids') || '[]')
+      interactionIds[stageIndex] = interactionId
+      localStorage.setItem('xknow-interaction-ids', JSON.stringify(interactionIds))
+      
+      console.log('✅ 学习交互已保存到数据库:', interactionId)
+    } catch (error) {
+      console.error('❌ 保存学习交互失败:', error)
+      throw error
+    }
+  }
+
   const generateLearningQuestions = async (topic: string, userConfig: {level: string, style: string}) => {
     setIsLoadingQuestions(true)
     try {
@@ -195,6 +227,26 @@ export default function LearnPage() {
         }
         localStorage.setItem('xknow-analyses', JSON.stringify(existingAnalyses))
         
+        // 如果用户已登录，同时更新数据库中的AI分析
+        if (user?.id) {
+          const interactionIds = JSON.parse(localStorage.getItem('xknow-interaction-ids') || '[]')
+          const interactionId = interactionIds[questionIndex]
+          
+          if (interactionId) {
+            try {
+              await LearningSessionService.updateInteractionAnalysis(
+                interactionId,
+                analysis.analysis,
+                analysis.insights
+              )
+              console.log(`✅ 第${questionIndex + 1}题AI分析已保存到数据库`)
+            } catch (error) {
+              console.error(`❌ 第${questionIndex + 1}题AI分析保存失败:`, error)
+              // 数据库操作失败不影响用户体验
+            }
+          }
+        }
+        
         console.log(`第${questionIndex + 1}题分析完成`)
       } else {
         console.error(`第${questionIndex + 1}题分析失败:`, response.status)
@@ -243,6 +295,24 @@ export default function LearnPage() {
       // 立即开始AI分析当前问题（后台异步执行）
       const currentQuestion = currentStageData.question
       const questionIndex = currentStage
+      
+      // 保存交互到数据库（异步执行，不影响用户体验）
+      if (user?.id) {
+        const sessionId = localStorage.getItem('xknow-session-id')
+        if (sessionId) {
+          saveInteractionToDatabase(
+            sessionId,
+            questionIndex,
+            currentStageData.type,
+            currentQuestion,
+            currentStageData.followUp,
+            newResponse
+          ).catch((error: unknown) => {
+            console.error('保存交互到数据库失败:', error)
+            // 不影响用户继续流程
+          })
+        }
+      }
       
       // 使用try-catch包装异步分析，避免未处理的Promise错误
       analyzeQuestion(currentQuestion, newResponse, questionIndex).catch(error => {

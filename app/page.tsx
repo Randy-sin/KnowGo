@@ -1,14 +1,15 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { motion, useScroll, useTransform } from "framer-motion"
 import { ArrowRight, Sparkles, Clock, ArrowDown } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
+import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs"
 import Link from "next/link"
 import { LanguageToggle } from "@/components/ui/language-toggle"
 import { useTranslations } from "@/lib/use-translations"
-import Parallax, { ScrollReveal } from "@/components/ui/parallax"
+import { LearningSessionService } from "@/lib/learning-session-service"
+import Parallax from "@/components/ui/parallax"
 
 // 新闻数据类型
 interface NewsItem {
@@ -120,76 +121,66 @@ const newsData: NewsItem[] = [
   }
 ]
 
-// 优化的新闻卡片组件
+// 简化的新闻卡片组件
 function CompactNewsCard({ news, index }: { news: NewsItem; index: number }) {
-  // 根据卡片位置计算基础透明度
-  const cardPosition = index / 11 // 总共12张卡片，index从0开始
-  const baseOpacity = Math.min(1, 0.75 + (cardPosition * 0.25)) // 后面的卡片更不透明，最后几张完全不透明
-  
   return (
-    <ScrollReveal delay={index * 0.05} className="h-full">
-      <motion.article
-        initial={{ opacity: 0, y: 12, scale: 0.98 }}
-        whileInView={{ 
-          opacity: 1, 
-          y: 0, 
-          scale: 1,
-          transition: { 
-            duration: 0.5,
-            delay: index * 0.05,
-            ease: [0.25, 0.1, 0.25, 1]
-          }
-        }}
-        whileHover={{ 
-          y: -4,
-          scale: 1.01,
-          backgroundColor: "rgba(255, 255, 255, 1)",
-          transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }
-        }}
-        viewport={{ once: true, margin: "-10%" }}
-        style={{
-          backgroundColor: `rgba(255, 255, 255, ${baseOpacity})`
-        }}
-        className="backdrop-blur-sm border border-gray-200/60 rounded-2xl p-5 hover:border-gray-300/80 transition-all duration-300 hover:shadow-xl group cursor-pointer h-full"
-      >
-        {/* 分类标签和时间 */}
-        <div className="flex items-center justify-between mb-4">
-          <span className="inline-flex items-center px-3 py-1.5 bg-gray-100/70 text-gray-600 text-xs font-medium rounded-lg tracking-wide">
-            {news.category}
-          </span>
-          <div className="flex items-center space-x-1.5 text-xs text-gray-400">
-            <Clock className="w-3.5 h-3.5" />
-            <span className="font-medium">{news.readTime}</span>
-          </div>
+    <motion.article
+      whileHover={{ 
+        y: -4,
+        scale: 1.01,
+        backgroundColor: "rgba(255, 255, 255, 1)",
+        transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }
+      }}
+      style={{
+        backgroundColor: "rgba(255, 255, 255, 0.8)"
+      }}
+      className="backdrop-blur-sm border border-gray-200/60 rounded-2xl p-5 hover:border-gray-300/80 transition-all duration-300 hover:shadow-xl group cursor-pointer h-full"
+    >
+      {/* 分类标签和时间 */}
+      <div className="flex items-center justify-between mb-4">
+        <span className="inline-flex items-center px-3 py-1.5 bg-gray-100/70 text-gray-600 text-xs font-medium rounded-lg tracking-wide">
+          {news.category}
+        </span>
+        <div className="flex items-center space-x-1.5 text-xs text-gray-400">
+          <Clock className="w-3.5 h-3.5" />
+          <span className="font-medium">{news.readTime}</span>
         </div>
+      </div>
 
-        {/* 标题 */}
-        <h3 className="text-sm font-semibold text-gray-900 mb-2 leading-snug group-hover:text-gray-700 transition-colors line-clamp-2 tracking-tight">
-          {news.title}
-        </h3>
+      {/* 标题 */}
+      <h3 className="text-sm font-semibold text-gray-900 mb-2 leading-snug group-hover:text-gray-700 transition-colors line-clamp-2 tracking-tight">
+        {news.title}
+      </h3>
 
-        {/* 摘要 */}
-        <p className="text-gray-600 text-xs leading-relaxed line-clamp-2 mb-3 font-light">
-          {news.excerpt}
-        </p>
+      {/* 摘要 */}
+      <p className="text-gray-600 text-xs leading-relaxed line-clamp-2 mb-3 font-light">
+        {news.excerpt}
+      </p>
 
-        {/* 时间戳和阅读指示 */}
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-xs text-gray-400 font-medium">{news.timestamp}</span>
-          <div className="flex items-center text-gray-400 group-hover:text-gray-600 transition-colors">
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-200" />
-          </div>
+      {/* 时间戳和阅读指示 */}
+      <div className="flex items-center justify-between pt-1">
+        <span className="text-xs text-gray-400 font-medium">{news.timestamp}</span>
+        <div className="flex items-center text-gray-400 group-hover:text-gray-600 transition-colors">
+          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-200" />
         </div>
-      </motion.article>
-    </ScrollReveal>
+      </div>
+    </motion.article>
   )
 }
 
 export default function HomePage() {
   const router = useRouter()
+  const { isLoaded, isSignedIn, user } = useUser()
   const [input, setInput] = useState("")
   const containerRef = useRef(null)
   const newsRef = useRef(null)
+  
+  // 渐进式滚动状态管理
+  const [scrollStage, setScrollStage] = useState(0) // 0: 初始, 1: 第一次滚动锁定, 2: 完全解锁
+  const [showGradient, setShowGradient] = useState(false)
+  const [lockedScrollPosition, setLockedScrollPosition] = useState(0)
+  const scrollLockRef = useRef(false)
+  const firstScrollTriggered = useRef(false) // 即时标记，防止重复触发
   
   const { t } = useTranslations()
 
@@ -209,20 +200,199 @@ export default function HomePage() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
   const heroScale = useTransform(scrollYProgress, [0, 0.6], [1, 0.95])
   
+  // 页面加载时重置状态
+  useEffect(() => {
+    // 重置所有滚动相关状态
+    firstScrollTriggered.current = false
+    scrollLockRef.current = false
+    setScrollStage(0)
+    setShowGradient(false)
+    setLockedScrollPosition(0)
+  }, [])
+  
+  // 渐进式两段滚动处理
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      const isScrollingDown = e.deltaY > 0
+      const currentScrollY = window.scrollY
+      
+      // 第一次滚动检测 - 使用即时标记
+      if (!firstScrollTriggered.current && scrollStage === 0 && isScrollingDown && currentScrollY < 200) {
+        e.preventDefault()
+        e.stopPropagation()
+        
+        // 立即设置标记，防止后续滚动
+        firstScrollTriggered.current = true
+        scrollLockRef.current = true
+        
+        // 添加body锁定类
+        document.body.style.overflow = 'hidden'
+        document.body.style.position = 'fixed'
+        document.body.style.width = '100%'
+        
+        // 计算锁定位置
+        const targetPosition = window.innerHeight + 280
+        
+        // 立即设置状态
+        setScrollStage(1)
+        setShowGradient(true)
+        setLockedScrollPosition(targetPosition)
+        
+        // 立即滚动到锁定位置
+        setTimeout(() => {
+          document.body.style.overflow = ''
+          document.body.style.position = ''
+          document.body.style.width = ''
+          window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+          })
+        }, 100)
+        
+        return false
+      } 
+      
+      // 在锁定状态下，阻止所有滚动（使用ref而不是state）
+      if (scrollLockRef.current) {
+        if (isScrollingDown && firstScrollTriggered.current) {
+          // 第二次向下滚动：解锁
+          setScrollStage(2)
+          scrollLockRef.current = false
+          firstScrollTriggered.current = false
+          
+          // 清理body样式
+          document.body.style.overflow = ''
+          document.body.style.position = ''
+          document.body.style.width = ''
+        } else {
+          // 其他滚动：完全阻止
+          e.preventDefault()
+          e.stopPropagation()
+          return false
+        }
+      }
+    }
+    
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      
+      // 强化的滚动锁定逻辑
+      if (scrollLockRef.current && lockedScrollPosition > 0) {
+        const diff = Math.abs(currentScrollY - lockedScrollPosition)
+        
+        // 更严格的位置控制
+        if (diff > 10) {
+          window.scrollTo({
+            top: lockedScrollPosition,
+            behavior: 'auto'
+          })
+        }
+      }
+    }
+    
+    // 添加键盘事件监听，防止键盘滚动
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (scrollLockRef.current) {
+        // 阻止空格键、方向键、Page Up/Down等滚动操作
+        if (['Space', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(e.code)) {
+          if (e.code === 'ArrowDown' || e.code === 'Space' || e.code === 'PageDown') {
+            // 如果是向下操作，且已经第一次触发，则解锁
+            if (firstScrollTriggered.current) {
+              setScrollStage(2)
+              scrollLockRef.current = false
+              firstScrollTriggered.current = false
+              
+              // 清理body样式
+              document.body.style.overflow = ''
+              document.body.style.position = ''
+              document.body.style.width = ''
+              return
+            }
+          }
+          e.preventDefault()
+          return false
+        }
+      }
+    }
+    
+    // 添加触摸事件监听，防止触摸滚动
+    const handleTouchMove = (e: TouchEvent) => {
+      if (scrollLockRef.current) {
+        e.preventDefault()
+        return false
+      }
+    }
+    
+    // 添加所有事件监听
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    window.addEventListener('scroll', handleScroll, { passive: false })
+    window.addEventListener('keydown', handleKeyDown, { passive: false })
+    window.addEventListener('touchmove', handleTouchMove, { passive: false })
+    
+    return () => {
+      window.removeEventListener('wheel', handleWheel)
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('touchmove', handleTouchMove)
+      
+      // 清理body样式
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+  }, [scrollStage, lockedScrollPosition])
+  
   // 直接控制新闻背景透明度 - 滚动到底部时完全不透明
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim()) return
-    
-    // 立即保存问题并跳转，不等待分类结果
-    localStorage.setItem('xknow-query', input.trim())
-    
-    // 立即跳转到配置页面，提供流畅体验
-    router.push('/configure')
-    
-    // 后台执行问题分类（游戏将在configure页面生成）
-    classifyQuestionInBackground(input.trim())
+
+    // 🔍 添加调试信息
+    console.log('🔍 用户状态检查:')
+    console.log('- isLoaded:', isLoaded)
+    console.log('- isSignedIn:', isSignedIn) 
+    console.log('- user?.id:', user?.id)
+    console.log('- 查询内容:', input.trim())
+
+    try {
+      const response = await fetch('/api/classify-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query: input.trim() })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to classify question')
+      }
+
+      const data = await response.json()
+      console.log('分类结果:', data)
+      
+      // 保存到localStorage
+      localStorage.setItem('xknow-query', input.trim())
+      localStorage.setItem('xknow-classification', JSON.stringify(data))
+      
+      // 🔍 检查数据库操作条件
+      if (user?.id) {
+        console.log('✅ 用户已登录，准备创建学习会话')
+        console.log('- 用户ID:', user.id)
+        await createInitialLearningSession(user.id, input.trim(), data)
+      } else {
+        console.log('⚠️ 用户未登录，跳过数据库操作')
+        console.log('- isLoaded:', isLoaded)
+        console.log('- isSignedIn:', isSignedIn)
+        console.log('- user:', user)
+      }
+      
+      router.push('/configure')
+    } catch (error) {
+      console.error('提交失败:', error)
+    } finally {
+      // setIsLoading(false) // This state variable is not defined in the original file
+    }
   }
 
   // 后台分类函数
@@ -241,9 +411,21 @@ export default function HomePage() {
       if (response.ok) {
         const classification = await response.json()
         
-        // 分类完成后保存结果
+        // 分类完成后保存到localStorage（保持现有逻辑）
         localStorage.setItem('xknow-classification', JSON.stringify(classification))
         console.log('后台分类完成:', classification)
+        
+        // 如果用户已登录，同时将数据保存到数据库
+        if (user?.id) {
+          try {
+            // 创建学习会话记录，但不需要用户配置
+            // 配置将在configure页面完成后更新
+            await createInitialLearningSession(user.id, query, classification)
+          } catch (dbError) {
+            console.error('创建学习会话失败:', dbError)
+            // 数据库操作失败不影响用户体验，继续使用localStorage
+          }
+        }
       } else {
         console.error('分类失败:', response.status)
       }
@@ -252,9 +434,47 @@ export default function HomePage() {
     }
   }
 
+  // 创建初始学习会话
+  const createInitialLearningSession = async (userId: string, query: string, classification: object) => {
+    try {
+      // 创建临时配置，将在configure页面完成后更新
+      const tempConfig = { level: 'intermediate' as const, style: 'structured' }
+      
+      const sessionId = await LearningSessionService.createSession(
+        userId,
+        query,
+        classification,
+        'others', // 默认类别，将在classify页面确认
+        tempConfig
+      )
+      
+      // 保存会话ID到localStorage，供后续页面使用
+      localStorage.setItem('xknow-session-id', sessionId)
+      console.log('✅ 学习会话已创建:', sessionId)
+    } catch (error) {
+      console.error('❌ 创建学习会话失败:', error)
+      throw error
+    }
+  }
+
   return (
-    <div ref={containerRef} className="relative">
-      {/* 主页区域 - 带视差效果 */}
+        <div ref={containerRef} className="relative">
+        {/* 滚动提示 - 第一阶段锁定时显示 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ 
+            opacity: scrollStage === 1 ? 1 : 0,
+            y: scrollStage === 1 ? 0 : 20
+          }}
+          transition={{ duration: 0.6, delay: 1.2 }}
+          className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-40 text-center pointer-events-none"
+        >
+          <div className="bg-white/90 backdrop-blur-xl rounded-full px-4 py-2 border border-gray-200/50 shadow-lg">
+            <p className="text-xs text-gray-500 font-light">再次滑动继续浏览</p>
+          </div>
+        </motion.div>
+        
+        {/* 主页区域 - 带视差效果 */}
       <section className="relative h-screen overflow-hidden">
         {/* 背景渐变 */}
         <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50/20 to-gray-50/40" />
@@ -270,6 +490,11 @@ export default function HomePage() {
             </Link>
           </SignedOut>
           <SignedIn>
+            <Link href="/profile">
+              <button className="btn-ghost-minimal flex items-center gap-2 text-sm">
+                {t('common.profile')}
+              </button>
+            </Link>
             <UserButton 
               appearance={{
                 elements: {
@@ -396,6 +621,11 @@ export default function HomePage() {
                 }}
                 className="inline-flex flex-col items-center space-y-3 text-gray-600/80 hover:text-gray-800 transition-colors duration-500 cursor-pointer"
                 onClick={() => {
+                  // 检查是否在锁定状态
+                  if (scrollLockRef.current) {
+                    return // 在锁定状态下阻止点击滚动
+                  }
+                  
                   const newsSection = document.querySelector('section[class*="bg-gray-50"]')
                   newsSection?.scrollIntoView({ behavior: 'smooth' })
                 }}
@@ -448,19 +678,54 @@ export default function HomePage() {
       </section>
 
       {/* 新闻区域 - 简洁背景 */}
-      <section 
+      <motion.section 
         ref={newsRef}
         className="relative py-12 pb-20 bg-gray-50/40"
+        initial={{ opacity: 0 }}
+        animate={{ 
+          opacity: scrollStage > 0 ? 1 : 0,
+          y: scrollStage > 0 ? 0 : 40
+        }}
+        transition={{ 
+          duration: 1, 
+          ease: [0.25, 0.1, 0.25, 1],
+          delay: 0.2
+        }}
       >
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          {/* 新闻网格 - 简洁展示 */}
+          {/* 新闻网格 - 渐进式展示 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
-            {newsData.map((news, index) => (
-              <CompactNewsCard key={news.id} news={news} index={index} />
-            ))}
+            {newsData.map((news, index) => {
+              // 第一阶段只显示前6个卡片（约第一行和第二行一半）
+              const shouldShowInStage1 = index < 6
+              const shouldShow = scrollStage === 0 ? false : 
+                               scrollStage === 1 ? shouldShowInStage1 : true
+              
+              return (
+                <motion.div
+                  key={news.id}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ 
+                    opacity: shouldShow ? 1 : 0,
+                    y: shouldShow ? 0 : 20,
+                    scale: shouldShow ? 1 : 0.95
+                  }}
+                  transition={{ 
+                    duration: 0.6, 
+                    ease: [0.25, 0.1, 0.25, 1],
+                    delay: shouldShow ? 0.3 + (index * 0.1) : 0
+                  }}
+                  style={{
+                    display: scrollStage === 1 && !shouldShowInStage1 ? 'none' : 'block'
+                  }}
+                >
+                  <CompactNewsCard news={news} index={index} />
+                </motion.div>
+              )
+            })}
           </div>
         </div>
-              </section>
+      </motion.section>
 
 
     </div>

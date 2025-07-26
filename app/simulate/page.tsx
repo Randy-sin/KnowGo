@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Play, RefreshCw, Video } from "lucide-react"
+import { ArrowLeft, Play, RefreshCw, Video, Check } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { GameResponse } from "@/lib/game-generation-service"
+import { LearningSessionService } from "@/lib/learning-session-service"
 
 interface GameStreamEvent {
   type: 'start' | 'progress' | 'complete' | 'error'
@@ -14,18 +15,27 @@ interface GameStreamEvent {
   error?: string
 }
 
+// 定义视频下载信息类型
+interface VideoDownloadInfo {
+  downloadUrl: string
+  fileSize?: number
+  duration?: number
+  format?: string
+  resolution?: string
+}
+
 interface VideoStreamEvent {
   type: 'progress' | 'complete' | 'timeout' | 'error'
   stage?: string
   message?: string
   progress?: number
   videoPrompt?: string
-  downloadInfo?: any
+  downloadInfo?: VideoDownloadInfo
   error?: string
 }
 
 export default function SimulatePage() {
-  const { isLoaded, isSignedIn } = useUser()
+  const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState("")
@@ -44,6 +54,31 @@ export default function SimulatePage() {
   const [videoCompleted, setVideoCompleted] = useState(false)
   const [videoTaskId, setVideoTaskId] = useState('')
   
+  // 保存游戏到数据库的函数
+  const saveGameToDatabase = async (game: GameResponse) => {
+    try {
+      const sessionId = localStorage.getItem('xknow-session-id')
+      if (!sessionId) {
+        console.warn('缺少sessionId，跳过游戏保存')
+        return
+      }
+      
+      await LearningSessionService.saveGameSession(
+        sessionId,
+        game.title,
+        game.gameType,
+        game.instructions,
+        game.html,
+        undefined // 游戏设计概念数据可以从其他地方获取
+      )
+      
+      console.log('✅ 游戏已保存到数据库:', game.title)
+    } catch (error) {
+      console.error('❌ 保存游戏失败:', error)
+      throw error
+    }
+  }
+
   // 智能等待游戏生成的机制
   const waitForGameOrShowExisting = useCallback(async (currentTopic: string, currentCategory: string, currentUserLevel: string) => {
     console.log('🔍 检查游戏状态...')
@@ -64,6 +99,15 @@ export default function SimulatePage() {
         if (game.html && game.title) {
           setCurrentGame(game)
           console.log('✅ 使用现有游戏:', game.title)
+          
+          // 如果用户已登录，保存游戏到数据库（如果还没保存）
+          if (user?.id) {
+            saveGameToDatabase(game).catch((error: unknown) => {
+              console.error('保存游戏到数据库失败:', error)
+              // 数据库操作失败不影响用户体验
+            })
+          }
+          
           return
         } else {
           console.log('❌ 游戏数据不完整:', { hasHtml: !!game.html, hasTitle: !!game.title })
@@ -89,6 +133,14 @@ export default function SimulatePage() {
             setIsWaitingForGame(false)
             clearInterval(checkInterval)
             console.log('🎉 游戏生成完成:', game.title)
+            
+            // 如果用户已登录，保存游戏到数据库
+            if (user?.id) {
+              saveGameToDatabase(game).catch((error: unknown) => {
+                console.error('保存游戏到数据库失败:', error)
+                // 数据库操作失败不影响用户体验
+              })
+            }
           }
         } catch (error) {
           console.error('❌ 游戏解析失败:', error)
@@ -468,83 +520,113 @@ export default function SimulatePage() {
                     )}
                   </div>
                 ) : videoCompleted ? (
-                  /* 视频生成完成界面 */
-                  <div>
+                  /* 视频生成完成界面 - Silicon Valley Minimalist */
+                  <div className="max-w-lg mx-auto">
                     <motion.div
-                      initial={{ scale: 0.8, opacity: 0 }}
+                      initial={{ scale: 0.95, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      className="w-20 h-20 mx-auto mb-8 bg-green-100 rounded-2xl flex items-center justify-center"
+                      transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                      className="w-16 h-16 mx-auto mb-8 bg-gray-100 rounded-full flex items-center justify-center"
                     >
-                      <Video className="w-10 h-10 text-green-600" />
+                      <Video className="w-7 h-7 text-gray-700" />
                     </motion.div>
                     
-                    <h2 className="text-2xl font-light text-gray-900 mb-4">
-                      🎬 沉浸式历史视频已生成！
-                    </h2>
-                    
-                    <p className="text-gray-600 mb-8">
-                      基于您的学习主题创作的专属历史场景视频
-                    </p>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                      className="text-center mb-12"
+                    >
+                      <h2 className="heading-lg mb-3">
+                        Video Generated
+                      </h2>
+                      
+                      <p className="text-body font-light">
+                        Your personalized learning video is ready
+                      </p>
+                    </motion.div>
                     
                     {videoDownloadUrl && (
-                      <div className="space-y-4">
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                        className="space-y-6"
+                      >
                         <motion.a
                           href={videoDownloadUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-block px-8 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors duration-300"
+                          className="btn-primary-minimal w-full inline-flex items-center justify-center py-4"
                           whileHover={{ y: -2 }}
                           whileTap={{ y: 0 }}
                         >
-                          🎥 观看历史视频
+                          <Video className="w-4 h-4 mr-2" />
+                          Watch Video
                         </motion.a>
                         
-                        <div className="flex gap-4 justify-center mt-6">
-                          <motion.button
-                            onClick={() => router.push('/feedback')}
-                            className="px-6 py-2 text-gray-600 hover:text-gray-900 transition-colors duration-300"
-                            whileHover={{ y: -1 }}
-                            whileTap={{ y: 0 }}
-                          >
-                            完成学习
-                          </motion.button>
-                        </div>
-                      </div>
+                        <motion.button
+                          onClick={() => router.push('/feedback')}
+                          className="btn-ghost-minimal w-full py-3"
+                          whileHover={{ y: -1 }}
+                          whileTap={{ y: 0 }}
+                        >
+                          Continue Learning
+                        </motion.button>
+                      </motion.div>
                     )}
                     
                     {videoPrompt && (
-                      <div className="mt-8 p-6 bg-gray-50 rounded-xl text-left">
-                        <h3 className="text-sm font-medium text-gray-900 mb-3">视频场景提示词：</h3>
-                        <p className="text-sm text-gray-700 leading-relaxed">
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                        className="mt-12 p-6 bg-white border border-gray-200 rounded-2xl text-left"
+                      >
+                        <h3 className="text-caption uppercase tracking-wide text-gray-500 mb-3">Scene Description</h3>
+                        <p className="text-body leading-relaxed font-light">
                           {videoPrompt}
                         </p>
-                      </div>
+                      </motion.div>
                     )}
                   </div>
                 ) : (
-                  /* 视频加载失败状态 */
-                  <div>
+                  /* 学习完成状态 - Silicon Valley Minimalist */
+                  <div className="max-w-lg mx-auto">
                     <motion.div
-                      className="w-20 h-20 mx-auto mb-8 bg-red-100 rounded-2xl flex items-center justify-center"
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                      className="w-16 h-16 mx-auto mb-8 bg-gray-100 rounded-full flex items-center justify-center"
                     >
-                      <Video className="w-10 h-10 text-red-600" />
+                      <Check className="w-7 h-7 text-gray-700" />
                     </motion.div>
                     
-                    <h2 className="text-2xl font-light text-gray-900 mb-4">
-                      🎉 游戏完成！
-                    </h2>
-                    
-                    <p className="text-gray-600 mb-8">
-                      {videoMessage || '视频暂时无法播放，但您已完成学习任务'}
-                    </p>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                      className="text-center mb-12"
+                    >
+                      <h2 className="heading-lg mb-3">
+                        Learning Complete
+                      </h2>
+                      
+                      <p className="text-body font-light">
+                        {videoMessage || 'Great work! Ready for the next step?'}
+                      </p>
+                    </motion.div>
                     
                     <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                       onClick={() => router.push('/feedback')}
-                      className="px-8 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors duration-300"
+                      className="btn-primary-minimal w-full py-4"
                       whileHover={{ y: -2 }}
                       whileTap={{ y: 0 }}
                     >
-                      完成学习
+                      Continue Learning
                     </motion.button>
                   </div>
                 )}

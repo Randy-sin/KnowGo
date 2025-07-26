@@ -52,8 +52,8 @@
 }
 
 html {
-  /* 优化的平滑滚动 */
-  scroll-behavior: smooth;
+  /* 移除平滑滚动以消除延迟 */
+  scroll-behavior: auto;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   /* 优化滚动性能 */
   -webkit-overflow-scrolling: touch;
@@ -79,16 +79,16 @@ body {
   max-width: 100vw;
 }
 
-/* 定制平滑滚动行为 */
+/* 禁用平滑滚动以消除延迟 */
 @media (prefers-reduced-motion: no-preference) {
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
   
-  /* 为支持的浏览器启用原生平滑滚动 */
+  /* 确保所有浏览器都使用即时滚动 */
   @supports (scroll-behavior: smooth) {
     html {
-      scroll-behavior: smooth;
+      scroll-behavior: auto;
     }
   }
 }
@@ -745,4 +745,52 @@ body {
 .fullscreen-game-container:fullscreen iframe {
   height: 100vh !important;
   border-radius: 0 !important;
+}
+
+/* Silicon Valley 风格毛玻璃效果 */
+.modal-backdrop {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* 确保毛玻璃效果的浏览器兼容性 */
+@supports not (backdrop-filter: blur(20px)) {
+  .modal-backdrop {
+    background-color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+/* 优化模态框的层级和动画 */
+.modal-content {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* 优化模态框滚动 */
+.modal-scroll-area {
+  /* 确保在所有设备上的平滑滚动 */
+  -webkit-overflow-scrolling: touch;
+  overflow-anchor: auto;
+  scrollbar-width: none; /* Firefox - 隐藏滚动条 */
+  scrollbar-color: transparent transparent;
+  /* 确保滚动容器能够捕获滚动事件 */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+.modal-scroll-area::-webkit-scrollbar {
+  display: none; /* Chrome/Safari - 隐藏滚动条 */
+}
+
+/* 防止背景滚动穿透 - 改进版本 */
+.modal-open {
+  overflow: hidden !important;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* 完全禁用背景滚动 */
+  touch-action: none;
+  overscroll-behavior: none;
 }

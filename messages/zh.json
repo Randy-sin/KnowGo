@@ -1,6 +1,7 @@
 {
   "common": {
     "signIn": "登录",
+    "profile": "个人中心",
     "builtForCuriousMinds": "为好奇的心灵而建",
     "language": "语言",
     "welcome": "欢迎",

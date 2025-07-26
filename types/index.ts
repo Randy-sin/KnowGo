@@ -39,12 +39,16 @@ export interface LearningSession {
   insights: string[]
 }
 
+// 定义通用元数据类型
+export type MetadataValue = string | number | boolean | Date | null | undefined
+export type MetadataRecord = Record<string, MetadataValue | MetadataValue[]>
+
 export interface Interaction {
   id: string
   type: 'question' | 'answer' | 'simulation' | 'reflection'
   content: string
   timestamp: Date
-  metadata?: Record<string, any>
+  metadata?: MetadataRecord
 }
 
 // AI引导相关类型
@@ -132,11 +136,13 @@ export interface ModalProps extends ComponentProps {
 }
 
 // 动画相关类型
+export type AnimationProperty = string | number | string[] | number[]
+
 export interface AnimationVariants {
-  initial: Record<string, any>
-  animate: Record<string, any>
-  exit?: Record<string, any>
-  transition?: Record<string, any>
+  initial: Record<string, AnimationProperty>
+  animate: Record<string, AnimationProperty>
+  exit?: Record<string, AnimationProperty>
+  transition?: Record<string, AnimationProperty>
 }
 
 // 游戏设计相关类型
@@ -149,7 +155,7 @@ export interface GameDesignConcept {
 }
 
 // API响应类型
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   error?: string

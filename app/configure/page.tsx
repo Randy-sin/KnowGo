@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { LanguageToggle } from "@/components/ui/language-toggle"
 import { useTranslations } from "@/lib/use-translations"
+import { LearningSessionService } from "@/lib/learning-session-service"
 
 export default function ConfigurePage() {
   const { isLoaded, isSignedIn, user } = useUser()
@@ -138,7 +139,7 @@ export default function ConfigurePage() {
 
   const handleContinue = async () => {
     if (selectedLevel && selectedStyle) {
-      // Store configuration
+      // Store configuration to localStorage (保持现有逻辑)
       const config = {
         level: selectedLevel,
         style: selectedStyle
@@ -152,6 +153,23 @@ export default function ConfigurePage() {
       localStorage.removeItem('xknow-pregenerated-reflection');
       localStorage.removeItem('xknow-analyses'); // 清除旧的AI分析数据
       localStorage.removeItem('xknow-responses'); // 清除旧的用户回答
+      
+              // 如果用户已登录且有学习会话，更新数据库中的配置
+        if (user?.id) {
+          const sessionId = localStorage.getItem('xknow-session-id')
+          if (sessionId) {
+            try {
+              await LearningSessionService.updateLearningConfig(sessionId, {
+                level: selectedLevel as 'beginner' | 'intermediate' | 'expert',
+                style: selectedStyle
+              }, 'learn')
+              console.log('✅ 学习配置已更新到数据库')
+            } catch (error) {
+              console.error('❌ 更新学习配置失败:', error)
+              // 数据库更新失败不影响用户体验
+            }
+          }
+        }
       
       // 立即跳转到classify页面，提供流畅体验
       router.push('/classify');
@@ -279,7 +297,7 @@ export default function ConfigurePage() {
   }
 
   return (
-    <div className="min-h-screen py-8 container-minimal relative">
+    <div className="h-screen flex flex-col justify-center items-center container-minimal relative overflow-hidden px-4">
       {/* Minimal back button */}
       <motion.button
         initial={{ opacity: 0, x: -10 }}
@@ -310,21 +328,19 @@ export default function ConfigurePage() {
         </div>
       </motion.div>
 
-      {/* Main Content Container */}
-      <div className="flex flex-col items-center justify-start pt-16 pb-24">
-        {/* Main Header - simplified */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-16"
-        >
-          <h1 className="heading-lg mb-2">
-            {t('configure.title')}
-          </h1>
-        </motion.div>
+      {/* Main Header - simplified */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+        className="text-center mb-8"
+      >
+        <h1 className="heading-lg mb-2">
+          {t('configure.title')}
+        </h1>
+      </motion.div>
 
-        <div className="w-full max-w-4xl space-y-16">
+      <div className="w-full max-w-4xl space-y-8">
         {/* Knowledge Level */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -332,16 +348,16 @@ export default function ConfigurePage() {
           transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
           <motion.div 
-            className="mb-8"
+            className="mb-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <h2 className="text-xl font-semibold mb-2">{t('configure.knowledgeLevel')}</h2>
+            <h2 className="text-lg font-semibold mb-2">{t('configure.knowledgeLevel')}</h2>
             <p className="text-body text-sm">{t('configure.knowledgeLevelDesc')}</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-3 gap-3">
             {levels.map((level, levelIndex) => (
               <motion.button
                 key={level.id}
@@ -361,7 +377,7 @@ export default function ConfigurePage() {
                   transition: { duration: 0.1 }
                 }}
                 onClick={() => setSelectedLevel(level.id)}
-                className={`card-minimal p-6 text-left transition-all duration-300 relative micro-bounce ${
+                className={`card-minimal p-4 text-left transition-all duration-300 relative micro-bounce ${
                   selectedLevel === level.id ? 'selected-level' : ''
                 }`}
               >
@@ -424,17 +440,17 @@ export default function ConfigurePage() {
           transition={{ duration: 0.6, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
           <motion.div 
-            className="mb-8"
+            className="mb-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
           >
-            <h2 className="text-xl font-semibold mb-2">{t('configure.learningStyle')}</h2>
+            <h2 className="text-lg font-semibold mb-2">{t('configure.learningStyle')}</h2>
             <p className="text-body text-sm">{t('configure.learningStyleDesc')}</p>
           </motion.div>
 
           <motion.div 
-            className="grid grid-cols-2 md:grid-cols-4 gap-3 stagger-children"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 stagger-children"
             initial="hidden"
             animate="visible"
             variants={{
@@ -485,7 +501,7 @@ export default function ConfigurePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.2, ease: [0.16, 1, 0.3, 1] }}
-          className="flex justify-center"
+          className="flex justify-center mt-6"
         >
           <motion.button
             onClick={handleContinue}
@@ -522,32 +538,32 @@ export default function ConfigurePage() {
             </motion.div>
           </motion.button>
         </motion.div>
-      </div>
 
-      {/* Progress indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: selectedLevel && selectedStyle ? 1 : 0.3 }}
-        transition={{ duration: 0.3 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <div className="flex space-x-2">
-          <motion.div 
-            className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-              selectedLevel ? 'bg-black' : 'bg-gray-300'
-            }`}
-            animate={selectedLevel ? { scale: [1, 1.2, 1] } : {}}
-            transition={{ duration: 0.3 }}
-          />
-          <motion.div 
-            className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-              selectedStyle ? 'bg-black' : 'bg-gray-300'
-            }`}
-            animate={selectedStyle ? { scale: [1, 1.2, 1] } : {}}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
-      </motion.div>
+        {/* Progress indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: selectedLevel && selectedStyle ? 1 : 0.3 }}
+          transition={{ duration: 0.3 }}
+          className="mt-6 flex justify-center"
+        >
+          <div className="flex space-x-2">
+            <motion.div 
+              className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                selectedLevel ? 'bg-black' : 'bg-gray-300'
+              }`}
+              animate={selectedLevel ? { scale: [1, 1.2, 1] } : {}}
+              transition={{ duration: 0.3 }}
+            />
+            <motion.div 
+              className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                selectedStyle ? 'bg-black' : 'bg-gray-300'
+              }`}
+              animate={selectedStyle ? { scale: [1, 1.2, 1] } : {}}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+        </motion.div>
+      </div>
     </div>
   )
 } 

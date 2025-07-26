@@ -8,9 +8,10 @@ import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import type { QuestionCategory, ClassificationResult } from "@/lib/classifier-service"
 // import { LanguageToggle } from "@/components/ui/language-toggle"
 import { useTranslations } from "@/lib/use-translations"
+import { LearningSessionService } from "@/lib/learning-session-service"
 
 export default function ClassifyPage() {
-  const { isLoaded, isSignedIn } = useUser()
+  const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [isClassifying] = useState(false)
@@ -42,8 +43,22 @@ export default function ClassifyPage() {
   const handleConfirm = async () => {
     if (!selectedCategory) return;
     
-    // 保存分类信息
+    // 保存分类信息到localStorage（保持现有逻辑）
     localStorage.setItem('xknow-category', selectedCategory);
+    
+    // 如果用户已登录且有学习会话，更新数据库中的分类确认
+    if (user?.id) {
+      const sessionId = localStorage.getItem('xknow-session-id')
+      if (sessionId) {
+        try {
+          await LearningSessionService.confirmCategory(sessionId, selectedCategory)
+          console.log('✅ 用户分类确认已保存到数据库')
+        } catch (error) {
+          console.error('❌ 保存分类确认失败:', error)
+          // 数据库操作失败不影响用户体验
+        }
+      }
+    }
     
     // 立即跳转到学习页面，提供流畅体验
     router.push('/learn');
@@ -96,6 +111,13 @@ export default function ClassifyPage() {
             createdAt: Date.now()
           }));
           console.log('🎬 历史视频任务已创建:', data.taskId)
+        } else if (response.status === 503) {
+          // MiniMax服务不可用，但提示词已生成
+          const errorData = await response.json();
+          console.warn('🎬 视频服务暂时不可用:', errorData.error);
+          if (errorData.videoPrompt) {
+            console.log('💡 视频提示词已生成:', errorData.videoPrompt);
+          }
         } else {
           console.error('历史视频任务创建失败:', response.status)
         }

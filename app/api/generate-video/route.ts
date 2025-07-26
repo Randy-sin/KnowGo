@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { 
   generateHistoryVideoPrompt,
-  VideoPromptRequest
+  VideoPromptRequest,
+  VideoPromptResponse
 } from '@/lib/video-prompt-service'
 import {
   createVideoGenerationTask,
@@ -82,6 +83,8 @@ async function handleGeneratePrompt(topic: string, userLevel: string) {
  * 处理创建视频生成任务的请求
  */
 async function handleCreateTask(topic: string, userLevel: string) {
+  let promptResult: VideoPromptResponse | null = null;
+  
   try {
     // 第一步：生成视频提示词
     const promptRequest: VideoPromptRequest = {
@@ -89,7 +92,7 @@ async function handleCreateTask(topic: string, userLevel: string) {
       userLevel: userLevel as 'beginner' | 'intermediate' | 'expert'
     }
     
-    const promptResult = await generateHistoryVideoPrompt(promptRequest)
+    promptResult = await generateHistoryVideoPrompt(promptRequest)
     console.log('Generated video prompt for:', topic)
 
     // 第二步：创建视频生成任务
@@ -113,6 +116,20 @@ async function handleCreateTask(topic: string, userLevel: string) {
     })
   } catch (error) {
     console.error('Error creating video task:', error)
+    
+    // 如果是MiniMax余额不足，返回特殊错误信息
+    if (error instanceof Error && error.message.includes('账户余额不足')) {
+      return NextResponse.json(
+        { 
+          error: 'MiniMax视频生成服务暂时不可用',
+          reason: 'balance_insufficient',
+          videoPrompt: promptResult?.videoPrompt,
+          suggestion: '视频提示词已生成，请联系管理员充值后重试'
+        },
+        { status: 503 }
+      )
+    }
+    
     return NextResponse.json(
       { error: '视频任务创建失败，请重试' },
       { status: 500 }

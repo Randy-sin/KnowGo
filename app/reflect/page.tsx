@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
+import { LearningSessionService } from "@/lib/learning-session-service"
 
 interface ReflectionData {
   question: string
@@ -12,7 +13,7 @@ interface ReflectionData {
 }
 
 export default function ReflectPage() {
-  const { isLoaded, isSignedIn } = useUser()
+  const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
   
   const [query, setQuery] = useState("")
@@ -108,26 +109,39 @@ export default function ReflectPage() {
 
   const handleContinue = () => {
     if (reflectionText.trim()) {
-      // 保存反思内容
+      // 保存反思内容到localStorage（保持现有逻辑）
       localStorage.setItem('xknow-reflection', reflectionText.trim())
       
-      // 检查游戏状态并跳转到对应的学习页面
-      const category = localStorage.getItem('xknow-category')
-      let targetRoute = '/simulate'
-      
-      switch (category) {
-        case 'science':
-          targetRoute = '/simulate'
-          break
-        case 'history':
-          targetRoute = '/history'
-          break
-        case 'others':
-          targetRoute = '/geography'
-          break
-        default:
-          targetRoute = '/simulate'
+      // 如果用户已登录，同时保存到数据库
+      if (user?.id && reflectionData) {
+        const sessionId = localStorage.getItem('xknow-session-id')
+        if (sessionId) {
+          LearningSessionService.saveReflection(
+            sessionId,
+            reflectionData.question,
+            reflectionData.placeholder,
+            reflectionText.trim()
+          ).then(() => {
+            console.log('✅ 反思内容已保存到数据库')
+          }).catch((error: unknown) => {
+            console.error('❌ 保存反思内容失败:', error)
+            // 数据库操作失败不影响用户体验
+          })
+        }
       }
+      
+      // 检查游戏状态并跳转到游戏界面
+      const category = localStorage.getItem('xknow-category')
+      const targetRoute = '/simulate' // 所有科目都统一跳转到游戏界面
+      
+      // 注释：之前的分科目跳转已废弃，现在统一使用游戏界面
+      // switch (category) {
+      //   case 'science':
+      //   case 'history':
+      //   case 'others':
+      //   default:
+      //     targetRoute = '/simulate'
+      // }
       
       console.log('反思完成，跳转到:', targetRoute)
       router.push(targetRoute)

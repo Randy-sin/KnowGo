@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { LanguageProvider } from "@/lib/language-context";
-import SmoothScrolling from "@/components/ui/smooth-scrolling";
 import "./globals.css";
 
 const inter = Inter({
@@ -45,12 +44,10 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className="scroll-smooth">
+      <html lang="en">
         <body className={`${inter.variable} font-sans antialiased`}>
           <LanguageProvider>
-            <SmoothScrolling>
-              {children}
-            </SmoothScrolling>
+            {children}
           </LanguageProvider>
         </body>
       </html>

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { useTranslations } from "@/lib/use-translations"
 import { QuizQuestion } from "@/lib/quiz-service"
+import { LearningSessionService } from "@/lib/learning-session-service"
 
 interface UserResponse {
   question: string
@@ -17,7 +18,7 @@ interface UserResponse {
 }
 
 export default function FeedbackPage() {
-  const { isLoaded, isSignedIn } = useUser()
+  const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState("")
@@ -37,6 +38,59 @@ export default function FeedbackPage() {
   const [currentStage, setCurrentStage] = useState<'reflection' | 'quiz'>('reflection')
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false)
   const [quizGenerationMessage, setQuizGenerationMessage] = useState("")
+
+  // 更新数据库中的答题记录
+  const updateQuizAnswerInDatabase = async (userAnswer: number) => {
+    try {
+      const quizRecordIds = JSON.parse(localStorage.getItem('xknow-quiz-record-ids') || '[]')
+      const quizRecordId = quizRecordIds[currentIndex]
+      
+      if (!quizRecordId || !currentQuiz) {
+        console.warn('缺少quizRecordId或currentQuiz，跳过答题记录更新')
+        return
+      }
+      
+      await LearningSessionService.updateQuizAnswer(quizRecordId, userAnswer)
+      
+      console.log(`✅ 答题记录[${currentIndex}]已更新到数据库`)
+    } catch (error) {
+      console.error(`❌ 更新答题记录[${currentIndex}]失败:`, error)
+      throw error
+    }
+  }
+
+  // 保存quiz到数据库的函数
+  const saveQuizToDatabase = async (quiz: QuizQuestion, questionIndex: number) => {
+    try {
+      const sessionId = localStorage.getItem('xknow-session-id')
+      const interactionIds = JSON.parse(localStorage.getItem('xknow-interaction-ids') || '[]')
+      const interactionId = interactionIds[questionIndex]
+      
+      if (!sessionId || !interactionId) {
+        console.warn('缺少sessionId或interactionId，跳过quiz保存')
+        return
+      }
+      
+      const quizId = await LearningSessionService.saveQuizRecord(
+        sessionId,
+        interactionId,
+        quiz.question,
+        quiz.options,
+        quiz.correctAnswer,
+        quiz.explanation
+      )
+      
+      // 保存quiz记录ID到localStorage，供答题时使用
+      const quizRecordIds = JSON.parse(localStorage.getItem('xknow-quiz-record-ids') || '[]')
+      quizRecordIds[questionIndex] = quizId
+      localStorage.setItem('xknow-quiz-record-ids', JSON.stringify(quizRecordIds))
+      
+      console.log(`✅ Quiz[${questionIndex}]已保存到数据库:`, quizId)
+    } catch (error) {
+      console.error(`❌ 保存Quiz[${questionIndex}]失败:`, error)
+      throw error
+    }
+  }
 
   // AI生成题目的函数
   const generateQuizForTopic = async () => {
@@ -141,6 +195,14 @@ export default function FeedbackPage() {
                     // 保存quiz到localStorage，使用问题索引区分
                     localStorage.setItem(`xknow-quiz-${currentIndex}`, JSON.stringify(data.quiz))
                     console.log(`✅ Quiz已保存到localStorage[${currentIndex}]`)
+                    
+                    // 如果用户已登录，同时保存到数据库
+                    if (user?.id) {
+                      saveQuizToDatabase(data.quiz, currentIndex).catch((error: unknown) => {
+                        console.error('保存quiz到数据库失败:', error)
+                        // 数据库操作失败不影响用户体验
+                      })
+                    }
                   }
                   break
                   
@@ -455,14 +517,22 @@ export default function FeedbackPage() {
     setSelectedAnswer(answerIndex)
     setShowQuizResult(true)
     setHasAnsweredQuiz(true)
+    
+    // 如果用户已登录，更新数据库中的答题记录
+    if (user?.id && currentQuiz) {
+      updateQuizAnswerInDatabase(answerIndex).catch((error: unknown) => {
+        console.error('更新答题记录失败:', error)
+        // 数据库操作失败不影响用户体验
+      })
+    }
   }
 
   const isCorrectAnswer = selectedAnswer === currentQuiz?.correctAnswer
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
       {/* 极简导航 */}
-      <div className="absolute top-8 left-8">
+      <div className="absolute top-8 left-8 z-10">
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -475,13 +545,13 @@ export default function FeedbackPage() {
       </div>
 
       {/* 主内容 */}
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="max-w-4xl mx-auto px-6 py-16 pb-24">
         {/* 标题区域 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-16"
+          className="text-center mb-8"
         >
           <h1 className="text-2xl font-light text-gray-900 mb-3 tracking-tight">
             {currentStage === 'reflection' ? '学习反馈' : '知识检测'}
@@ -508,7 +578,7 @@ export default function FeedbackPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="mb-12"
+                className="mb-8"
               >
                 <div className="text-center mb-8">
                   <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
@@ -525,7 +595,7 @@ export default function FeedbackPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="grid md:grid-cols-2 gap-8 mb-12"
+                className="grid md:grid-cols-2 gap-8 mb-8"
               >
                 {/* 你的思考 */}
                 <div className="space-y-4">

@@ -25,8 +25,8 @@ export interface VideoDownloadResponse {
   bytes: number
 }
 
-// MiniMax API Key (from documentation)
-const MINIMAX_API_KEY = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJHcm91cE5hbWUiOiLlhrzmmJ_mnJciLCJVc2VyTmFtZSI6IuWGvOaYn-aclyIsIkFjY291bnQiOiIiLCJTdWJqZWN0SUQiOiIxOTExOTg1NjgwODM4MzA0NjkxIiwiUGhvbmUiOiIxMzc2MDkwMTMxOCIsIkdyb3VwSUQiOiIxOTExOTg1NjgwODM0MTEwMzg3IiwiUGFnZU5hbWUiOiIiLCJNYWlsIjoiIiwiQ3JlYXRlVGltZSI6IjIwMjUtMDctMjYgMTU6NDE6NTEiLCJUb2tlblR5cGUiOjEsImlzcyI6Im1pbmltYXgifQ.jSdFhLJR2JFy0H0PdjiJPXr28DnZf6jpsQPF5MS0wbdGzZcyii1OSeAvNCls9CecbShP3P-FAjL32T853q2ilvFhgVOIIWrNdvxW_QS-tYqtswoFTJzWqBZyIvwgRTAjRmyndYeal1tqnP2f2Gxj8uESRGLl5P0ncHNV38UVNRrwU9zMu1Xjd4daT19HeO7IPLsn5Ko_q0olaxIaT4NcQWE11Jm8eijnBD2KyODNn95CLQZdelcXHwfhRDOkE0FHzhQfJq5sLtEgXEwy3HZSEjJk7PmHjg0kJVJWKZP_bKVP9Tz5Vjebv-V7wVpgu6_jIAKIDu9YMexJPX6KEi2YNA";
+// MiniMax API Key (优先使用环境变量)
+const MINIMAX_API_KEY = process.env.MINIMAX_API_KEY || "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJHcm91cE5hbWUiOiLlhrzmmJ_mnJciLCJVc2VyTmFtZSI6IuWGvOaYn-aclyIsIkFjY291bnQiOiIiLCJTdWJqZWN0SUQiOiIxOTExOTg1NjgwODM4MzA0NjkxIiwiUGhvbmUiOiIxMzc2MDkwMTMxOCIsIkdyb3VwSUQiOiIxOTExOTg1NjgwODM0MTEwMzg3IiwiUGFnZU5hbWUiOiIiLCJNYWlsIjoiIiwiQ3JlYXRlVGltZSI6IjIwMjUtMDctMjYgMTU6NDE6NTEiLCJUb2tlblR5cGUiOjEsImlzcyI6Im1pbmltYXgifQ.jSdFhLJR2JFy0H0PdjiJPXr28DnZf6jpsQPF5MS0wbdGzZcyii1OSeAvNCls9CecbShP3P-FAjL32T853q2ilvFhgVOIIWrNdvxW_QS-tYqtswoFTJzWqBZyIvwgRTAjRmyndYeal1tqnP2f2Gxj8uESRGLl5P0ncHNV38UVNRrwU9zMu1Xjd4daT19HeO7IPLsn5Ko_q0olaxIaT4NcQWE11Jm8eijnBD2KyODNn95CLQZdelcXHwfhRDOkE0FHzhQfJq5sLtEgXEwy3HZSEjJk7PmHjg0kJVJWKZP_bKVP9Tz5Vjebv-V7wVpgu6_jIAKIDu9YMexJPX6KEi2YNA";
 
 const MINIMAX_BASE_URL = "https://api.minimaxi.com/v1";
 const MODEL = "MiniMax-Hailuo-02";
@@ -65,7 +65,14 @@ export async function createVideoGenerationTask(request: VideoGenerationRequest)
     const result = await response.json();
     
     if (result.base_resp?.status_code !== 0) {
-      throw new Error(`MiniMax API error: ${result.base_resp?.status_msg}`);
+      const errorMsg = result.base_resp?.status_msg || 'Unknown error';
+      
+      // 针对特定错误提供更友好的提示
+      if (errorMsg.includes('insufficient balance')) {
+        throw new Error('MiniMax账户余额不足，请联系管理员为视频生成服务充值');
+      }
+      
+      throw new Error(`MiniMax API error: ${errorMsg}`);
     }
 
     if (!result.task_id) {
