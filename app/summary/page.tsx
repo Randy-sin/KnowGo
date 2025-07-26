@@ -110,13 +110,13 @@ export default function SummaryPage() {
 
   if (!isLoaded || !learningData || !showContent) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-page flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
+          <div className="w-1 h-1 bg-secondary rounded-full animate-pulse"></div>
         </motion.div>
       </div>
     )
@@ -125,7 +125,7 @@ export default function SummaryPage() {
   const stats = getStats()
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-page">
       
       {/* 极简导航 */}
       <div className="absolute top-8 left-8 z-20">
@@ -134,7 +134,7 @@ export default function SummaryPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           onClick={() => router.back()}
-          className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors duration-300"
+          className="w-6 h-6 flex items-center justify-center text-secondary hover:text-primary transition-colors duration-300"
         >
           <ArrowLeft className="w-4 h-4" />
         </motion.button>
@@ -150,13 +150,13 @@ export default function SummaryPage() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl font-light text-gray-900 tracking-tight mb-4">
+          <h1 className="text-4xl font-light text-primary tracking-tight mb-4">
             {t('summary.title')}
           </h1>
-          <p className="text-lg font-light text-gray-500">
+          <p className="text-lg font-light text-secondary">
             {learningData.topic}
           </p>
-          <div className="w-12 h-px bg-gray-200 mx-auto mt-8"></div>
+          <div className="w-12 h-px bg-default mx-auto mt-8"></div>
         </motion.div>
 
         {/* 学习统计卡片 */}
@@ -166,28 +166,28 @@ export default function SummaryPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="grid md:grid-cols-3 gap-6 mb-16"
         >
-          <div className="bg-white border border-gray-100 rounded-3xl p-6 text-center">
-            <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-6 h-6 text-gray-600" />
+          <div className="bg-card border border-default rounded-3xl p-6 text-center">
+            <div className="w-12 h-12 bg-subtle rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-6 h-6 text-secondary" />
             </div>
-            <div className="text-2xl font-light text-gray-900 mb-1">{stats.completedSections}/4</div>
-            <div className="text-sm text-gray-500">{t('summary.completedSections')}</div>
+            <div className="text-2xl font-light text-primary mb-1">{stats.completedSections}/4</div>
+            <div className="text-sm text-secondary">{t('summary.completedSections')}</div>
           </div>
 
-          <div className="bg-white border border-gray-100 rounded-3xl p-6 text-center">
-            <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-6 h-6 text-gray-600" />
+          <div className="bg-card border border-default rounded-3xl p-6 text-center">
+            <div className="w-12 h-12 bg-subtle rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-6 h-6 text-secondary" />
             </div>
-            <div className="text-2xl font-light text-gray-900 mb-1">{stats.totalTime}</div>
-            <div className="text-sm text-gray-500">{t('summary.timeInvested')}</div>
+            <div className="text-2xl font-light text-primary mb-1">{stats.totalTime}</div>
+            <div className="text-sm text-secondary">{t('summary.timeInvested')}</div>
           </div>
 
-          <div className="bg-white border border-gray-100 rounded-3xl p-6 text-center">
-            <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Brain className="w-6 h-6 text-gray-600" />
+          <div className="bg-card border border-default rounded-3xl p-6 text-center">
+            <div className="w-12 h-12 bg-subtle rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Brain className="w-6 h-6 text-secondary" />
             </div>
-            <div className="text-2xl font-light text-gray-900 mb-1">{stats.engagement}%</div>
-            <div className="text-sm text-gray-500">{t('summary.engagement')}</div>
+            <div className="text-2xl font-light text-primary mb-1">{stats.engagement}%</div>
+            <div className="text-sm text-secondary">{t('summary.engagement')}</div>
           </div>
         </motion.div>
 
@@ -198,24 +198,24 @@ export default function SummaryPage() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="space-y-8 mb-16"
         >
-          <h2 className="text-2xl font-light text-gray-900 text-center mb-12">{t('summary.yourLearningPath')}</h2>
+          <h2 className="text-2xl font-light text-primary text-center mb-12">{t('summary.yourLearningPath')}</h2>
           
           {/* 思考阶段 */}
-          <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden">
+          <div className="bg-card border border-default rounded-3xl overflow-hidden">
             <div className="p-8">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">1</span>
+                <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
+                  <span className="text-[rgb(var(--background))] text-sm font-medium">1</span>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900">{t('summary.deepThinking')}</h3>
+                <h3 className="text-lg font-medium text-primary">{t('summary.deepThinking')}</h3>
               </div>
               <div className="space-y-4">
                 {learningData.responses.slice(0, 3).map((response, index) => (
-                  <div key={index} className="bg-gray-50 rounded-2xl p-4">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                  <div key={index} className="bg-subtle rounded-2xl p-4">
+                    <div className="text-xs text-secondary uppercase tracking-wide mb-2">
                       {t('summary.question')} {index + 1}
                     </div>
-                    <p className="text-sm text-gray-700 leading-relaxed">
+                    <p className="text-sm text-primary leading-relaxed">
                       {response || t('summary.noResponse')}
                     </p>
                   </div>
@@ -225,32 +225,32 @@ export default function SummaryPage() {
           </div>
 
           {/* AI分析阶段 */}
-          <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden">
+          <div className="bg-card border border-default rounded-3xl overflow-hidden">
             <div className="p-8">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">2</span>
+                <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
+                  <span className="text-[rgb(var(--background))] text-sm font-medium">2</span>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900">{t('summary.aiInsights')}</h3>
+                <h3 className="text-lg font-medium text-primary">{t('summary.aiInsights')}</h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-2xl p-4">
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                <div className="bg-subtle rounded-2xl p-4">
+                  <div className="text-xs text-secondary uppercase tracking-wide mb-2">
                     {t('summary.keyInsights')}
                   </div>
                   <div className="space-y-2">
                     {learningData.analyses.slice(0, 3).map((analysis, index) => (
-                      <div key={index} className="text-sm text-gray-600">
+                      <div key={index} className="text-sm text-secondary">
                         • {analysis.insights?.[0] || t('summary.analysisPending')}
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-2xl p-4">
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                <div className="bg-subtle rounded-2xl p-4">
+                  <div className="text-xs text-secondary uppercase tracking-wide mb-2">
                     {t('summary.yourReflections')}
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-secondary">
                     {learningData.reflections.filter(r => r).length} {t('summary.reflectionsRecorded')}
                   </div>
                 </div>

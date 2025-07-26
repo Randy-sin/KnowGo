@@ -448,24 +448,7 @@ export default function HomePage() {
         {/* 背景渐变 - 深色模式适配 */}
         <div className="absolute inset-0 bg-gradient-to-b from-[rgb(var(--background))] via-[rgb(var(--muted))]/10 to-[rgb(var(--muted))]/20" />
         
-        {/* 左上角Logo */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-          className="absolute top-8 left-8 z-20"
-        >
-          <img 
-            src="/logo.png" 
-            alt="Xknow"
-            className="h-20 w-auto opacity-90 filter grayscale-[0.1] dark:hidden"
-          />
-          <img 
-            src="/logoblack.jpg" 
-            alt="Xknow"
-            className="h-20 w-auto opacity-90 filter grayscale-[0.1] hidden dark:block"
-          />
-        </motion.div>
+
 
         {/* 右上角语言切换和登录状态 */}
         <div className="absolute top-8 right-8 flex items-center space-x-4 z-20">
@@ -504,16 +487,33 @@ export default function HomePage() {
         >
 
 
-          {/* Main heading */}
+          {/* Background Logo - 绝对定位在顶部区域 */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+            className="absolute top-0 left-1/2 transform -translate-x-1/2 pointer-events-none z-0"
+            style={{ top: '15%' }}
+          >
+            <img 
+              src="/logo.png" 
+              alt="Xknow"
+              className="h-48 w-auto opacity-100 dark:hidden"
+            />
+            <img 
+              src="/logoblack.jpg" 
+              alt="Xknow"
+              className="h-48 w-auto opacity-100 hidden dark:block"
+            />
+          </motion.div>
+
+          {/* Main subtitle - 整体下移给logo留空间 */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-            className="space-y-8 mb-16 max-w-4xl"
+            className="space-y-8 mb-16 max-w-4xl relative z-10 mt-32"
           >
-            <h1 className="heading-xl tracking-tight">
-              {t('home.title')}
-            </h1>
             <p className="text-subtitle max-w-2xl mx-auto font-light">
               {t('home.subtitle')}
             </p>
@@ -583,47 +583,7 @@ export default function HomePage() {
               </motion.div>
             </motion.div>
 
-            {/* 探索提示 */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-              className="flex flex-col items-center space-y-4"
-            >
-              <motion.div
-                animate={{ y: [0, 4, 0] }}
-                transition={{ 
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="inline-flex flex-col items-center space-y-3 text-[rgb(var(--muted-foreground))]/80 hover:text-[rgb(var(--foreground))] transition-colors duration-500 cursor-pointer"
-                onClick={() => {
-                  // 检查是否在锁定状态
-                  if (scrollLockRef.current) {
-                    return // 在锁定状态下阻止点击滚动
-                  }
-                  
-                  const newsSection = document.querySelector('section[class*="bg-\\[rgb"]')
-                  newsSection?.scrollIntoView({ behavior: 'smooth' })
-                }}
-              >
-                <span className="text-sm font-medium tracking-wide">{t('home.exploreLearningHistory')}</span>
-                <div className="flex flex-col items-center space-y-1">
-                  <ArrowDown className="w-4 h-4" />
-                  <motion.div 
-                    animate={{ opacity: [0, 1, 0] }}
-                    transition={{ 
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: 0.5
-                    }}
-                    className="w-1 h-1 bg-[rgb(var(--muted-foreground))] rounded-full"
-                  />
-                </div>
-              </motion.div>
-            </motion.div>
+
           </SignedIn>
 
           {/* 未登录用户显示登录提示 */}

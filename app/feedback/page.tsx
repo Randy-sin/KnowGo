@@ -602,10 +602,10 @@ export default function FeedbackPage() {
                 className="mb-8"
               >
                 <div className="text-center mb-8">
-                  <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-xs font-medium text-gray-600">{currentIndex + 1}</span>
+                  <div className="w-6 h-6 rounded-full bg-subtle flex items-center justify-center mx-auto mb-4">
+                    <span className="text-xs font-medium text-secondary">{currentIndex + 1}</span>
                   </div>
-                  <p className="text-lg text-gray-700 leading-relaxed max-w-2xl mx-auto">
+                  <p className="text-lg text-primary leading-relaxed max-w-2xl mx-auto">
                     {currentData.question}
                   </p>
                 </div>
@@ -621,13 +621,13 @@ export default function FeedbackPage() {
                 {/* 用户反思 */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                      <h3 className="text-sm font-medium text-gray-900 uppercase tracking-wide">你的反思</h3>
-                    </div>
+                                      <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-secondary rounded-full"></div>
+                    <h3 className="text-sm font-medium text-primary uppercase tracking-wide">你的反思</h3>
+                  </div>
                     {isSavingReflection && (
-                      <div className="flex items-center space-x-2 text-xs text-gray-500">
-                        <div className="w-3 h-3 border border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                      <div className="flex items-center space-x-2 text-xs text-secondary">
+                        <div className="w-3 h-3 border border-default border-t-primary rounded-full animate-spin"></div>
                         <span>保存中...</span>
                       </div>
                     )}
