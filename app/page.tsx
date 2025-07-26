@@ -443,7 +443,7 @@ export default function HomePage() {
           className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-40 text-center pointer-events-none"
         >
           <div className="bg-white/90 backdrop-blur-xl rounded-full px-4 py-2 border border-gray-200/50 shadow-lg">
-            <p className="text-xs text-gray-500 font-light">再次滑动继续浏览</p>
+            <p className="text-xs text-gray-500 font-light">{t('home.scrollHint')}</p>
           </div>
         </motion.div>
         
@@ -452,6 +452,20 @@ export default function HomePage() {
         {/* 背景渐变 */}
         <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50/20 to-gray-50/40" />
         
+        {/* 左上角Logo */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+          className="absolute top-8 left-8 z-20"
+        >
+          <img 
+            src="/logo.png" 
+            alt="Xknow"
+            className="h-20 w-auto opacity-90 filter grayscale-[0.1]"
+          />
+        </motion.div>
+
         {/* 右上角语言切换和登录状态 */}
         <div className="absolute top-8 right-8 flex items-center space-x-4 z-20">
           <LanguageToggle />
@@ -487,17 +501,7 @@ export default function HomePage() {
           }}
           className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6"
         >
-          {/* Brand mark */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-            className="mb-12"
-          >
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-black rounded-full mb-8">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-          </motion.div>
+
 
           {/* Main heading */}
           <motion.div
@@ -603,7 +607,7 @@ export default function HomePage() {
                   newsSection?.scrollIntoView({ behavior: 'smooth' })
                 }}
               >
-                <span className="text-sm font-medium tracking-wide">探索学习历史</span>
+                <span className="text-sm font-medium tracking-wide">{t('home.exploreLearningHistory')}</span>
                 <div className="flex flex-col items-center space-y-1">
                   <ArrowDown className="w-4 h-4" />
                   <motion.div 
@@ -630,7 +634,7 @@ export default function HomePage() {
               className="text-center space-y-6"
             >
               <p className="text-subtitle font-light">
-                请先登录以开始您的学习之旅
+                {t('home.signInToStart')}
               </p>
               <Link href="/sign-in">
                 <motion.button
@@ -639,7 +643,7 @@ export default function HomePage() {
                   transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                   className="button-primary btn-text-large px-12 py-4"
                 >
-                  立即登录
+                  {t('home.signInNow')}
                 </motion.button>
               </Link>
             </motion.div>
@@ -686,9 +690,9 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">探索您的学习历程</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">{t('home.exploreLearningHistory')}</h3>
               <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                登录后即可查看您的个性化学习历史记录，包括学习进度、测验成绩和深度思考总结
+                {t('home.viewHistory')}
               </p>
               <Link href="/sign-in">
                 <motion.button
@@ -697,7 +701,7 @@ export default function HomePage() {
                   transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                   className="button-primary btn-text px-8 py-3"
                 >
-                  立即登录查看
+                  {t('home.signInToView')}
                 </motion.button>
               </Link>
             </motion.div>
