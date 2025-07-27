@@ -898,3 +898,42 @@ body {
 .modal-scroll-area::-webkit-scrollbar-thumb:hover {
   background-color: rgba(156, 163, 175, 0.7);
 }
+
+/* Iframe 滚动优化 - 确保嵌入HTML可以正常滚动 */
+iframe {
+  /* 启用平滑滚动 */
+  scroll-behavior: smooth;
+  /* 移动端触摸滚动优化 */
+  -webkit-overflow-scrolling: touch;
+  /* 确保滚动区域可访问 */
+  overflow: auto !important;
+}
+
+/* 游戏容器滚动优化 */
+.game-container {
+  /* 确保容器内容可以滚动 */
+  overflow: auto;
+  /* 移动端优化 */
+  -webkit-overflow-scrolling: touch;
+  /* 防止滚动条抖动 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+.game-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.game-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.game-container::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 4px;
+}
+
+.game-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.5);
+}

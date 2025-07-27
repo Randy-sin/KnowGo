@@ -454,7 +454,7 @@ export default function SimulatePage() {
   if (!isLoaded || !query) {
     console.log('⏳ 显示加载状态:', { isLoaded, hasQuery: !!query })
     return (
-      <div className="min-h-screen bg-page flex items-center justify-center">
+      <div className="min-h-screen bg-[rgb(var(--background))] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -472,7 +472,7 @@ export default function SimulatePage() {
   }
 
   return (
-    <div className="min-h-screen bg-page">
+    <div className="min-h-screen bg-[rgb(var(--background))]">
       
       {/* 极简导航 - 只有返回按钮 */}
       <div className="absolute top-8 left-8 z-20">
@@ -481,7 +481,7 @@ export default function SimulatePage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           onClick={handleBack}
-          className="w-10 h-10 flex items-center justify-center bg-card/80 backdrop-blur-sm border border-default rounded-full text-secondary hover:text-primary hover:bg-card hover:border-default transition-all duration-300 shadow-sm hover:shadow-md"
+          className="w-10 h-10 flex items-center justify-center bg-[rgb(var(--background))]/80 backdrop-blur-sm border border-[rgb(var(--border))] rounded-full text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))] hover:bg-[rgb(var(--background))] hover:border-[rgb(var(--muted-foreground))] transition-all duration-300 shadow-sm hover:shadow-md"
         >
           <ArrowLeft className="w-4 h-4" />
         </motion.button>
@@ -489,27 +489,16 @@ export default function SimulatePage() {
 
       {/* 简约刷新按钮 - 右上角 */}
       {currentGame && (
-        <div className="absolute top-8 right-8 z-20 flex space-x-3">
+        <div className="absolute top-8 right-8 z-20">
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
             onClick={handleRefreshGame}
-            className="w-10 h-10 flex items-center justify-center bg-card/80 backdrop-blur-sm border border-default rounded-full text-secondary hover:text-primary hover:bg-card hover:border-default transition-all duration-300 shadow-sm hover:shadow-md"
+            className="w-10 h-10 flex items-center justify-center bg-[rgb(var(--background))]/80 backdrop-blur-sm border border-[rgb(var(--border))] rounded-full text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))] hover:bg-[rgb(var(--background))] hover:border-[rgb(var(--muted-foreground))] transition-all duration-300 shadow-sm hover:shadow-md"
             title="刷新游戏"
           >
             <RefreshCw className="w-4 h-4" />
-          </motion.button>
-          
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            onClick={handleGameComplete}
-            className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black text-sm font-medium rounded-full hover:bg-black/90 dark:hover:bg-white/90 transition-all duration-300 shadow-sm hover:shadow-md"
-            title={category === 'history' ? "完成游戏，观看历史视频" : "完成游戏，进入反馈"}
-          >
-            完成
           </motion.button>
         </div>
       )}
@@ -563,21 +552,25 @@ export default function SimulatePage() {
                     htmlPreview: currentGame.html?.substring(0, 100) + '...'
                   })
                   return (
-                    <div className="w-full h-full flex items-center justify-center p-4">
+                    <div className="w-full h-full flex items-center justify-center p-4 overflow-hidden">
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-                        className="w-[95vw] h-[95vh] bg-card rounded-2xl shadow-sm border border-default overflow-auto"
+                        className="game-container w-[95vw] h-[95vh] bg-[rgb(var(--background))] rounded-2xl shadow-sm border border-[rgb(var(--border))] overflow-hidden"
                       >
                       <iframe
                         key={gameKey} // 添加key以强制刷新iframe
                         srcDoc={currentGame.html}
-                        className="w-full h-full border-0 overflow-auto"
+                        className="w-full h-full border-0"
                         title={currentGame.title}
-                        sandbox="allow-scripts allow-same-origin allow-forms"
-                        scrolling="yes"
-                        style={{ WebkitOverflowScrolling: 'touch' }}
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-modals"
+                        scrolling="auto"
+                        style={{ 
+                          WebkitOverflowScrolling: 'touch',
+                          overflowX: 'auto',
+                          overflowY: 'auto'
+                        }}
                         onLoad={() => console.log('🎮 iframe加载完成')}
                         onError={(e) => console.error('🎮 iframe加载错误:', e)}
                       />
