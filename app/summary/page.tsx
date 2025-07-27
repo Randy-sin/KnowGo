@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, CheckCircle, Clock, Brain, Gamepad2, Video, RotateCcw, ArrowRight, Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { ArrowLeft, CheckCircle, Clock, Brain, Gamepad2, Video, RotateCcw, ArrowRight, Loader2, ChevronDown, ChevronUp, Home } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useUser, RedirectToSignIn } from "@clerk/nextjs"
 import { useTranslations } from "@/lib/use-translations"
@@ -662,9 +662,9 @@ export default function SummaryPage() {
             onClick={() => router.push('/profile')}
             whileHover={{ y: -2 }}
             whileTap={{ y: 0 }}
-            className="inline-flex items-center justify-center space-x-3 px-8 py-4 bg-card border border-default text-primary rounded-2xl font-medium transition-all duration-300 hover:border-secondary hover:bg-subtle"
+            className="inline-flex items-center justify-center space-x-3 px-8 py-4 bg-[rgb(var(--background))] border border-[rgb(var(--border))] text-[rgb(var(--foreground))] rounded-2xl font-medium transition-all duration-300 hover:border-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))]/50"
           >
-            <span>{t('summary.viewAllLearning')}</span>
+            <span>查看学习记录</span>
             <ArrowRight className="w-4 h-4" />
           </motion.button>
         </motion.div>
