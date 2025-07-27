@@ -652,10 +652,10 @@ export default function SummaryPage() {
             onClick={handleNewQuery}
             whileHover={{ y: -2 }}
             whileTap={{ y: 0 }}
-            className="inline-flex items-center justify-center space-x-3 px-8 py-4 bg-primary text-[rgb(var(--background))] rounded-2xl font-medium transition-all duration-300 hover:bg-primary/90"
+            className="inline-flex items-center justify-center space-x-3 px-8 py-4 bg-[rgb(var(--foreground))] text-[rgb(var(--background))] rounded-2xl font-medium transition-all duration-300 hover:bg-[rgb(var(--foreground))]/90"
           >
-            <RotateCcw className="w-4 h-4" />
-            <span>{t('summary.startNewJourney')}</span>
+            <Home className="w-4 h-4" />
+            <span>返回主页</span>
           </motion.button>
           
           <motion.button

@@ -17,6 +17,7 @@ export default function ConfigurePage() {
   const [query, setQuery] = useState("")
   const [classification, setClassification] = useState<{category: string} | null>(null)
   const [isClassifying, setIsClassifying] = useState(true)
+  const [isContinuing, setIsContinuing] = useState(false) // 添加继续状态
   const { t } = useTranslations()
 
   // 将useEffect移到组件顶部，避免条件性调用
@@ -138,7 +139,11 @@ export default function ConfigurePage() {
   ]
 
   const handleContinue = async () => {
-    if (selectedLevel && selectedStyle) {
+    if (!selectedLevel || !selectedStyle || isContinuing) return;
+    
+    setIsContinuing(true) // 开始继续状态
+    
+    try {
       // Store configuration to localStorage (保持现有逻辑)
       const config = {
         level: selectedLevel,
@@ -154,29 +159,35 @@ export default function ConfigurePage() {
       localStorage.removeItem('xknow-analyses'); // 清除旧的AI分析数据
       localStorage.removeItem('xknow-responses'); // 清除旧的用户回答
       
-              // 如果用户已登录且有学习会话，更新数据库中的配置
-        if (user?.id) {
-          const sessionId = localStorage.getItem('xknow-session-id')
-          if (sessionId) {
-            try {
-              await LearningSessionService.updateLearningConfig(sessionId, {
-                level: selectedLevel as 'beginner' | 'intermediate' | 'expert',
-                style: selectedStyle
-              }, 'learn')
-              console.log('✅ 学习配置已更新到数据库')
-            } catch (error) {
-              console.error('❌ 更新学习配置失败:', error)
-              // 数据库更新失败不影响用户体验
-            }
+      // 如果用户已登录且有学习会话，更新数据库中的配置
+      if (user?.id) {
+        const sessionId = localStorage.getItem('xknow-session-id')
+        if (sessionId) {
+          try {
+            await LearningSessionService.updateLearningConfig(sessionId, {
+              level: selectedLevel as 'beginner' | 'intermediate' | 'expert',
+              style: selectedStyle
+            }, 'learn')
+            console.log('✅ 学习配置已更新到数据库')
+          } catch (error) {
+            console.error('❌ 更新学习配置失败:', error)
+            // 数据库更新失败不影响用户体验
           }
         }
-      
-      // 立即跳转到classify页面，提供流畅体验
-      router.push('/classify');
+      }
       
       // 后台异步生成问题和游戏（所有科目）
       generateQuestionsInBackground(config)
       generateGameInBackground(config)
+      
+      // 添加短暂延迟以显示动画效果，然后跳转
+      setTimeout(() => {
+        router.push('/classify');
+      }, 400)
+      
+    } catch (error) {
+      console.error('配置保存失败:', error)
+      setIsContinuing(false)
     }
   }
 
@@ -297,7 +308,15 @@ export default function ConfigurePage() {
   }
 
   return (
-    <div className="h-screen flex flex-col justify-center items-center container-minimal relative overflow-hidden px-4">
+    <motion.div 
+      className="h-screen flex flex-col justify-center items-center container-minimal relative overflow-hidden px-4"
+      initial={{ opacity: 1 }}
+      animate={{ 
+        opacity: isContinuing ? 0.95 : 1,
+        filter: isContinuing ? 'blur(0.5px)' : 'blur(0px)'
+      }}
+      transition={{ duration: 0.4 }}
+    >
       {/* Minimal back button */}
       <motion.button
         initial={{ opacity: 0, x: -10 }}
@@ -505,44 +524,57 @@ export default function ConfigurePage() {
         >
           <motion.button
             onClick={handleContinue}
-            disabled={!selectedLevel || !selectedStyle}
+            disabled={!selectedLevel || !selectedStyle || isContinuing}
             className={`btn-primary-minimal px-8 py-3 text-base transition-all duration-300 ${
-              selectedLevel && selectedStyle
+              selectedLevel && selectedStyle && !isContinuing
                 ? '' 
                 : 'opacity-50 cursor-not-allowed'
             }`}
-            whileHover={selectedLevel && selectedStyle ? { 
+            whileHover={selectedLevel && selectedStyle && !isContinuing ? { 
               y: -2,
               transition: { duration: 0.2 }
             } : {}}
-            whileTap={selectedLevel && selectedStyle ? { 
+            whileTap={selectedLevel && selectedStyle && !isContinuing ? { 
               y: -1,
               transition: { duration: 0.1 }
             } : {}}
-            animate={selectedLevel && selectedStyle ? {
+            animate={selectedLevel && selectedStyle && !isContinuing ? {
               boxShadow: "0 8px 25px 0 rgba(0, 0, 0, 0.15)"
             } : {}}
           >
-{t('configure.startLearning')}
-            <motion.div
-              animate={selectedLevel && selectedStyle ? { 
-                x: [0, 2, 0],
-                transition: { 
-                  repeat: Infinity, 
-                  duration: 1.5,
-                  ease: "easeInOut"
-                }
-              } : {}}
-            >
-              <ArrowRight className="w-4 h-4" />
-            </motion.div>
+            {isContinuing ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-4 h-4 border border-[rgb(var(--muted-foreground))] border-t-[rgb(var(--background))] rounded-full"
+                />
+                <span>正在准备...</span>
+              </>
+            ) : (
+              <>
+                <span>{t('configure.startLearning')}</span>
+                <motion.div
+                  animate={selectedLevel && selectedStyle ? { 
+                    x: [0, 2, 0],
+                    transition: { 
+                      repeat: Infinity, 
+                      duration: 1.5,
+                      ease: "easeInOut"
+                    }
+                  } : {}}
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </motion.div>
+              </>
+            )}
           </motion.button>
         </motion.div>
 
         {/* Progress indicator */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: selectedLevel && selectedStyle ? 1 : 0.3 }}
+          animate={{ opacity: selectedLevel && selectedStyle && !isContinuing ? 1 : 0.3 }}
           transition={{ duration: 0.3 }}
           className="mt-6 flex justify-center"
         >
@@ -564,6 +596,6 @@ export default function ConfigurePage() {
           </div>
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
-} 
+}
